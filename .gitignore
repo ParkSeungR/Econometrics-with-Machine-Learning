@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+ECHO가 설정되어 있지 않습니다.
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+ECHO가 설정되어 있지 않습니다.
+# Environments
+envs/
+venv/
+.venv/
+ECHO가 설정되어 있지 않습니다.
+# Outputs / large or generated
+Output/
+**/tmp/
