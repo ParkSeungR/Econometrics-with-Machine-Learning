@@ -17,112 +17,112 @@ import statsmodels.stats.outliers_influence as smo # Corrected import for reset_
 
 def Comprehensive_regression_analysis(data, y_var, X_vars, data_type=None):
     """
-    ´ÜÀÏ ¸í·É¾î·Î È¸±Í ºĞ¼®¿¡ ÇÊ¿äÇÑ ¸ğµç °á°ú¸¦ Ãâ·ÂÇÏ´Â ÇÔ¼ö.
-    È¾´Ü¸é ¶Ç´Â ½Ã°è¿­ µ¥ÀÌÅÍ¿¡ µû¶ó ÀÌºĞ»ê/ÀÚ±â»ó°ü °ËÁ¤ ¹× ÇØ°á ÃßÁ¤¹ıÀ» Àû¿ëÇÕ´Ï´Ù.
+    ë‹¨ì¼ ëª…ë ¹ì–´ë¡œ íšŒê·€ ë¶„ì„ì— í•„ìš”í•œ ëª¨ë“  ê²°ê³¼ë¥¼ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜.
+    íš¡ë‹¨ë©´ ë˜ëŠ” ì‹œê³„ì—´ ë°ì´í„°ì— ë”°ë¼ ì´ë¶„ì‚°/ìê¸°ìƒê´€ ê²€ì • ë° í•´ê²° ì¶”ì •ë²•ì„ ì ìš©í•©ë‹ˆë‹¤.
 
     Args:
-        data (pd.DataFrame): ºĞ¼®ÇÒ ÀüÃ¼ µ¥ÀÌÅÍ.
-        y_var (str): Á¾¼Ó º¯¼ö¸í.
-        X_vars (list): µ¶¸³ º¯¼ö¸í ¸®½ºÆ®.
-        data_type (str, optional): µ¥ÀÌÅÍÀÇ À¯ÇüÀ» ¸í½ÃÀûÀ¸·Î ÁöÁ¤ÇÕ´Ï´Ù.
-                                   'time_series' ¶Ç´Â 'cross_sectional'.
-                                   NoneÀÎ °æ¿ì ÀÎµ¦½º À¯ÇüÀ» ±â¹İÀ¸·Î ÀÚµ¿ °¨ÁöÇÕ´Ï´Ù.
-                                   ±âº»°ªÀº None.
+        data (pd.DataFrame): ë¶„ì„í•  ì „ì²´ ë°ì´í„°.
+        y_var (str): ì¢…ì† ë³€ìˆ˜ëª….
+        X_vars (list): ë…ë¦½ ë³€ìˆ˜ëª… ë¦¬ìŠ¤íŠ¸.
+        data_type (str, optional): ë°ì´í„°ì˜ ìœ í˜•ì„ ëª…ì‹œì ìœ¼ë¡œ ì§€ì •í•©ë‹ˆë‹¤.
+                                   'time_series' ë˜ëŠ” 'cross_sectional'.
+                                   Noneì¸ ê²½ìš° ì¸ë±ìŠ¤ ìœ í˜•ì„ ê¸°ë°˜ìœ¼ë¡œ ìë™ ê°ì§€í•©ë‹ˆë‹¤.
+                                   ê¸°ë³¸ê°’ì€ None.
     """
 
     y = data[y_var]
     X = data[X_vars]
 
     print("=" * 50)
-    print("Á¾ÇÕ È¸±Í ºĞ¼® º¸°í¼­")
+    print("ì¢…í•© íšŒê·€ ë¶„ì„ ë³´ê³ ì„œ")
     print("=" * 50)
 
-    # 0. µ¥ÀÌÅÍ À¯Çü ÆÄ¾Ç (½Ã°è¿­ ¿©ºÎ)
+    # 0. ë°ì´í„° ìœ í˜• íŒŒì•… (ì‹œê³„ì—´ ì—¬ë¶€)
     if data_type is None:
         is_time_series = isinstance(data.index, pd.DatetimeIndex) and data.index.is_monotonic_increasing
-        print("\n--- 0. µ¥ÀÌÅÍ À¯Çü ÆÄ¾Ç (ÀÚµ¿ °¨Áö) ---")
+        print("\n--- 0. ë°ì´í„° ìœ í˜• íŒŒì•… (ìë™ ê°ì§€) ---")
     elif data_type == 'time_series':
         is_time_series = True
-        print("\n--- 0. µ¥ÀÌÅÍ À¯Çü ÆÄ¾Ç (¸í½ÃÀû ÁöÁ¤: ½Ã°è¿­) ---")
+        print("\n--- 0. ë°ì´í„° ìœ í˜• íŒŒì•… (ëª…ì‹œì  ì§€ì •: ì‹œê³„ì—´) ---")
     elif data_type == 'cross_sectional':
         is_time_series = False
-        print("\n--- 0. µ¥ÀÌÅÍ À¯Çü ÆÄ¾Ç (¸í½ÃÀû ÁöÁ¤: È¾´Ü¸é) ---")
+        print("\n--- 0. ë°ì´í„° ìœ í˜• íŒŒì•… (ëª…ì‹œì  ì§€ì •: íš¡ë‹¨ë©´) ---")
     else:
-        raise ValueError("data_typeÀº 'time_series', 'cross_sectional' ¶Ç´Â NoneÀÌ¾î¾ß ÇÕ´Ï´Ù.")
+        raise ValueError("data_typeì€ 'time_series', 'cross_sectional' ë˜ëŠ” Noneì´ì–´ì•¼ í•©ë‹ˆë‹¤.")
     
     if is_time_series:
-        print("µ¥ÀÌÅÍ´Â ½Ã°è¿­ µ¥ÀÌÅÍ·Î ÆÄ¾ÇµË´Ï´Ù.")
+        print("ë°ì´í„°ëŠ” ì‹œê³„ì—´ ë°ì´í„°ë¡œ íŒŒì•…ë©ë‹ˆë‹¤.")
     else:
-        print("µ¥ÀÌÅÍ´Â È¾´Ü¸é µ¥ÀÌÅÍ·Î ÆÄ¾ÇµË´Ï´Ù.")
+        print("ë°ì´í„°ëŠ” íš¡ë‹¨ë©´ ë°ì´í„°ë¡œ íŒŒì•…ë©ë‹ˆë‹¤.")
 
-    # 1. µ¥ÀÌÅÍ ±âº» Á¤º¸
-    print("\n--- 1. µ¥ÀÌÅÍ ±âº» Á¤º¸ ---")
+    # 1. ë°ì´í„° ê¸°ë³¸ ì •ë³´
+    print("\n--- 1. ë°ì´í„° ê¸°ë³¸ ì •ë³´ ---")
     print(data.info())
-    print(f"\nÁ¾¼Ó º¯¼ö: {y_var}")
-    print(f"µ¶¸³ º¯¼ö: {X_vars}")
+    print(f"\nì¢…ì† ë³€ìˆ˜: {y_var}")
+    print(f"ë…ë¦½ ë³€ìˆ˜: {X_vars}")
 
-    # 2. ±âÃÊ Åë°è·®
-    print("\n--- 2. ±âÃÊ Åë°è·® ---")
+    # 2. ê¸°ì´ˆ í†µê³„ëŸ‰
+    print("\n--- 2. ê¸°ì´ˆ í†µê³„ëŸ‰ ---")
     print(data.describe())
 
-    # 3. »ó°ü°è¼ö Çà·Ä
-    print("\n--- 3. »ó°ü°è¼ö Çà·Ä ---")
+    # 3. ìƒê´€ê³„ìˆ˜ í–‰ë ¬
+    print("\n--- 3. ìƒê´€ê³„ìˆ˜ í–‰ë ¬ ---")
     print(data[X_vars + [y_var]].corr())
-    # »ó°ü°è¼ö Çà·Ä ±×·¡ÇÁ Ãâ·Â ºÎºĞ Á¦°Å
+    # ìƒê´€ê³„ìˆ˜ í–‰ë ¬ ê·¸ë˜í”„ ì¶œë ¥ ë¶€ë¶„ ì œê±°
 
-    # 4. µ¥ÀÌÅÍ ½Ã°¢È­
-    print("\n--- 4. µ¥ÀÌÅÍ ½Ã°¢È­ ---")
+    # 4. ë°ì´í„° ì‹œê°í™”
+    print("\n--- 4. ë°ì´í„° ì‹œê°í™” ---")
     plt.figure(figsize=(15, 5))
     for i, col in enumerate(X_vars + [y_var]):
         plt.subplot(1, len(X_vars) + 1, i + 1)
         sns.histplot(data[col], kde=True)
-        plt.title(f'È÷½ºÅä±×·¥ ¹× KDE: {col}')
+        plt.title(f'íˆìŠ¤í† ê·¸ë¨ ë° KDE: {col}')
     plt.tight_layout()
     plt.show()
 
     if is_time_series:
-        print("\n½Ã°è¿­ µ¥ÀÌÅÍ: ½Ã°£ º¯È­¿¡ µû¸¥ ¼± ±×·¡ÇÁ Ãß°¡")
+        print("\nì‹œê³„ì—´ ë°ì´í„°: ì‹œê°„ ë³€í™”ì— ë”°ë¥¸ ì„  ê·¸ë˜í”„ ì¶”ê°€")
         plt.figure(figsize=(15, 6))
         for col in X_vars + [y_var]:
             plt.plot(data.index, data[col], label=col)
-        plt.title("½Ã°£ º¯È­¿¡ µû¸¥ º¯¼ö ÃßÀÌ")
-        plt.xlabel("½Ã°£")
-        plt.ylabel("°ª")
+        plt.title("ì‹œê°„ ë³€í™”ì— ë”°ë¥¸ ë³€ìˆ˜ ì¶”ì´")
+        plt.xlabel("ì‹œê°„")
+        plt.ylabel("ê°’")
         plt.legend()
         plt.grid(True)
         plt.show()
 
-    # 5. OLS È¸±ÍºĞ¼® °á°ú
-    print("\n--- 5. OLS È¸±ÍºĞ¼® °á°ú ---")
+    # 5. OLS íšŒê·€ë¶„ì„ ê²°ê³¼
+    print("\n--- 5. OLS íšŒê·€ë¶„ì„ ê²°ê³¼ ---")
     X_const = add_constant(X)
     ols_model = sm.OLS(y, X_const)
     ols_results = ols_model.fit()
     print(ols_results.summary())
 
-    # 6. ÀÜÂ÷ÀÇ Á¤±Ô¼º °ËÁ¤
-    print("\n--- 6. ÀÜÂ÷ÀÇ Á¤±Ô¼º °ËÁ¤ ---")
+    # 6. ì”ì°¨ì˜ ì •ê·œì„± ê²€ì •
+    print("\n--- 6. ì”ì°¨ì˜ ì •ê·œì„± ê²€ì • ---")
     residuals = ols_results.resid
 
     shapiro_test = stats.shapiro(residuals)
     print(f"Shapiro-Wilk Test: Statistic={shapiro_test.statistic:.4f}, p-value={shapiro_test.pvalue:.4f}")
     if shapiro_test.pvalue < 0.05:
-        print("±Í¹«°¡¼³ ±â°¢: ÀÜÂ÷´Â Á¤±Ô ºĞÆ÷¸¦ µû¸£Áö ¾Ê½À´Ï´Ù.")
+        print("ê·€ë¬´ê°€ì„¤ ê¸°ê°: ì”ì°¨ëŠ” ì •ê·œ ë¶„í¬ë¥¼ ë”°ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.")
     else:
-        print("±Í¹«°¡¼³ Ã¤ÅÃ: ÀÜÂ÷´Â Á¤±Ô ºĞÆ÷¸¦ µû¸¥´Ù°í º¼ ¼ö ÀÖ½À´Ï´Ù.")
+        print("ê·€ë¬´ê°€ì„¤ ì±„íƒ: ì”ì°¨ëŠ” ì •ê·œ ë¶„í¬ë¥¼ ë”°ë¥¸ë‹¤ê³  ë³¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
     jb_test = sm.stats.jarque_bera(residuals)
     print(f"Jarque-Bera Test: Statistic={jb_test[0]:.4f}, p-value={jb_test[1]:.4f}")
     if jb_test[1] < 0.05:
-        print("±Í¹«°¡¼³ ±â°¢: ÀÜÂ÷´Â Á¤±Ô ºĞÆ÷¸¦ µû¸£Áö ¾Ê½À´Ï´Ù.")
+        print("ê·€ë¬´ê°€ì„¤ ê¸°ê°: ì”ì°¨ëŠ” ì •ê·œ ë¶„í¬ë¥¼ ë”°ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.")
     else:
-        print("±Í¹«°¡¼³ Ã¤ÅÃ: ÀÜÂ÷´Â Á¤±Ô ºĞÆ÷¸¦ µû¸¥´Ù°í º¼ ¼ö ÀÖ½À´Ï´Ù.")
+        print("ê·€ë¬´ê°€ì„¤ ì±„íƒ: ì”ì°¨ëŠ” ì •ê·œ ë¶„í¬ë¥¼ ë”°ë¥¸ë‹¤ê³  ë³¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
     fig = sm.qqplot(residuals, line='s')
-    plt.title("ÀÜÂ÷ QQ Plot")
+    plt.title("ì”ì°¨ QQ Plot")
     plt.show()
 
-    # 7. ¸ğÇü¼³Á¤ ¿À·ù °ËÁ¤ (RESET Test)
-    print("\n--- 7. ¸ğÇü¼³Á¤ ¿À·ù °ËÁ¤ (RESET Test) ---")
+    # 7. ëª¨í˜•ì„¤ì • ì˜¤ë¥˜ ê²€ì • (RESET Test)
+    print("\n--- 7. ëª¨í˜•ì„¤ì • ì˜¤ë¥˜ ê²€ì • (RESET Test) ---")
     try:
         reset_output = smo.reset_ramsey(res=ols_results, degree=3)
         
@@ -132,19 +132,19 @@ def Comprehensive_regression_analysis(data, y_var, X_vars, data_type=None):
         if not np.isnan(fstat_reset):
             print(f"RESET Test (Ramsey): F-statistic={fstat_reset:.4f}, p-value={fpval_reset:.4f}")
             if fpval_reset < 0.05:
-                print("±Í¹«°¡¼³ ±â°¢: ¸ğÇü ¼³Á¤ ¿À·ù°¡ Á¸ÀçÇÒ ¼ö ÀÖ½À´Ï´Ù (Ramsey RESET test °á°ú).")
+                print("ê·€ë¬´ê°€ì„¤ ê¸°ê°: ëª¨í˜• ì„¤ì • ì˜¤ë¥˜ê°€ ì¡´ì¬í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤ (Ramsey RESET test ê²°ê³¼).")
             else:
-                print("±Í¹«°¡¼³ Ã¤ÅÃ: ¸ğÇü ¼³Á¤ ¿À·ù°¡ ¾ø´Ù°í º¼ ¼ö ÀÖ½À´Ï´Ù (Ramsey RESET test °á°ú).")
+                print("ê·€ë¬´ê°€ì„¤ ì±„íƒ: ëª¨í˜• ì„¤ì • ì˜¤ë¥˜ê°€ ì—†ë‹¤ê³  ë³¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤ (Ramsey RESET test ê²°ê³¼).")
         else:
-            print("RESET Test °á°ú¸¦ Ç¥½ÃÇÒ ¼ö ¾ø½À´Ï´Ù.")
+            print("RESET Test ê²°ê³¼ë¥¼ í‘œì‹œí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.")
             
     except Exception as e:
-        print(f"RESET Test ¼öÇà Áß ¿À·ù ¹ß»ı: {e}")
-        print("RESET Test´Â ÀÏºÎ »óÈ²¿¡¼­ ¼öÄ¡Àû ¹®Á¦·Î ¿À·ù°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù (¿¹: µ¥ÀÌÅÍ Å©±â, ´ÙÁß°ø¼±¼º).")
+        print(f"RESET Test ìˆ˜í–‰ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+        print("RESET TestëŠ” ì¼ë¶€ ìƒí™©ì—ì„œ ìˆ˜ì¹˜ì  ë¬¸ì œë¡œ ì˜¤ë¥˜ê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤ (ì˜ˆ: ë°ì´í„° í¬ê¸°, ë‹¤ì¤‘ê³µì„ ì„±).")
 
 
-    # 8. ´ÙÁß°ø¼±¼º °ËÁ¤ (VIF)
-    print("\n--- 8. ´ÙÁß°ø¼±¼º °ËÁ¤ (VIF) ---")
+    # 8. ë‹¤ì¤‘ê³µì„ ì„± ê²€ì • (VIF)
+    print("\n--- 8. ë‹¤ì¤‘ê³µì„ ì„± ê²€ì • (VIF) ---")
     vif_data = pd.DataFrame()
     vif_data["Variable"] = X_const.columns
     vif_data["VIF"] = [variance_inflation_factor(X_const.values, i) 
@@ -154,27 +154,27 @@ def Comprehensive_regression_analysis(data, y_var, X_vars, data_type=None):
         vif_data = vif_data[vif_data['Variable'] != 'const']
 
     print(vif_data)
-    print("\nÀÏ¹İÀûÀ¸·Î VIF °ªÀÌ 10 ÀÌ»óÀÌ¸é ½É°¢ÇÑ ´ÙÁß°ø¼±¼ºÀ» ÀÇ½ÉÇÕ´Ï´Ù.")
+    print("\nì¼ë°˜ì ìœ¼ë¡œ VIF ê°’ì´ 10 ì´ìƒì´ë©´ ì‹¬ê°í•œ ë‹¤ì¤‘ê³µì„ ì„±ì„ ì˜ì‹¬í•©ë‹ˆë‹¤.")
 
-    # 9. ÀÚ±â»ó°ü °ËÁ¤ (½Ã°è¿­ µ¥ÀÌÅÍÀÏ °æ¿ì¿¡¸¸)
+    # 9. ìê¸°ìƒê´€ ê²€ì • (ì‹œê³„ì—´ ë°ì´í„°ì¼ ê²½ìš°ì—ë§Œ)
     if is_time_series:
-        print("\n--- 9. ÀÚ±â»ó°ü °ËÁ¤ (½Ã°è¿­ µ¥ÀÌÅÍ) ---")
-        print("ÀÜÂ÷ ±×·¡ÇÁ (½Ã°£¿¡ µû¸¥)")
+        print("\n--- 9. ìê¸°ìƒê´€ ê²€ì • (ì‹œê³„ì—´ ë°ì´í„°) ---")
+        print("ì”ì°¨ ê·¸ë˜í”„ (ì‹œê°„ì— ë”°ë¥¸)")
         plt.figure(figsize=(12, 5))
         plt.plot(data.index, residuals)
         plt.axhline(0, color='red', linestyle='--')
-        plt.title("½Ã°£¿¡ µû¸¥ ÀÜÂ÷ ÃßÀÌ")
-        plt.xlabel("½Ã°£")
-        plt.ylabel("ÀÜÂ÷")
+        plt.title("ì‹œê°„ì— ë”°ë¥¸ ì”ì°¨ ì¶”ì´")
+        plt.xlabel("ì‹œê°„")
+        plt.ylabel("ì”ì°¨")
         plt.grid(True)
         plt.show()
 
         # Durbin-Watson Test
         dw_test = durbin_watson(residuals)
         print(f"Durbin-Watson Test: Statistic={dw_test:.4f}")
-        print("Durbin-Watson Åë°è·®Àº 2¿¡ °¡±î¿ì¸é ÀÚ±â»ó°üÀÌ ¾øÀ½À» ³ªÅ¸³À´Ï´Ù.")
+        print("Durbin-Watson í†µê³„ëŸ‰ì€ 2ì— ê°€ê¹Œìš°ë©´ ìê¸°ìƒê´€ì´ ì—†ìŒì„ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤.")
         if dw_test < 1.5 or dw_test > 2.5:
-            print("ÀÚ±â»ó°üÀÌ Á¸ÀçÇÒ °¡´É¼ºÀÌ ÀÖ½À´Ï´Ù.")
+            print("ìê¸°ìƒê´€ì´ ì¡´ì¬í•  ê°€ëŠ¥ì„±ì´ ìˆìŠµë‹ˆë‹¤.")
 
         # Breusch-Godfrey Test
         try:
@@ -185,16 +185,16 @@ def Comprehensive_regression_analysis(data, y_var, X_vars, data_type=None):
             bg_test = sm.stats.acorr_breusch_godfrey(ols_results, nlags=min(int(len(y)/4), max_nlags))
             print(f"Breusch-Godfrey Test: LM Statistic={bg_test[0]:.4f}, p-value={bg_test[1]:.4f}")
             if bg_test[1] < 0.05:
-                print("±Í¹«°¡¼³ ±â°¢: ÀÚ±â»ó°üÀÌ Á¸ÀçÇÕ´Ï´Ù.")
+                print("ê·€ë¬´ê°€ì„¤ ê¸°ê°: ìê¸°ìƒê´€ì´ ì¡´ì¬í•©ë‹ˆë‹¤.")
             else:
-                print("±Í¹«°¡¼³ Ã¤ÅÃ: ÀÚ±â»ó°üÀÌ ¾ø´Ù°í º¼ ¼ö ÀÖ½À´Ï´Ù.")
+                print("ê·€ë¬´ê°€ì„¤ ì±„íƒ: ìê¸°ìƒê´€ì´ ì—†ë‹¤ê³  ë³¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
         except Exception as e:
-            print(f"Breusch-Godfrey Test ¼öÇà Áß ¿À·ù ¹ß»ı: {e}")
-            print("ÃæºĞÇÑ °üÃøÄ¡ ¼ö ¶Ç´Â lag ¼³Á¤ ¹®Á¦·Î ¿À·ù°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+            print(f"Breusch-Godfrey Test ìˆ˜í–‰ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+            print("ì¶©ë¶„í•œ ê´€ì¸¡ì¹˜ ìˆ˜ ë˜ëŠ” lag ì„¤ì • ë¬¸ì œë¡œ ì˜¤ë¥˜ê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
 
-        # Augmented Dickey-Fuller Test (ÀÜÂ÷ÀÇ Á¤»ó¼º °ËÁ¤)
-        print("\nAugmented Dickey-Fuller Test (ÀÜÂ÷ÀÇ Á¤»ó¼º °ËÁ¤):")
+        # Augmented Dickey-Fuller Test (ì”ì°¨ì˜ ì •ìƒì„± ê²€ì •)
+        print("\nAugmented Dickey-Fuller Test (ì”ì°¨ì˜ ì •ìƒì„± ê²€ì •):")
         try:
             adf_test = adfuller(residuals)
             print(f"  ADF Statistic: {adf_test[0]:.4f}")
@@ -203,23 +203,23 @@ def Comprehensive_regression_analysis(data, y_var, X_vars, data_type=None):
             for key, value in adf_test[4].items():
                 print(f"    {key}: {value:.4f}")
             if adf_test[1] < 0.05:
-                print("±Í¹«°¡¼³ ±â°¢: ÀÜÂ÷´Â Á¤»ó¼ºÀ» °¡Áı´Ï´Ù.")
+                print("ê·€ë¬´ê°€ì„¤ ê¸°ê°: ì”ì°¨ëŠ” ì •ìƒì„±ì„ ê°€ì§‘ë‹ˆë‹¤.")
             else:
-                print("±Í¹«°¡¼³ Ã¤ÅÃ: ÀÜÂ÷´Â ºñÁ¤»ó¼ºÀ» °¡Áı´Ï´Ù (´ÜÀ§±ÙÀÌ Á¸ÀçÇÒ °¡´É¼º).")
+                print("ê·€ë¬´ê°€ì„¤ ì±„íƒ: ì”ì°¨ëŠ” ë¹„ì •ìƒì„±ì„ ê°€ì§‘ë‹ˆë‹¤ (ë‹¨ìœ„ê·¼ì´ ì¡´ì¬í•  ê°€ëŠ¥ì„±).")
         except Exception as e:
-            print(f"Augmented Dickey-Fuller Test ¼öÇà Áß ¿À·ù ¹ß»ı: {e}")
-            print("ÃæºĞÇÑ °üÃøÄ¡ ¼ö ºÎÁ· ¶Ç´Â ÀÜÂ÷ Æ¯¼º ¹®Á¦·Î ¿À·ù°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+            print(f"Augmented Dickey-Fuller Test ìˆ˜í–‰ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+            print("ì¶©ë¶„í•œ ê´€ì¸¡ì¹˜ ìˆ˜ ë¶€ì¡± ë˜ëŠ” ì”ì°¨ íŠ¹ì„± ë¬¸ì œë¡œ ì˜¤ë¥˜ê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
-    # 10. ÀÌºĞ»ê °ËÁ¤ (È¾´Ü¸é µ¥ÀÌÅÍÀÏ °æ¿ì¿¡¸¸)
+    # 10. ì´ë¶„ì‚° ê²€ì • (íš¡ë‹¨ë©´ ë°ì´í„°ì¼ ê²½ìš°ì—ë§Œ)
     if not is_time_series:
-        print("\n--- 10. ÀÌºĞ»ê °ËÁ¤ (È¾´Ü¸é µ¥ÀÌÅÍ) ---")
-        print("ÀÜÂ÷ ±×·¡ÇÁ (¿¹Ãø°ª¿¡ µû¸¥)")
+        print("\n--- 10. ì´ë¶„ì‚° ê²€ì • (íš¡ë‹¨ë©´ ë°ì´í„°) ---")
+        print("ì”ì°¨ ê·¸ë˜í”„ (ì˜ˆì¸¡ê°’ì— ë”°ë¥¸)")
         plt.figure(figsize=(10, 6))
         plt.scatter(ols_results.fittedvalues, residuals)
         plt.axhline(0, color='red', linestyle='--')
-        plt.xlabel("¿¹Ãø°ª")
-        plt.ylabel("ÀÜÂ÷")
-        plt.title("¿¹Ãø°ª¿¡ µû¸¥ ÀÜÂ÷ »êÁ¡µµ")
+        plt.xlabel("ì˜ˆì¸¡ê°’")
+        plt.ylabel("ì”ì°¨")
+        plt.title("ì˜ˆì¸¡ê°’ì— ë”°ë¥¸ ì”ì°¨ ì‚°ì ë„")
         plt.show()
 
         # Breusch-Pagan test
@@ -227,65 +227,65 @@ def Comprehensive_regression_analysis(data, y_var, X_vars, data_type=None):
             bp_test = het_breuschpagan(residuals, X_const)
             print(f"Breusch-Pagan Test: LM Statistic={bp_test[0]:.4f}, p-value={bp_test[1]:.4f}")
             if bp_test[1] < 0.05:
-                print("±Í¹«°¡¼³ ±â°¢: ÀÌºĞ»ê¼ºÀÌ Á¸ÀçÇÕ´Ï´Ù.")
+                print("ê·€ë¬´ê°€ì„¤ ê¸°ê°: ì´ë¶„ì‚°ì„±ì´ ì¡´ì¬í•©ë‹ˆë‹¤.")
             else:
-                print("±Í¹«°¡¼³ Ã¤ÅÃ: ÀÌºĞ»ê¼ºÀÌ ¾ø´Ù°í º¼ ¼ö ÀÖ½À´Ï´Ù.")
+                print("ê·€ë¬´ê°€ì„¤ ì±„íƒ: ì´ë¶„ì‚°ì„±ì´ ì—†ë‹¤ê³  ë³¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
         except Exception as e:
-            print(f"Breusch-Pagan Test ¼öÇà Áß ¿À·ù ¹ß»ı: {e}")
+            print(f"Breusch-Pagan Test ìˆ˜í–‰ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
 
         # White test
         try:
             white_test = het_white(residuals, X_const)
             print(f"White Test: LM Statistic={white_test[0]:.4f}, p-value={white_test[1]:.4f}")
             if white_test[1] < 0.05:
-                print("±Í¹«°¡¼³ ±â°¢: ÀÌºĞ»ê¼ºÀÌ Á¸ÀçÇÕ´Ï´Ù.")
+                print("ê·€ë¬´ê°€ì„¤ ê¸°ê°: ì´ë¶„ì‚°ì„±ì´ ì¡´ì¬í•©ë‹ˆë‹¤.")
             else:
-                print("±Í¹«°¡¼³ Ã¤ÅÃ: ÀÌºĞ»ê¼ºÀÌ ¾ø´Ù°í º¼ ¼ö ÀÖ½À´Ï´Ù.")
+                print("ê·€ë¬´ê°€ì„¤ ì±„íƒ: ì´ë¶„ì‚°ì„±ì´ ì—†ë‹¤ê³  ë³¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
         except Exception as e:
-            print(f"White Test ¼öÇà Áß ¿À·ù ¹ß»ı: {e}")
+            print(f"White Test ìˆ˜í–‰ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
     else:
-        print("\n--- 10. ÀÌºĞ»ê °ËÁ¤ (½Ã°è¿­ µ¥ÀÌÅÍÀÇ °æ¿ì ¼öÇàÇÏÁö ¾ÊÀ½) ---")
+        print("\n--- 10. ì´ë¶„ì‚° ê²€ì • (ì‹œê³„ì—´ ë°ì´í„°ì˜ ê²½ìš° ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ) ---")
 
 
-    # 11. ÀÚ±â»ó°ü ÇØ°áÀ» À§ÇÑ ÃßÁ¤¹ı (½Ã°è¿­ µ¥ÀÌÅÍÀÏ °æ¿ì¿¡¸¸)
+    # 11. ìê¸°ìƒê´€ í•´ê²°ì„ ìœ„í•œ ì¶”ì •ë²• (ì‹œê³„ì—´ ë°ì´í„°ì¼ ê²½ìš°ì—ë§Œ)
     cochrane_orcutt_results = None
-    prais_winsten_results = None # Prais-WinstenÀº GLSAR·Î ÅëÇÕÇÏ¿© Ã³¸®
+    prais_winsten_results = None # Prais-Winstenì€ GLSARë¡œ í†µí•©í•˜ì—¬ ì²˜ë¦¬
     hac_se_results = None
 
     if is_time_series:
-        print("\n--- 11. ÀÚ±â»ó°ü ÇØ°áÀ» À§ÇÑ ÃßÁ¤¹ı (½Ã°è¿­ µ¥ÀÌÅÍ) ---")
+        print("\n--- 11. ìê¸°ìƒê´€ í•´ê²°ì„ ìœ„í•œ ì¶”ì •ë²• (ì‹œê³„ì—´ ë°ì´í„°) ---")
 
-        # Cochrane-Orcutt (sm.GLSAR »ç¿ë)
+        # Cochrane-Orcutt (sm.GLSAR ì‚¬ìš©)
         try:
-            print("\n- Cochrane-Orcutt (GLSAR) ÃßÁ¤ -")
-            # GLSAR ¸ğµ¨ »ı¼º: (1,0)Àº AR(1) ¿ÀÂ÷¸¦ °¡Á¤
-            # X_const (»ó¼öÇ× Æ÷ÇÔ)¸¦ Àü´ŞÇØ¾ß ÇÔ
-            glsar_model = sm.GLSAR(y, X_const, 1) # 1Àº AR(1)À» ÀÇ¹Ì
-            # ¹İº¹ ÃßÁ¤ (ÃÖ´ë 100È¸, ¼ö·Å Çã¿ë ¿ÀÂ÷ 1e-8)
+            print("\n- Cochrane-Orcutt (GLSAR) ì¶”ì • -")
+            # GLSAR ëª¨ë¸ ìƒì„±: (1,0)ì€ AR(1) ì˜¤ì°¨ë¥¼ ê°€ì •
+            # X_const (ìƒìˆ˜í•­ í¬í•¨)ë¥¼ ì „ë‹¬í•´ì•¼ í•¨
+            glsar_model = sm.GLSAR(y, X_const, 1) # 1ì€ AR(1)ì„ ì˜ë¯¸
+            # ë°˜ë³µ ì¶”ì • (ìµœëŒ€ 100íšŒ, ìˆ˜ë ´ í—ˆìš© ì˜¤ì°¨ 1e-8)
             cochrane_orcutt_results = glsar_model.iterative_fit(maxiter=100, tol=1e-8)
             print(cochrane_orcutt_results.summary())
-            print(f"ÃßÁ¤µÈ AR(1) °è¼ö (rho): {glsar_model.rho[0]:.4f}")
+            print(f"ì¶”ì •ëœ AR(1) ê³„ìˆ˜ (rho): {glsar_model.rho[0]:.4f}")
 
         except Exception as e:
-            print(f"Cochrane-Orcutt (GLSAR) ÃßÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
-            print("GLSAR ÃßÁ¤Àº µ¥ÀÌÅÍ Æ¯¼ºÀÌ³ª ¼ö·Å ¹®Á¦·Î ¿À·ù°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+            print(f"Cochrane-Orcutt (GLSAR) ì¶”ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+            print("GLSAR ì¶”ì •ì€ ë°ì´í„° íŠ¹ì„±ì´ë‚˜ ìˆ˜ë ´ ë¬¸ì œë¡œ ì˜¤ë¥˜ê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
 
-        # Prais-Winsten (sm.GLSAR »ç¿ë)
-        print("\n- Prais-Winsten (GLSAR) ÃßÁ¤ -")
+        # Prais-Winsten (sm.GLSAR ì‚¬ìš©)
+        print("\n- Prais-Winsten (GLSAR) ì¶”ì • -")
         try:
-            # GLSARÀº ±âº»ÀûÀ¸·Î Ã¹ °üÃøÄ¡µµ º¯È¯ÇÏ´Â Prais-Winsten ¹æ½ÄÀ» »ç¿ëÇÕ´Ï´Ù.
-            # iterative_fit()ÀÌ »ç½Ç»ó Prais-WinstenÀÇ ¹İº¹ÀûÀÎ rho ÃßÁ¤ °úÁ¤À» Æ÷ÇÔÇÕ´Ï´Ù.
-            # µû¶ó¼­ º°µµÀÇ Prais-Winsten ¸ğµ¨À» ¸í½ÃÀûÀ¸·Î »ı¼ºÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
-            # À§ÀÇ Cochrane-Orcutt (GLSAR) °á°ú°¡ Prais-WinstenÀÇ Æ¯¼ºÀ» Æ÷ÇÔÇÕ´Ï´Ù.
-            print("Cochrane-Orcutt (GLSAR) °á°ú°¡ Prais-Winsten ÃßÁ¤ÀÇ Æ¯¼ºÀ» Æ÷ÇÔÇÕ´Ï´Ù.")
-            print("Prais-Winsten¿¡ Æ¯È­µÈ º°µµ ±¸ÇöÀº ÇÊ¿äÇÏÁö ¾Ê½À´Ï´Ù. À§ÀÇ GLSAR °á°ú¸¦ ÂüÁ¶ÇÏ¼¼¿ä.")
+            # GLSARì€ ê¸°ë³¸ì ìœ¼ë¡œ ì²« ê´€ì¸¡ì¹˜ë„ ë³€í™˜í•˜ëŠ” Prais-Winsten ë°©ì‹ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.
+            # iterative_fit()ì´ ì‚¬ì‹¤ìƒ Prais-Winstenì˜ ë°˜ë³µì ì¸ rho ì¶”ì • ê³¼ì •ì„ í¬í•¨í•©ë‹ˆë‹¤.
+            # ë”°ë¼ì„œ ë³„ë„ì˜ Prais-Winsten ëª¨ë¸ì„ ëª…ì‹œì ìœ¼ë¡œ ìƒì„±í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
+            # ìœ„ì˜ Cochrane-Orcutt (GLSAR) ê²°ê³¼ê°€ Prais-Winstenì˜ íŠ¹ì„±ì„ í¬í•¨í•©ë‹ˆë‹¤.
+            print("Cochrane-Orcutt (GLSAR) ê²°ê³¼ê°€ Prais-Winsten ì¶”ì •ì˜ íŠ¹ì„±ì„ í¬í•¨í•©ë‹ˆë‹¤.")
+            print("Prais-Winstenì— íŠ¹í™”ëœ ë³„ë„ êµ¬í˜„ì€ í•„ìš”í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ìœ„ì˜ GLSAR ê²°ê³¼ë¥¼ ì°¸ì¡°í•˜ì„¸ìš”.")
         except Exception as e:
-            print(f"Prais-Winsten ÃßÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
+            print(f"Prais-Winsten ì¶”ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
 
 
-        # HAC Ç¥ÁØ¿ÀÂ÷ (Newey-West)
-        print("\n- HAC Ç¥ÁØ¿ÀÂ÷ (Newey-West) -")
+        # HAC í‘œì¤€ì˜¤ì°¨ (Newey-West)
+        print("\n- HAC í‘œì¤€ì˜¤ì°¨ (Newey-West) -")
         try:
             num_exog = X_const.shape[1]
             max_lags_hac = len(y) - num_exog -1
@@ -295,46 +295,46 @@ def Comprehensive_regression_analysis(data, y_var, X_vars, data_type=None):
             hac_se_results = ols_model.fit(cov_type='HAC', cov_kwds={'maxlags': max_lags_hac})
             print(hac_se_results.summary())
         except Exception as e:
-            print(f"HAC Ç¥ÁØ¿ÀÂ÷ ÃßÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
+            print(f"HAC í‘œì¤€ì˜¤ì°¨ ì¶”ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
 
     else:
-        print("\n--- 11. ÀÚ±â»ó°ü ÇØ°áÀ» À§ÇÑ ÃßÁ¤¹ı (È¾´Ü¸é µ¥ÀÌÅÍÀÇ °æ¿ì ¼öÇàÇÏÁö ¾ÊÀ½) ---")
+        print("\n--- 11. ìê¸°ìƒê´€ í•´ê²°ì„ ìœ„í•œ ì¶”ì •ë²• (íš¡ë‹¨ë©´ ë°ì´í„°ì˜ ê²½ìš° ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ) ---")
 
-    # 12. ÀÌºĞ»ê ¹®Á¦ ÇØ°á ÃßÁ¤¹ı (È¾´Ü¸é µ¥ÀÌÅÍÀÏ °æ¿ì¿¡¸¸)
+    # 12. ì´ë¶„ì‚° ë¬¸ì œ í•´ê²° ì¶”ì •ë²• (íš¡ë‹¨ë©´ ë°ì´í„°ì¼ ê²½ìš°ì—ë§Œ)
     gls_results = None
     white_robust_results = None
 
     if not is_time_series:
-        print("\n--- 12. ÀÌºĞ»ê ¹®Á¦ ÇØ°á ÃßÁ¤¹ı (È¾´Ü¸é µ¥ÀÌÅÍ) ---")
+        print("\n--- 12. ì´ë¶„ì‚° ë¬¸ì œ í•´ê²° ì¶”ì •ë²• (íš¡ë‹¨ë©´ ë°ì´í„°) ---")
 
-        # ÀÏ¹İÈ­ ÃÖ¼ÒÀÚ½Â¹ı(Generalized Least Squares: GLS)
+        # ì¼ë°˜í™” ìµœì†ŒììŠ¹ë²•(Generalized Least Squares: GLS)
         try:
-            print("\n- ÀÏ¹İÈ­ ÃÖ¼ÒÀÚ½Â¹ı(GLS) -")
+            print("\n- ì¼ë°˜í™” ìµœì†ŒììŠ¹ë²•(GLS) -")
             weights = 1.0 / (residuals**2 + 1e-8)
             gls_model = sm.WLS(y, X_const, weights=weights)
             gls_results = gls_model.fit()
             print(gls_results.summary())
         except Exception as e:
-            print(f"GLS ÃßÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
+            print(f"GLS ì¶”ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
 
-        # White¡¯s Robust standard error
-        print("\n- White¡¯s Robust standard error -")
+        # Whiteâ€™s Robust standard error
+        print("\n- Whiteâ€™s Robust standard error -")
         try:
             white_robust_results = ols_model.fit(cov_type='HC3')
             print(white_robust_results.summary())
         except Exception as e:
-            print(f"White's Robust standard error ÃßÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
+            print(f"White's Robust standard error ì¶”ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
     else:
-        print("\n--- 12. ÀÌºĞ»ê ¹®Á¦ ÇØ°á ÃßÁ¤¹ı (½Ã°è¿­ µ¥ÀÌÅÍÀÇ °æ¿ì ¼öÇàÇÏÁö ¾ÊÀ½) ---")
+        print("\n--- 12. ì´ë¶„ì‚° ë¬¸ì œ í•´ê²° ì¶”ì •ë²• (ì‹œê³„ì—´ ë°ì´í„°ì˜ ê²½ìš° ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ) ---")
 
 
-    # 13. Á¾ÇÕ ÃßÁ¤ °á°ú ¿ä¾àÇ¥
+    # 13. ì¢…í•© ì¶”ì • ê²°ê³¼ ìš”ì•½í‘œ
     print("\n" + "=" * 50)
-    print("Á¾ÇÕ ÃßÁ¤ °á°ú ¿ä¾àÇ¥")
+    print("ì¢…í•© ì¶”ì • ê²°ê³¼ ìš”ì•½í‘œ")
     print("=" * 50)
 
     if is_time_series:
-        print("\n--- ½Ã°è¿­ µ¥ÀÌÅÍ °ü·Ã ÃßÁ¤°á°ú ¿ä¾àÇ¥ ---")
+        print("\n--- ì‹œê³„ì—´ ë°ì´í„° ê´€ë ¨ ì¶”ì •ê²°ê³¼ ìš”ì•½í‘œ ---")
         summary_dict_ts = {'OLS': ols_results}
         if cochrane_orcutt_results:
             summary_dict_ts['Cochrane-Orcutt (GLSAR)'] = cochrane_orcutt_results
@@ -349,13 +349,13 @@ def Comprehensive_regression_analysis(data, y_var, X_vars, data_type=None):
                                                       'R2':lambda x: f"{x.rsquared:.4f}"})
             print(results_table_ts)
         except Exception as e:
-            print(f"½Ã°è¿­ µ¥ÀÌÅÍ ÃßÁ¤ °á°ú ¿ä¾àÇ¥ »ı¼º Áß ¿À·ù ¹ß»ı: {e}")
-            print("ÀÏºÎ ¸ğµ¨ÀÇ °á°ú°¡ ºñ¾îÀÖÀ» ¼ö ÀÖ½À´Ï´Ù.")
+            print(f"ì‹œê³„ì—´ ë°ì´í„° ì¶”ì • ê²°ê³¼ ìš”ì•½í‘œ ìƒì„± ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+            print("ì¼ë¶€ ëª¨ë¸ì˜ ê²°ê³¼ê°€ ë¹„ì–´ìˆì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
-        print("\n(Âü°í: Cochrane-Orcutt (GLSAR)´Â ¹İº¹ ÃßÁ¤µÈ ÀÚ±â»ó°ü º¸Á¤ °á°úÀÔ´Ï´Ù.)")
+        print("\n(ì°¸ê³ : Cochrane-Orcutt (GLSAR)ëŠ” ë°˜ë³µ ì¶”ì •ëœ ìê¸°ìƒê´€ ë³´ì • ê²°ê³¼ì…ë‹ˆë‹¤.)")
 
     if not is_time_series:
-        print("\n--- È¾´Ü¸é µ¥ÀÌÅÍ °ü·Ã ÃßÁ¤°á°ú ¿ä¾àÇ¥ ---")
+        print("\n--- íš¡ë‹¨ë©´ ë°ì´í„° ê´€ë ¨ ì¶”ì •ê²°ê³¼ ìš”ì•½í‘œ ---")
         summary_dict_cs = {'OLS': ols_results}
         if gls_results:
             summary_dict_cs['GLS'] = gls_results
@@ -370,10 +370,10 @@ def Comprehensive_regression_analysis(data, y_var, X_vars, data_type=None):
                                                       'R2':lambda x: f"{x.rsquared:.4f}"})
             print(results_table_cs)
         except Exception as e:
-            print(f"È¾´Ü¸é µ¥ÀÌÅÍ ÃßÁ¤ °á°ú ¿ä¾àÇ¥ »ı¼º Áß ¿À·ù ¹ß»ı: {e}")
-            print("ÀÏºÎ ¸ğµ¨ÀÇ °á°ú°¡ ºñ¾îÀÖÀ» ¼ö ÀÖ½À´Ï´Ù.")
+            print(f"íš¡ë‹¨ë©´ ë°ì´í„° ì¶”ì • ê²°ê³¼ ìš”ì•½í‘œ ìƒì„± ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+            print("ì¼ë¶€ ëª¨ë¸ì˜ ê²°ê³¼ê°€ ë¹„ì–´ìˆì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
 
     print("\n" + "=" * 50)
-    print("ºĞ¼® ¿Ï·á")
+    print("ë¶„ì„ ì™„ë£Œ")
     print("=" * 50)

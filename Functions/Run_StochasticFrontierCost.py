@@ -11,72 +11,72 @@ warnings.filterwarnings('ignore')
 
 class _StochasticFrontierCostAnalyzer:
     """
-    È®·üº¯°æºñ¿ëÇÔ¼ö ºĞ¼®, ±â¼ú È¿À²¼º, TFP ±¸¼º¿äÀÎ ºĞÇØ¸¦ À§ÇÑ ³»ºÎ Å¬·¡½º
-    (»ç¿ëÀÚ°¡ Á÷Á¢ È£ÃâÇÏÁö ¾ÊÀ½)
+    ?ëº£ìª§è¹‚Â€å¯ƒìˆí‰¬?â‘ºë¸¿??éºê¾©ê½, æ¹²ê³—ë‹  ?â‘¥ì‘‰?? TFP æ´ÑŠê½¦?ë¶¿ì”¤ éºê¾ªë¹ç‘œ??ê¾ªë¸³ ?ëŒ€? ?ëŒ€ì˜’??
+    (?ÑŠìŠœ?ë¨­? ï§ê³¸ì ’ ?ëª„í…§?ì„? ?ë”†ì“¬)
     """
     
     def __init__(self, data, cost_var, price_vars, input_vars, output_var, time_var='t', id_var='id', include_time=True):
         self.data = data.copy()
-        self.cost_var = cost_var  # ÃÑºñ¿ë
-        self.price_vars = price_vars  # ¿ä¼Ò°¡°İµé 
-        self.input_vars = input_vars  # ÅõÀÔ·®µé
-        self.output_var = output_var  # »êÃâ·®
+        self.cost_var = cost_var  # ç¥ì•¸í‰¬??
+        self.price_vars = price_vars  # ?ë¶¿ëƒ¼åª›Â€å¯ƒâ‘¸ë±¾ 
+        self.input_vars = input_vars  # ?ÑŠì—¯?ë°ë±¾
+        self.output_var = output_var  # ?ê³—í…§??
         self.time_var = time_var
         self.id_var = id_var
         self.include_time = include_time
         
-        # °á°ú ÀúÀå¿ë µñ¼Å³Ê¸®
+        # å¯ƒê³Œë‚µ ?Â€?Î¼ìŠœ ?ëº¤ë€›?ëˆâ”
         self.results = {}
         self.normalized_data = None
         self.translog_vars = None
         
-        # µ¥ÀÌÅÍ °ËÁõ
+        # ?ê³—ì” ??å¯ƒÂ€ï§?
         self._validate_data()
         
     def _validate_data(self):
-        """µ¥ÀÌÅÍ À¯È¿¼º °Ë»ç"""
+        """?ê³—ì” ???ì¢ìŠš??å¯ƒÂ€??""
         required_vars = [self.cost_var, self.output_var] + self.price_vars + self.input_vars + [self.id_var]
         if self.include_time:
             required_vars.append(self.time_var)
             
         missing_vars = [var for var in required_vars if var not in self.data.columns]
         if missing_vars:
-            raise ValueError(f"´ÙÀ½ º¯¼öµéÀÌ µ¥ÀÌÅÍ¿¡ ¾ø½À´Ï´Ù: {missing_vars}")
+            raise ValueError(f"?ã…¼ì“¬ è¹‚Â€?ì„ë±¾???ê³—ì” ?ê³—ë¿‰ ?ë†ë’¿?ëˆë–: {missing_vars}")
         
-        # °¡°İº¯¼ö¿Í ÅõÀÔ·® º¯¼öÀÇ °³¼ö°¡ °°ÀºÁö È®ÀÎ
+        # åª›Â€å¯ƒâ‘¸??ì„? ?ÑŠì—¯??è¹‚Â€?ì„ì“½ åª›ì’–ë‹”åª›Â€ åª›ìˆˆ?ï§Â€ ?ëº¤ì”¤
         if len(self.price_vars) != len(self.input_vars):
-            raise ValueError(f"°¡°İº¯¼ö °³¼ö({len(self.price_vars)})¿Í ÅõÀÔ·®º¯¼ö °³¼ö({len(self.input_vars)})°¡ ´Ù¸¨´Ï´Ù.")
+            raise ValueError(f"åª›Â€å¯ƒâ‘¸???åª›ì’–ë‹”({len(self.price_vars)})?Â€ ?ÑŠì—¯?ë°???åª›ì’–ë‹”({len(self.input_vars)})åª›Â€ ?ã…»ì«­?ëˆë–.")
             
-        # ·Î±× º¯È¯À» À§ÇØ ¾ç¼ö Ã¼Å©
+        # æ¿¡ì’“ë ‡ è¹‚Â€?ì„ì“£ ?ê¾ªë¹ ?ë¬’ë‹” ï§£ëŒ„ê²•
         for var in [self.cost_var, self.output_var] + self.price_vars + self.input_vars:
             if (self.data[var] <= 0).any():
-                raise ValueError(f"º¯¼ö {var}¿¡ 0 ÀÌÇÏÀÇ °ªÀÌ ÀÖ½À´Ï´Ù. ·Î±× º¯È¯ÀÌ ºÒ°¡´ÉÇÕ´Ï´Ù.")
+                raise ValueError(f"è¹‚Â€??{var}??0 ?ëŒ„ë¸¯??åª›ë¯ªì”  ?ë‰ë’¿?ëˆë–. æ¿¡ì’“ë ‡ è¹‚Â€?ì„ì”  éºë‡??Î½ë¹€?ëˆë–.")
         
-        print(f"? µ¥ÀÌÅÍ °ËÁõ ¿Ï·á:")
-        print(f"   °¡°İº¯¼ö: {self.price_vars}")
-        print(f"   ÅõÀÔ·®º¯¼ö: {self.input_vars}")
-        print(f"   ÃÑºñ¿ëº¯¼ö: {self.cost_var}")
-        print(f"   »êÃâ·®º¯¼ö: {self.output_var}")
+        print(f"? ?ê³—ì” ??å¯ƒÂ€ï§??ê¾¨ì¦º:")
+        print(f"   åª›Â€å¯ƒâ‘¸??? {self.price_vars}")
+        print(f"   ?ÑŠì—¯?ë°??? {self.input_vars}")
+        print(f"   ç¥ì•¸í‰¬?â‘¸??? {self.cost_var}")
+        print(f"   ?ê³—í…§?ë°??? {self.output_var}")
     
     def exploratory_data_analysis(self):
-        """Å½»öÀû µ¥ÀÌÅÍ ºĞ¼® ¼öÇà"""
+        """?ë¨¯ê¹‹???ê³—ì” ??éºê¾©ê½ ?ì„‘ë»¾"""
         print("=" * 60)
-        print("Å½»öÀû µ¥ÀÌÅÍ ºĞ¼® (EDA) - È®·üº¯°æºñ¿ëÇÔ¼ö")
+        print("?ë¨¯ê¹‹???ê³—ì” ??éºê¾©ê½ (EDA) - ?ëº£ìª§è¹‚Â€å¯ƒìˆí‰¬?â‘ºë¸¿??)
         print("=" * 60)
         
-        # ±âº» º¯¼öµé
+        # æ¹²ê³•ë‚¯ è¹‚Â€?ì„ë±¾
         analysis_vars = [self.cost_var, self.output_var] + self.price_vars
         if self.include_time:
             analysis_vars.append(self.time_var)
         
-        # 1. ±âÃÊÅë°è·®
-        print("\n1. ±âÃÊÅë°è·®")
+        # 1. æ¹²ê³—í¹?ë“¦í€??
+        print("\n1. æ¹²ê³—í¹?ë“¦í€??)
         print("-" * 40)
         desc_stats = self.data[analysis_vars].describe()
         print(desc_stats.round(4))
         
-        # 2. »ó°ü°ü°è
-        print("\n2. »ó°ü°ü°è Á¶È¸")
+        # 2. ?ê³´?æ„¿Â€æ€¨?
+        print("\n2. ?ê³´?æ„¿Â€æ€¨?è­°ê³ ì‰¶")
         print("-" * 40)
         corr_matrix = self.data[analysis_vars].corr()
         print(corr_matrix.round(4))
@@ -84,53 +84,53 @@ class _StochasticFrontierCostAnalyzer:
         return desc_stats, corr_matrix
     
     def normalize_data(self):
-        """°³Ã¼º° Æò±ÕÀ¸·Î µ¥ÀÌÅÍ Ç¥ÁØÈ­"""
-        print("\nµ¥ÀÌÅÍ Ç¥ÁØÈ­ ¼öÇà Áß...")
+        """åª›ì’–ê»œè¹‚??ë¯í‡?ì‡°ì¤ˆ ?ê³—ì” ???ì’–???""
+        print("\n?ê³—ì” ???ì’–????ì„‘ë»¾ ä»¥?..")
         
         self.normalized_data = self.data.copy()
         
-        # °³Ã¼º° Æò±Õ °è»ê (ºñ¿ë, °¡°İ, »êÃâ·®)
+        # åª›ì’–ê»œè¹‚??ë¯í‡ æ€¨ê¾©ê¶› (é®ê¾©ìŠœ, åª›Â€å¯ƒ? ?ê³—í…§??
         vars_to_normalize = [self.cost_var, self.output_var] + self.price_vars
         
         for var in vars_to_normalize:
-            # °³Ã¼º° Æò±Õ
+            # åª›ì’–ê»œè¹‚??ë¯í‡
             mean_by_id = self.data.groupby(self.id_var)[var].transform('mean')
-            # Ç¥ÁØÈ­
+            # ?ì’–???
             self.normalized_data[f'nm_{var}'] = self.data[var] / mean_by_id
-            # ·Î±× º¯È¯
+            # æ¿¡ì’“ë ‡ è¹‚Â€??
             self.normalized_data[f'ln_{var}'] = np.log(self.normalized_data[f'nm_{var}'])
         
-        # ÅõÀÔ·®µµ º¹»ç (ºñ¿ë¸ò °è»ê¿ë)
+        # ?ÑŠì—¯?ë°ë£„ è¹‚ë“­ê¶— (é®ê¾©ìŠœï§?æ€¨ê¾©ê¶›??
         for input_var in self.input_vars:
             self.normalized_data[input_var] = self.data[input_var]
         
         if self.include_time:
-            # ½Ã°£ º¯¼ö´Â ·Î±× º¯È¯ ¾øÀÌ ±×´ë·Î »ç¿ë (1, 2, 3, ...)
+            # ?ì’“ì»™ è¹‚Â€?ì„ë’— æ¿¡ì’“ë ‡ è¹‚Â€???ë†ì”  æ´¹ëªƒ?æ¿¡??ÑŠìŠœ (1, 2, 3, ...)
             self.normalized_data[self.time_var] = self.data[self.time_var]
         
-        print("µ¥ÀÌÅÍ Ç¥ÁØÈ­ ¿Ï·á")
+        print("?ê³—ì” ???ì’–????ê¾¨ì¦º")
     
     def create_translog_variables(self):
-        """ÃÊ¿ù´ë¼ö ºñ¿ëÇÔ¼ö¸¦ À§ÇÑ ±³Â÷Ç× º¯¼ö »ı¼º"""
-        print("ÃÊ¿ù´ë¼ö ºñ¿ëÇÔ¼ö º¯¼ö »ı¼º Áß...")
+        """ç¥ë‰ì¡?Â€??é®ê¾©ìŠœ?â‘¥ë‹”ç‘œ??ê¾ªë¸³ æ´ë¨¯ê°??è¹‚Â€???ì•¹ê½¦"""
+        print("ç¥ë‰ì¡?Â€??é®ê¾©ìŠœ?â‘¥ë‹” è¹‚Â€???ì•¹ê½¦ ä»¥?..")
         
         if self.normalized_data is None:
             self.normalize_data()
         
-        # ·Î±× º¯È¯µÈ °¡°İ º¯¼öµé°ú »êÃâ·®
+        # æ¿¡ì’“ë ‡ è¹‚Â€?ì„ë§‚ åª›Â€å¯ƒ?è¹‚Â€?ì„ë±¾æ€¨??ê³—í…§??
         ln_price_vars = [f'ln_{var}' for var in self.price_vars]
         ln_output_var = f'ln_{self.output_var}'
         
-        # ¸ğµç ÇÙ½Éº¯¼ö (°¡°İ + »êÃâ·® + ½Ã°£º¯¼ö)
+        # ï§â‘¤ë±º ?ë“­ë––è¹‚Â€??(åª›Â€å¯ƒ?+ ?ê³—í…§??+ ?ì’“ì»™è¹‚Â€??
         all_vars = ln_price_vars + [ln_output_var]
         if self.include_time:
-            all_vars.append(self.time_var)  # ½Ã°£Àº ±×³É t
+            all_vars.append(self.time_var)  # ?ì’“ì»™?Â€ æ´¹ëªƒê¹· t
         
-        # 2Â÷Ç× »ı¼º
+        # 2ï§¡â‘¦ë¹† ?ì•¹ê½¦
         for var in all_vars:
             self.normalized_data[f'{var}2'] = 0.5 * self.normalized_data[var] ** 2
         
-        # °¡°İº¯¼öµé °£ ±³Â÷Ç×
+        # åª›Â€å¯ƒâ‘¸??ì„ë±¾ åª›?æ´ë¨¯ê°??
         n_prices = len(ln_price_vars)
         for i in range(n_prices):
             for j in range(i+1, n_prices):
@@ -139,28 +139,28 @@ class _StochasticFrontierCostAnalyzer:
                 var_name = f'{var1}_{var2.split("_")[1]}'
                 self.normalized_data[var_name] = self.normalized_data[var1] * self.normalized_data[var2]
         
-        # °¡°İ°ú »êÃâ·®ÀÇ ±³Â÷Ç×
+        # åª›Â€å¯ƒâ‘·ë‚µ ?ê³—í…§?ë±ì“½ æ´ë¨¯ê°??
         for var in ln_price_vars:
             var_name = f'{var}_{self.output_var}'
             self.normalized_data[var_name] = self.normalized_data[var] * self.normalized_data[ln_output_var]
         
-        # ½Ã°£°ú ´Ù¸¥ º¯¼öµéÀÇ ±³Â÷Ç×
+        # ?ì’“ì»™æ€¨??ã…»â…¨ è¹‚Â€?ì„ë±¾??æ´ë¨¯ê°??
         if self.include_time:
             for var in ln_price_vars + [ln_output_var]:
                 var_name = f'{var}_{self.time_var}'
                 self.normalized_data[var_name] = self.normalized_data[var] * self.normalized_data[self.time_var]
         
-        # ÇÙ½ÉºĞ¼®¿ë º¯¼ö ¸®½ºÆ® »ı¼º
+        # ?ë“­ë––éºê¾©ê½??è¹‚Â€??ç”±ÑŠë’ª???ì•¹ê½¦
         self.translog_vars = []
         
-        # 1Â÷Ç×
+        # 1ï§¡â‘¦ë¹†
         self.translog_vars.extend(all_vars)
         
-        # 2Â÷Ç×
+        # 2ï§¡â‘¦ë¹†
         for var in all_vars:
             self.translog_vars.append(f'{var}2')
         
-        # °¡°İº¯¼öµé °£ ±³Â÷Ç×
+        # åª›Â€å¯ƒâ‘¸??ì„ë±¾ åª›?æ´ë¨¯ê°??
         for i in range(n_prices):
             for j in range(i+1, n_prices):
                 var1 = ln_price_vars[i]
@@ -168,126 +168,126 @@ class _StochasticFrontierCostAnalyzer:
                 var_name = f'{var1}_{var2.split("_")[1]}'
                 self.translog_vars.append(var_name)
         
-        # °¡°İ-»êÃâ·® ±³Â÷Ç×
+        # åª›Â€å¯ƒ??ê³—í…§??æ´ë¨¯ê°??
         for var in self.price_vars:
             self.translog_vars.append(f'ln_{var}_{self.output_var}')
         
-        # ½Ã°£ ±³Â÷Ç×
+        # ?ì’“ì»™ æ´ë¨¯ê°??
         if self.include_time:
             for var in self.price_vars + [self.output_var]:
                 self.translog_vars.append(f'ln_{var}_{self.time_var}')
         
-        print(f"»ı¼ºµÈ º¯¼ö ¼ö: {len(self.translog_vars)}")
-        print("ÃÊ¿ù´ë¼ö ºñ¿ëÇÔ¼ö º¯¼ö »ı¼º ¿Ï·á")
+        print(f"?ì•¹ê½¦??è¹‚Â€???? {len(self.translog_vars)}")
+        print("ç¥ë‰ì¡?Â€??é®ê¾©ìŠœ?â‘¥ë‹” è¹‚Â€???ì•¹ê½¦ ?ê¾¨ì¦º")
     
     def estimate_ols(self):
-        """OLS ÃßÁ¤ (ÃÊ±â°ª¿ë)"""
-        print("\nOLS ÃßÁ¤ ¼öÇà Áß...")
+        """OLS ç•°ë¶¿ì ™ (ç¥ë‡ë¦°åª›ë¯ªìŠœ)"""
+        print("\nOLS ç•°ë¶¿ì ™ ?ì„‘ë»¾ ä»¥?..")
         
         if self.translog_vars is None:
             self.create_translog_variables()
         
-        # Á¾¼Óº¯¼ö (ÃÑºñ¿ë)
+        # é†«ë‚†ëƒ½è¹‚Â€??(ç¥ì•¸í‰¬??
         y = self.normalized_data[f'ln_{self.cost_var}']
         
-        # µ¶¸³º¯¼ö
+        # ?ë‚…â”°è¹‚Â€??
         X = self.normalized_data[self.translog_vars]
         X = sm.add_constant(X)
         
-        # OLS ÃßÁ¤
+        # OLS ç•°ë¶¿ì ™
         ols_model = sm.OLS(y, X).fit()
         
         self.results['ols'] = ols_model
         
-        print("OLS ÃßÁ¤ ¿Ï·á")
+        print("OLS ç•°ë¶¿ì ™ ?ê¾¨ì¦º")
         print(f"R-squared: {ols_model.rsquared:.4f}")
         
         return ols_model
     
     def estimate_stochastic_frontier(self, distribution='half_normal'):
-        """È®·üº¯°æºñ¿ëÇÔ¼ö ÃßÁ¤ - °³¼±µÈ ¹öÀü"""
-        print(f"\nÈ®·üº¯°æºñ¿ëÇÔ¼ö ÃßÁ¤ ¼öÇà Áß (ºĞÆ÷: {distribution})...")
+        """?ëº£ìª§è¹‚Â€å¯ƒìˆí‰¬?â‘ºë¸¿??ç•°ë¶¿ì ™ - åª›ì’–ê½‘??è¸°ê¾©ìŸ¾"""
+        print(f"\n?ëº£ìª§è¹‚Â€å¯ƒìˆí‰¬?â‘ºë¸¿??ç•°ë¶¿ì ™ ?ì„‘ë»¾ ä»¥?(éºê¾ªë£·: {distribution})...")
         
         if 'ols' not in self.results:
-            print("OLS ÃßÁ¤À» ¸ÕÀú ¼öÇàÇÕ´Ï´Ù...")
+            print("OLS ç•°ë¶¿ì ™??ç™’ì‡±? ?ì„‘ë»¾?â‘¸ë•²??..")
             self.estimate_ols()
         
-        # OLS °á°ú °ËÁõ
+        # OLS å¯ƒê³Œë‚µ å¯ƒÂ€ï§?
         if not hasattr(self.results['ols'], 'params'):
-            print("? OLS ÃßÁ¤ °á°ú°¡ ¾ø½À´Ï´Ù.")
+            print("? OLS ç•°ë¶¿ì ™ å¯ƒê³Œë‚µåª›Â€ ?ë†ë’¿?ëˆë–.")
             return self._create_fallback_result()
         
-        # ÃÊ±â°ª ¼³Á¤
+        # ç¥ë‡ë¦°åª›??ã…¼ì ™
         ols_params = self.results['ols'].params.values
         
-        # OLS °á°ú °ËÁõ
+        # OLS å¯ƒê³Œë‚µ å¯ƒÂ€ï§?
         if np.any(np.isnan(ols_params)) or np.any(np.isinf(ols_params)):
-            print("?? OLS ÆÄ¶ó¹ÌÅÍ¿¡ NaN/Inf°¡ ÀÖ½À´Ï´Ù. ±âº»°ªÀ» »ç¿ëÇÕ´Ï´Ù.")
+            print("?? OLS ?ëš®ì”ªèª˜ëª…ê½£??NaN/Infåª›Â€ ?ë‰ë’¿?ëˆë–. æ¹²ê³•ë‚¯åª›ë¯ªì“£ ?ÑŠìŠœ?â‘¸ë•²??")
             ols_params = np.zeros(len(ols_params))
             ols_params[0] = np.log(self.normalized_data[f'ln_{self.cost_var}'].mean())
         
-        # Á¾¼Óº¯¼ö¿Í µ¶¸³º¯¼ö
+        # é†«ë‚†ëƒ½è¹‚Â€?ì„? ?ë‚…â”°è¹‚Â€??
         y = self.normalized_data[f'ln_{self.cost_var}'].values
         X = self.normalized_data[self.translog_vars].values
-        X = np.column_stack([np.ones(len(X)), X])  # »ó¼öÇ× Ãß°¡
+        X = np.column_stack([np.ones(len(X)), X])  # ?ê³¸ë‹”??ç•°ë¶½?
         
-        # µ¥ÀÌÅÍ °ËÁõ
+        # ?ê³—ì” ??å¯ƒÂ€ï§?
         if np.any(np.isnan(y)) or np.any(np.isnan(X)):
-            print("? µ¥ÀÌÅÍ¿¡ NaNÀÌ ÀÖ½À´Ï´Ù.")
+            print("? ?ê³—ì” ?ê³—ë¿‰ NaN???ë‰ë’¿?ëˆë–.")
             return self._create_fallback_result()
         
-        print(f"   µ¥ÀÌÅÍ Å©±â: y={y.shape}, X={X.shape}")
-        print(f"   OLS R©÷: {self.results['ols'].rsquared:.4f}")
+        print(f"   ?ê³—ì” ???Ñˆë¦°: y={y.shape}, X={X.shape}")
+        print(f"   OLS Rì§¼: {self.results['ols'].rsquared:.4f}")
         
-        # ÃÖ´ë¿ìµµÃßÁ¤
-        print("?? ÃÖ´ë¿ìµµÃßÁ¤ ½ÃÀÛ...")
+        # ï§¤ì’•??ê³•ë£„ç•°ë¶¿ì ™
+        print("?? ï§¤ì’•??ê³•ë£„ç•°ë¶¿ì ™ ?ì’–ì˜‰...")
         try:
             if distribution == 'half_normal':
                 result = self._ml_estimation_half_normal_cost(y, X, ols_params)
             else:
-                raise ValueError("ÇöÀç´Â half-normal ºĞÆ÷¸¸ Áö¿øÇÕ´Ï´Ù.")
+                raise ValueError("?ê¾©ì˜±??half-normal éºê¾ªë£·ï§?ï§Â€?ë¨°ë¹€?ëˆë–.")
         except Exception as e:
-            print(f"? ÃÖ´ë¿ìµµÃßÁ¤ Áß ¿À·ù: {str(e)}")
+            print(f"? ï§¤ì’•??ê³•ë£„ç•°ë¶¿ì ™ ä»¥??ã…»ìªŸ: {str(e)}")
             return self._create_fallback_result()
         
-        # °á°ú °ËÁõ
+        # å¯ƒê³Œë‚µ å¯ƒÂ€ï§?
         if result['success']:
-            # ÆÄ¶ó¹ÌÅÍ ÇÕ¸®¼º °ËÁõ
+            # ?ëš®ì”ªèª˜ëª…ê½£ ?â‘¸â”??å¯ƒÂ€ï§?
             if (result['sigma_u'] > 0 and result['sigma_v'] > 0 and 
                 result['sigma_u'] < 100 and result['sigma_v'] < 100 and
                 np.isfinite(result['log_likelihood'])):
                 
                 self.results['frontier'] = result
-                print("? È®·üº¯°æºñ¿ëÇÔ¼ö ÃßÁ¤ ¿Ï·á")
+                print("? ?ëº£ìª§è¹‚Â€å¯ƒìˆí‰¬?â‘ºë¸¿??ç•°ë¶¿ì ™ ?ê¾¨ì¦º")
                 
-                # ¸ğµ¨ ÀûÇÕµµ Á¤º¸
+                # ï§â‘¤ëœ½ ?ê³¹ë¹€???ëº£ë‚«
                 gamma = result['sigma_u']**2 / (result['sigma_u']**2 + result['sigma_v']**2)
-                print(f"   ¥ã = ¥ò©÷u/¥ò©÷: {gamma:.4f}")
+                print(f"   æ¬¾ = ?ì§¼u/?ì§¼: {gamma:.4f}")
                 if gamma > 0.5:
-                    print("   ¡æ ºñÈ¿À²¼ºÀÌ ¿ÀÂ÷ÀÇ ÁÖ¿ä ¿øÀÎÀÔ´Ï´Ù.")
+                    print("   ??é®ê¾ªìŠš?â‘¥ê½¦???ã…¼ê°??äºŒì‡±ìŠ‚ ?ë¨¯ì”¤?ë‚…ë•²??")
                 else:
-                    print("   ¡æ È®·üÀû ¿ÀÂ÷°¡ ÁÖ¿ä ¿øÀÎÀÔ´Ï´Ù.")
+                    print("   ???ëº£ìª§???ã…¼ê°åª›Â€ äºŒì‡±ìŠ‚ ?ë¨¯ì”¤?ë‚…ë•²??")
                 
                 return result
             else:
-                print("?? ÃßÁ¤µÈ ÆÄ¶ó¹ÌÅÍ°¡ ºñÇÕ¸®ÀûÀÔ´Ï´Ù.")
+                print("?? ç•°ë¶¿ì ™???ëš®ì”ªèª˜ëª…ê½£åª›Â€ é®ê¾ªë¹€ç”±ÑŠìŸ»?ë‚…ë•²??")
                 return self._create_fallback_result()
         else:
-            print(f"?? ÃßÁ¤ ½ÇÆĞ: {result.get('message', 'Unknown error')}")
+            print(f"?? ç•°ë¶¿ì ™ ?ã…½ë™£: {result.get('message', 'Unknown error')}")
             return self._create_fallback_result()
     
     def _create_fallback_result(self):
-        """ÃßÁ¤ ½ÇÆĞ½Ã ´ëÃ¼ °á°ú »ı¼º"""
-        print("   ´ëÃ¼ °á°ú »ı¼º Áß...")
+        """ç•°ë¶¿ì ™ ?ã…½ë™£???Â€ï§£?å¯ƒê³Œë‚µ ?ì•¹ê½¦"""
+        print("   ?Â€ï§£?å¯ƒê³Œë‚µ ?ì•¹ê½¦ ä»¥?..")
         
-        # ±âº» ÆÄ¶ó¹ÌÅÍ ¼³Á¤
-        n_params = len(self.translog_vars) + 1  # »ó¼öÇ× Æ÷ÇÔ
+        # æ¹²ê³•ë‚¯ ?ëš®ì”ªèª˜ëª…ê½£ ?ã…¼ì ™
+        n_params = len(self.translog_vars) + 1  # ?ê³¸ë‹”???Ñ‹ë¸¿
         fallback_beta = np.zeros(n_params)
         
-        # »ó¼öÇ×Àº Æò±Õ ºñ¿ëÀ¸·Î ¼³Á¤
+        # ?ê³¸ë‹”??? ?ë¯í‡ é®ê¾©ìŠœ?ì‡°ì¤ˆ ?ã…¼ì ™
         fallback_beta[0] = self.normalized_data[f'ln_{self.cost_var}'].mean()
         
-        # ±âº» sigma °ª
+        # æ¹²ê³•ë‚¯ sigma åª›?
         cost_std = self.normalized_data[f'ln_{self.cost_var}'].std()
         fallback_sigma_u = max(cost_std * 0.1, 0.01)
         fallback_sigma_v = max(cost_std * 0.1, 0.01)
@@ -305,12 +305,12 @@ class _StochasticFrontierCostAnalyzer:
         }
         
         self.results['frontier'] = fallback_result
-        print("   ?? ´ëÃ¼ ÆÄ¶ó¹ÌÅÍ »ç¿ë - °á°ú ÇØ¼®¿¡ ÁÖÀÇÇÏ¼¼¿ä.")
+        print("   ?? ?Â€ï§£??ëš®ì”ªèª˜ëª…ê½£ ?ÑŠìŠœ - å¯ƒê³Œë‚µ ?ëŒê½??äºŒì‡±ì“½?ì„ê½­??")
         
         return fallback_result
     
     def _ml_estimation_half_normal_cost(self, y, X, initial_params):
-        """ºñ¿ëÇÔ¼ö¿ë Half-normal ºĞÆ÷¸¦ °¡Á¤ÇÑ ÃÖ´ë¿ìµµÃßÁ¤ - °³¼±µÈ ¹öÀü"""
+        """é®ê¾©ìŠœ?â‘¥ë‹”??Half-normal éºê¾ªë£·ç‘œ?åª›Â€?ëº¥ë¸³ ï§¤ì’•??ê³•ë£„ç•°ë¶¿ì ™ - åª›ì’–ê½‘??è¸°ê¾©ìŸ¾"""
         
         def log_likelihood(params):
             try:
@@ -319,51 +319,51 @@ class _StochasticFrontierCostAnalyzer:
                 log_sigma_u = params[n_beta]      
                 log_sigma_v = params[n_beta + 1]  
                 
-                # sigma °è»ê (´õ ¾ÈÁ¤Àû)
-                sigma_u = np.exp(np.clip(log_sigma_u, -10, 5))  # ±Ø°ª Á¦ÇÑ
+                # sigma æ€¨ê¾©ê¶› (???ë‰ì ™??
+                sigma_u = np.exp(np.clip(log_sigma_u, -10, 5))  # æ´¹ë°´ì»ª ?ì’—ë¸³
                 sigma_v = np.exp(np.clip(log_sigma_v, -10, 5))
                 
-                # ÃÖ¼Ò°ª º¸Àå
+                # ï§¤ì’–ëƒ¼åª›?è¹‚ëŒì˜£
                 sigma_u = np.maximum(sigma_u, 1e-4)
                 sigma_v = np.maximum(sigma_v, 1e-4)
                 
-                # ÀÜÂ÷ °è»ê
+                # ?ë¶¿ê° æ€¨ê¾©ê¶›
                 residuals = y - X @ beta
                 
-                # ÀÜÂ÷ÀÇ ½ºÄÉÀÏ Ã¼Å©
+                # ?ë¶¿ê°???ã…¼???ï§£ëŒ„ê²•
                 if np.std(residuals) > 100 or np.std(residuals) < 1e-6:
                     return 1e8
                 
-                # º¹ÇÕ¿ÀÂ÷ ÆÄ¶ó¹ÌÅÍ
+                # è¹‚ë“¯ë¹€?ã…¼ê° ?ëš®ì”ªèª˜ëª…ê½£
                 sigma_sq = sigma_u**2 + sigma_v**2
                 sigma = np.sqrt(sigma_sq)
                 
                 if sigma < 1e-4 or sigma > 100:
                     return 1e8
                 
-                # ¶÷´Ù (ºñÀ² Á¦ÇÑ)
+                # ?ëš®ë– (é®ê¾©ì‘‰ ?ì’—ë¸³)
                 lambd = np.clip(sigma_u / sigma_v, 0.01, 100)
                 
-                # Ç¥ÁØÈ­µÈ ÀÜÂ÷
+                # ?ì’–??ë¶¾ë§‚ ?ë¶¿ê°
                 residuals_std = residuals / sigma
                 residuals_std = np.clip(residuals_std, -8, 8)
                 
-                # epsilon* °è»ê (ºñ¿ëÇÔ¼ö)
+                # epsilon* æ€¨ê¾©ê¶› (é®ê¾©ìŠœ?â‘¥ë‹”)
                 epsilon_star = residuals_std * lambd
                 epsilon_star = np.clip(epsilon_star, -8, 8)
                 
-                # ·Î±× È®·ü¹Ğµµ °è»ê
+                # æ¿¡ì’“ë ‡ ?ëº£ìª§è«›Â€??æ€¨ê¾©ê¶›
                 log_phi = -0.5 * np.log(2 * np.pi) - 0.5 * residuals_std**2
                 
-                # ·Î±× ´©ÀûºĞÆ÷ °è»ê (¾ÈÁ¤Àû ¹æ¹ı)
+                # æ¿¡ì’“ë ‡ ?ê¾©ìŸ»éºê¾ªë£· æ€¨ê¾©ê¶› (?ë‰ì ™??è«›â‘¸ì¾¿)
                 log_Phi = np.where(epsilon_star > -5, 
                                   np.log(norm.cdf(epsilon_star) + 1e-15),
                                   epsilon_star - 0.5 * epsilon_star**2 - np.log(np.sqrt(2*np.pi)))
                 
-                # ·Î±×¿ìµµ °è»ê
+                # æ¿¡ì’“ë ‡?ê³•ë£„ æ€¨ê¾©ê¶›
                 log_likelihood_val = (np.log(2) - np.log(sigma) + log_phi + log_Phi).sum()
                 
-                # ÃÖÁ¾ °ËÁõ
+                # ï§¤ì’–ì¥Œ å¯ƒÂ€ï§?
                 if not np.isfinite(log_likelihood_val) or log_likelihood_val < -1e6:
                     return 1e8
                 
@@ -372,109 +372,109 @@ class _StochasticFrontierCostAnalyzer:
             except Exception as e:
                 return 1e8
         
-        # °³¼±µÈ ÃÊ±â°ª ¼³Á¤
-        print("   ÃÊ±â°ª ¼³Á¤ Áß...")
+        # åª›ì’–ê½‘??ç¥ë‡ë¦°åª›??ã…¼ì ™
+        print("   ç¥ë‡ë¦°åª›??ã…¼ì ™ ä»¥?..")
         ols_residuals = y - X @ initial_params
         ols_sigma = np.std(ols_residuals)
         
-        # ´õ Å« ÃÊ±â°ª »ç¿ë (¾ÈÁ¤Àû ¼ö·ÅÀ» À§ÇØ)
-        initial_sigma_u = np.clip(ols_sigma * 0.8, 0.05, 1.0)  # ´õ Å« °ª
-        initial_sigma_v = np.clip(ols_sigma * 0.6, 0.05, 1.0)  # ´õ Å« °ª
+        # ????ç¥ë‡ë¦°åª›??ÑŠìŠœ (?ë‰ì ™???ì„ì¡ƒ???ê¾ªë¹)
+        initial_sigma_u = np.clip(ols_sigma * 0.8, 0.05, 1.0)  # ????åª›?
+        initial_sigma_v = np.clip(ols_sigma * 0.6, 0.05, 1.0)  # ????åª›?
         
-        # log scale·Î ÃÊ±â°ª ¼³Á¤
+        # log scaleæ¿¡?ç¥ë‡ë¦°åª›??ã…¼ì ™
         initial_vals = np.concatenate([
             initial_params, 
             [np.log(initial_sigma_u), np.log(initial_sigma_v)]
         ])
         
-        print(f"   OLS ¥ò: {ols_sigma:.4f}")
-        print(f"   ÃÊ±â ¥ò_u: {initial_sigma_u:.4f}, ¥ò_v: {initial_sigma_v:.4f}")
+        print(f"   OLS ?: {ols_sigma:.4f}")
+        print(f"   ç¥ë‡ë¦° ?_u: {initial_sigma_u:.4f}, ?_v: {initial_sigma_v:.4f}")
         
-        # ´õ °ü´ëÇÑ bounds ¼³Á¤
+        # ??æ„¿Â€?Â€??bounds ?ã…¼ì ™
         n_beta = len(initial_params)
         bounds = []
         
-        # beta ÆÄ¶ó¹ÌÅÍ: ´õ ³ĞÀº ¹üÀ§
+        # beta ?ëš®ì”ªèª˜ëª…ê½£: ???ë³¦? è¸°ë¶¿ì
         for i in range(n_beta):
             bounds.append((-20, 20))  
         
-        # log_sigma: ´õ ³ĞÀº ¹üÀ§
+        # log_sigma: ???ë³¦? è¸°ë¶¿ì
         bounds.append((-8, 3))   # exp(-8) ? 0.0003, exp(3) ? 20
         bounds.append((-8, 3))
         
-        # ÃÖÀûÈ­ ½Ãµµ (´õ °ü´ëÇÑ ¼³Á¤)
-        print("   ÃÖÀûÈ­ ½ÃÀÛ...")
+        # ï§¤ì’–ìŸ»???ì’•ë£„ (??æ„¿Â€?Â€???ã…¼ì ™)
+        print("   ï§¤ì’–ìŸ»???ì’–ì˜‰...")
         result = None
         
-        # ¹æ¹ı 1: L-BFGS-B (´õ °ü´ëÇÑ ¼³Á¤)
+        # è«›â‘¸ì¾¿ 1: L-BFGS-B (??æ„¿Â€?Â€???ã…¼ì ™)
         try:
-            print("   ½Ãµµ 1: L-BFGS-B")
+            print("   ?ì’•ë£„ 1: L-BFGS-B")
             result = minimize(log_likelihood, initial_vals, method='L-BFGS-B', 
                             bounds=bounds, 
                             options={'maxiter': 2000, 'ftol': 1e-6, 'gtol': 1e-4})
             
             if result.success and result.fun < 1e7:
-                print(f"   ? L-BFGS-B ¼º°ø: f={result.fun:.4f}")
+                print(f"   ? L-BFGS-B ?ê¹ƒë‚¬: f={result.fun:.4f}")
             else:
-                print(f"   L-BFGS-B ½ÇÆĞ: f={result.fun:.4f}")
+                print(f"   L-BFGS-B ?ã…½ë™£: f={result.fun:.4f}")
                 result = None
         except Exception as e:
-            print(f"   L-BFGS-B ¿À·ù: {str(e)}")
+            print(f"   L-BFGS-B ?ã…»ìªŸ: {str(e)}")
             result = None
         
-        # ¹æ¹ı 2: ´Ù¸¥ ÃÊ±â°ªÀ¸·Î Àç½Ãµµ
+        # è«›â‘¸ì¾¿ 2: ?ã…»â…¨ ç¥ë‡ë¦°åª›ë¯ªì‘æ¿¡??ÑŠë–†??
         if result is None:
             try:
-                print("   ½Ãµµ 2: ´Ù¸¥ ÃÊ±â°ªÀ¸·Î L-BFGS-B")
-                # ÃÊ±â°ªÀ» ¾à°£ º¯°æ
+                print("   ?ì’•ë£„ 2: ?ã…»â…¨ ç¥ë‡ë¦°åª›ë¯ªì‘æ¿¡?L-BFGS-B")
+                # ç¥ë‡ë¦°åª›ë¯ªì“£ ?ì„ì»™ è¹‚Â€å¯ƒ?
                 alt_initial_vals = initial_vals.copy()
-                alt_initial_vals[-2:] += np.random.normal(0, 0.5, 2)  # sigma ÃÊ±â°ª º¯°æ
+                alt_initial_vals[-2:] += np.random.normal(0, 0.5, 2)  # sigma ç¥ë‡ë¦°åª›?è¹‚Â€å¯ƒ?
                 
                 result = minimize(log_likelihood, alt_initial_vals, method='L-BFGS-B', 
                                 bounds=bounds, 
                                 options={'maxiter': 2000, 'ftol': 1e-6})
                 
                 if result.success and result.fun < 1e7:
-                    print(f"   ? ´ë¾È L-BFGS-B ¼º°ø: f={result.fun:.4f}")
+                    print(f"   ? ?Â€??L-BFGS-B ?ê¹ƒë‚¬: f={result.fun:.4f}")
                 else:
                     result = None
             except Exception as e:
-                print(f"   ´ë¾È L-BFGS-B ½ÇÆĞ: {str(e)}")
+                print(f"   ?Â€??L-BFGS-B ?ã…½ë™£: {str(e)}")
                 result = None
         
-        # ¹æ¹ı 3: BFGS (bounds ¾øÀ½)
+        # è«›â‘¸ì¾¿ 3: BFGS (bounds ?ë†ì“¬)
         if result is None:
             try:
-                print("   ½Ãµµ 3: BFGS")
+                print("   ?ì’•ë£„ 3: BFGS")
                 result = minimize(log_likelihood, initial_vals, method='BFGS', 
                                 options={'maxiter': 1500, 'gtol': 1e-4})
                 
                 if result.success and result.fun < 1e7:
-                    print(f"   ? BFGS ¼º°ø: f={result.fun:.4f}")
+                    print(f"   ? BFGS ?ê¹ƒë‚¬: f={result.fun:.4f}")
                 else:
                     result = None
             except Exception as e:
-                print(f"   BFGS ½ÇÆĞ: {str(e)}")
+                print(f"   BFGS ?ã…½ë™£: {str(e)}")
                 result = None
         
-        # ¹æ¹ı 4: Powell (derivative-free)
+        # è«›â‘¸ì¾¿ 4: Powell (derivative-free)
         if result is None:
             try:
-                print("   ½Ãµµ 4: Powell")
+                print("   ?ì’•ë£„ 4: Powell")
                 result = minimize(log_likelihood, initial_vals, method='Powell', 
                                 options={'maxiter': 1000, 'ftol': 1e-6})
                 
                 if result.success and result.fun < 1e7:
-                    print(f"   ? Powell ¼º°ø: f={result.fun:.4f}")
+                    print(f"   ? Powell ?ê¹ƒë‚¬: f={result.fun:.4f}")
                 else:
                     result = None
             except Exception as e:
-                print(f"   Powell ½ÇÆĞ: {str(e)}")
+                print(f"   Powell ?ã…½ë™£: {str(e)}")
                 result = None
         
-        # ¸ğµç ¹æ¹ı ½ÇÆĞ½Ã ±âº»°ª ¹İÈ¯
+        # ï§â‘¤ë±º è«›â‘¸ì¾¿ ?ã…½ë™£??æ¹²ê³•ë‚¯åª›?è«›ì„‘ì†š
         if result is None:
-            print("   ?? ¸ğµç ÃÖÀûÈ­ ¹æ¹ı ½ÇÆĞ - ±âº»°ª »ç¿ë")
+            print("   ?? ï§â‘¤ë±º ï§¤ì’–ìŸ»??è«›â‘¸ì¾¿ ?ã…½ë™£ - æ¹²ê³•ë‚¯åª›??ÑŠìŠœ")
             result = type('obj', (object,), {
                 'x': initial_vals, 
                 'fun': 1e10, 
@@ -482,18 +482,18 @@ class _StochasticFrontierCostAnalyzer:
                 'message': 'All optimization methods failed'
             })()
         
-        # °³¼±µÈ Ç¥ÁØ¿ÀÂ÷ °è»ê
-        print("   Ç¥ÁØ¿ÀÂ÷ °è»ê Áß...")
+        # åª›ì’–ê½‘???ì’–??ã…¼ê° æ€¨ê¾©ê¶›
+        print("   ?ì’–??ã…¼ê° æ€¨ê¾©ê¶› ä»¥?..")
         try:
             if result.success and result.fun < 1e9:
-                # Hessian °è»ê (´õ ¾ÈÁ¤ÀûÀÎ ¹æ¹ı)
+                # Hessian æ€¨ê¾©ê¶› (???ë‰ì ™?ê³¸ì”¤ è«›â‘¸ì¾¿)
                 eps = 1e-5
                 n_params = len(result.x)
                 hessian = np.zeros((n_params, n_params))
                 
                 f0 = log_likelihood(result.x)
                 
-                # diagonal elements¸¸ °è»ê (´õ ¾ÈÁ¤Àû)
+                # diagonal elementsï§?æ€¨ê¾©ê¶› (???ë‰ì ™??
                 for i in range(n_params):
                     x_plus = result.x.copy()
                     x_minus = result.x.copy()
@@ -504,9 +504,9 @@ class _StochasticFrontierCostAnalyzer:
                     f_minus = log_likelihood(x_minus)
                     
                     second_deriv = (f_plus - 2*f0 + f_minus) / (eps**2)
-                    hessian[i, i] = abs(second_deriv)  # Àı´ñ°ª »ç¿ë
+                    hessian[i, i] = abs(second_deriv)  # ?ëˆë™åª›??ÑŠìŠœ
                 
-                # Ç¥ÁØ¿ÀÂ÷ °è»ê
+                # ?ì’–??ã…¼ê° æ€¨ê¾©ê¶›
                 std_errors = np.zeros(n_params)
                 for i in range(n_params):
                     if hessian[i, i] > 1e-10:
@@ -514,17 +514,17 @@ class _StochasticFrontierCostAnalyzer:
                     else:
                         std_errors[i] = np.nan
                 
-                # ºñÇÕ¸®ÀûÀÎ Ç¥ÁØ¿ÀÂ÷ Á¦ÇÑ
+                # é®ê¾ªë¹€ç”±ÑŠìŸ»???ì’–??ã…¼ê° ?ì’—ë¸³
                 std_errors = np.where(std_errors > 100, np.nan, std_errors)
                 
             else:
                 std_errors = np.full(len(result.x), np.nan)
                 
         except Exception as e:
-            print(f"   Ç¥ÁØ¿ÀÂ÷ °è»ê ¿À·ù: {str(e)}")
+            print(f"   ?ì’–??ã…¼ê° æ€¨ê¾©ê¶› ?ã…»ìªŸ: {str(e)}")
             std_errors = np.full(len(result.x), np.nan)
         
-        # °á°ú Á¤¸®
+        # å¯ƒê³Œë‚µ ?ëº£â”
         n_beta = X.shape[1]
         estimated_params = {
             'beta': result.x[:n_beta],
@@ -543,78 +543,78 @@ class _StochasticFrontierCostAnalyzer:
             }
         }
         
-        # °á°ú Ãâ·Â
+        # å¯ƒê³Œë‚µ ç•°ì’•ì °
         if estimated_params['success']:
-            print(f"   ? ÃÖÀûÈ­ ¼º°ø!")
-            print(f"   ·Î±×¿ìµµ: {estimated_params['log_likelihood']:.4f}")
-            print(f"   ¥ò_u: {estimated_params['sigma_u']:.4f}")
-            print(f"   ¥ò_v: {estimated_params['sigma_v']:.4f}")
-            print(f"   ¥ë (¥ò_u/¥ò_v): {estimated_params['sigma_u']/estimated_params['sigma_v']:.4f}")
+            print(f"   ? ï§¤ì’–ìŸ»???ê¹ƒë‚¬!")
+            print(f"   æ¿¡ì’“ë ‡?ê³•ë£„: {estimated_params['log_likelihood']:.4f}")
+            print(f"   ?_u: {estimated_params['sigma_u']:.4f}")
+            print(f"   ?_v: {estimated_params['sigma_v']:.4f}")
+            print(f"   è²« (?_u/?_v): {estimated_params['sigma_u']/estimated_params['sigma_v']:.4f}")
         else:
-            print(f"   ?? ÃÖÀûÈ­ ½ÇÆĞ: {estimated_params['message']}")
-            print(f"   ÇÔ¼ö°ª: {result.fun:.4f}")
+            print(f"   ?? ï§¤ì’–ìŸ»???ã…½ë™£: {estimated_params['message']}")
+            print(f"   ?â‘¥ë‹”åª›? {result.fun:.4f}")
         
         return estimated_params
     
     def calculate_efficiency(self):
-        """±â¼úÀû È¿À²¼º(Technical Efficiency) °è»ê - °³¼±µÈ ¹öÀü"""
-        print("\n±â¼úÀû È¿À²¼º(TE) °è»ê Áß...")
+        """æ¹²ê³—ë‹ ???â‘¥ì‘‰??Technical Efficiency) æ€¨ê¾©ê¶› - åª›ì’–ê½‘??è¸°ê¾©ìŸ¾"""
+        print("\næ¹²ê³—ë‹ ???â‘¥ì‘‰??TE) æ€¨ê¾©ê¶› ä»¥?..")
         
         if 'frontier' not in self.results:
             self.estimate_stochastic_frontier()
         
-        # ÃßÁ¤ÀÌ ½ÇÆĞÇÑ °æ¿ì Ã³¸®
+        # ç•°ë¶¿ì ™???ã…½ë™£??å¯ƒìŒìŠ¦ ï§£ì„â”
         if not self.results['frontier']['success']:
-            print("?? È®·üº¯°æÇÔ¼ö ÃßÁ¤ÀÌ ½ÇÆĞÇÏ¿© È¿À²¼ºÀ» °è»êÇÒ ¼ö ¾ø½À´Ï´Ù.")
-            # ±âº»°ªÀ¸·Î 1.0 (¿ÏÀü È¿À²Àû) ÇÒ´ç
+            print("?? ?ëº£ìª§è¹‚Â€å¯ƒì€ë¸¿??ç•°ë¶¿ì ™???ã…½ë™£?ì„ë¿¬ ?â‘¥ì‘‰?ê¹†ì“£ æ€¨ê¾©ê¶›?????ë†ë’¿?ëˆë–.")
+            # æ¹²ê³•ë‚¯åª›ë¯ªì‘æ¿¡?1.0 (?ê¾©ìŸ¾ ?â‘¥ì‘‰?? ?ì¢Šë–¦
             self.normalized_data['technical_efficiency'] = 1.0
             return np.ones(len(self.normalized_data))
         
-        # ÆÄ¶ó¹ÌÅÍ ÃßÃâ
+        # ?ëš®ì”ªèª˜ëª…ê½£ ç•°ë¶¿í…§
         beta = self.results['frontier']['beta']
         sigma_u = self.results['frontier']['sigma_u']
         sigma_v = self.results['frontier']['sigma_v']
         
-        # numerical stability Ã¼Å©
+        # numerical stability ï§£ëŒ„ê²•
         if sigma_u < 1e-6 or sigma_v < 1e-6:
-            print("?? ¥ò °ªÀÌ ³Ê¹« ÀÛ¾Æ È¿À²¼º °è»êÀ» °Ç³Ê¶İ´Ï´Ù.")
+            print("?? ? åª›ë¯ªì”  ?ëˆĞ¢ ?ë¬’ë¸˜ ?â‘¥ì‘‰??æ€¨ê¾©ê¶›??å«„ëŒ€ê¼«?ê³·ë•²??")
             self.normalized_data['technical_efficiency'] = 1.0
             return np.ones(len(self.normalized_data))
         
-        # Á¾¼Óº¯¼ö¿Í µ¶¸³º¯¼ö
+        # é†«ë‚†ëƒ½è¹‚Â€?ì„? ?ë‚…â”°è¹‚Â€??
         y = self.normalized_data[f'ln_{self.cost_var}'].values
         X = self.normalized_data[self.translog_vars].values
         X = np.column_stack([np.ones(len(X)), X])
         
-        # ÀÜÂ÷
+        # ?ë¶¿ê°
         residuals = y - X @ beta
         
-        # ±â¼úÀû È¿À²¼º °è»ê (ºñ¿ëÇÔ¼ö¿ë - Jondrow et al., 1982)
+        # æ¹²ê³—ë‹ ???â‘¥ì‘‰??æ€¨ê¾©ê¶› (é®ê¾©ìŠœ?â‘¥ë‹”??- Jondrow et al., 1982)
         sigma_sq = sigma_u**2 + sigma_v**2
         sigma = np.sqrt(sigma_sq)
         lambd = sigma_u / sigma_v
         
-        # numerical stability¸¦ À§ÇÑ Ã³¸®
+        # numerical stabilityç‘œ??ê¾ªë¸³ ï§£ì„â”
         try:
-            mu_star = residuals * sigma_u**2 / sigma_sq  # ºñ¿ëÇÔ¼ö´Â ºÎÈ£ ¹İ´ë
+            mu_star = residuals * sigma_u**2 / sigma_sq  # é®ê¾©ìŠœ?â‘¥ë‹”??éºÂ€??è«›ì„?
             sigma_star = sigma_u * sigma_v / sigma
             
-            # numerical stability: ±Ø°ª Á¦ÇÑ
+            # numerical stability: æ´¹ë°´ì»ª ?ì’—ë¸³
             mu_star = np.clip(mu_star, -10, 10)
             sigma_star = np.maximum(sigma_star, 1e-6)
             
-            # Á¶°ÇºÎ ±â´ñ°ª (±â¼úÀû È¿À²¼º)
+            # è­°ê³Œêµ”éºÂ€ æ¹²ê³•ë™åª›?(æ¹²ê³—ë‹ ???â‘¥ì‘‰??
             ratio = mu_star / sigma_star
-            ratio = np.clip(ratio, -10, 10)  # ±Ø°ª Á¦ÇÑ
+            ratio = np.clip(ratio, -10, 10)  # æ´¹ë°´ì»ª ?ì’—ë¸³
             
-            # ¾ÈÁ¤ÀûÀÎ °è»êÀ» À§ÇØ ´Ü°èº°·Î °è»ê
+            # ?ë‰ì ™?ê³¸ì”¤ æ€¨ê¾©ê¶›???ê¾ªë¹ ?â‘£í€è¹‚ê¾¨ì¤ˆ æ€¨ê¾©ê¶›
             exp_term = np.exp(-mu_star + 0.5 * sigma_star**2)
             
-            # CDF °è»ê ½Ã numerical stability
+            # CDF æ€¨ê¾©ê¶› ??numerical stability
             cdf_term1 = norm.cdf(ratio + sigma_star)
             cdf_term2 = norm.cdf(ratio)
             
-            # 0À¸·Î ³ª´©±â ¹æÁö
+            # 0?ì‡°ì¤ˆ ?ì„ëŠ»æ¹²?è«›â‘¹?
             denominator = 1 - cdf_term2
             denominator = np.maximum(denominator, 1e-10)
             
@@ -622,131 +622,131 @@ class _StochasticFrontierCostAnalyzer:
             
             technical_efficiency = exp_term * numerator / denominator
             
-            # °á°ú °ËÁõ ¹× ÈÄÃ³¸®
+            # å¯ƒê³Œë‚µ å¯ƒÂ€ï§?è«›??ê¾©ì¿‚ç”±?
             technical_efficiency = np.clip(technical_efficiency, 1e-6, 1.0)
             
-            # NaNÀÌ³ª inf Ã¼Å©
+            # NaN?ëŒ€êµ¹ inf ï§£ëŒ„ê²•
             invalid_mask = ~np.isfinite(technical_efficiency)
             if invalid_mask.any():
-                print(f"?? {invalid_mask.sum()}°³ °üÃø°ª¿¡¼­ È¿À²¼º °è»ê ¿À·ù - ±âº»°ª 0.5 ÇÒ´ç")
+                print(f"?? {invalid_mask.sum()}åª›?æ„¿Â€ï§¥â†”ì»ª?ë¨¯ê½Œ ?â‘¥ì‘‰??æ€¨ê¾©ê¶› ?ã…»ìªŸ - æ¹²ê³•ë‚¯åª›?0.5 ?ì¢Šë–¦")
                 technical_efficiency[invalid_mask] = 0.5
             
             self.normalized_data['technical_efficiency'] = technical_efficiency
             
-            print("? ±â¼úÀû È¿À²¼º(TE) °è»ê ¿Ï·á")
-            print(f"   Æò±Õ TE: {technical_efficiency.mean():.4f}")
-            print(f"   ÃÖ¼Ò TE: {technical_efficiency.min():.4f}")
-            print(f"   ÃÖ´ë TE: {technical_efficiency.max():.4f}")
+            print("? æ¹²ê³—ë‹ ???â‘¥ì‘‰??TE) æ€¨ê¾©ê¶› ?ê¾¨ì¦º")
+            print(f"   ?ë¯í‡ TE: {technical_efficiency.mean():.4f}")
+            print(f"   ï§¤ì’–ëƒ¼ TE: {technical_efficiency.min():.4f}")
+            print(f"   ï§¤ì’•? TE: {technical_efficiency.max():.4f}")
             
             return technical_efficiency
             
         except Exception as e:
-            print(f"? È¿À²¼º °è»ê Áß ¿À·ù: {str(e)}")
-            # ¿À·ù ½Ã ±âº»°ª ÇÒ´ç
+            print(f"? ?â‘¥ì‘‰??æ€¨ê¾©ê¶› ä»¥??ã…»ìªŸ: {str(e)}")
+            # ?ã…»ìªŸ ??æ¹²ê³•ë‚¯åª›??ì¢Šë–¦
             technical_efficiency = np.full(len(residuals), 0.8)
             self.normalized_data['technical_efficiency'] = technical_efficiency
             return technical_efficiency
     
     def calculate_cost_economics(self):
-        """ºñ¿ëÇÔ¼ö °æÁ¦ÇĞÀû ÁöÇ¥ °è»ê"""
-        print("\nºñ¿ëÇÔ¼ö °æÁ¦ÇĞÀû ÁöÇ¥ °è»ê Áß...")
+        """é®ê¾©ìŠœ?â‘¥ë‹” å¯ƒìŒì £?ìˆˆìŸ» ï§Â€??æ€¨ê¾©ê¶›"""
+        print("\né®ê¾©ìŠœ?â‘¥ë‹” å¯ƒìŒì £?ìˆˆìŸ» ï§Â€??æ€¨ê¾©ê¶› ä»¥?..")
         
         if 'technical_efficiency' not in self.normalized_data.columns:
             self.calculate_efficiency()
         
-        # ÆÄ¶ó¹ÌÅÍ
+        # ?ëš®ì”ªèª˜ëª…ê½£
         beta = self.results['frontier']['beta']
         
-        # ½ÇÁ¦ ºñ¿ë¸ò °è»ê (¿Ã¹Ù¸¥ ¹æ¹ı)
+        # ?ã…¼ì £ é®ê¾©ìŠœï§?æ€¨ê¾©ê¶› (?Ñ‰ì»®ç‘œ?è«›â‘¸ì¾¿)
         self._calculate_actual_cost_shares()
         
-        # °¡°İÅº·Â¼º °è»ê
+        # åª›Â€å¯ƒâ‘ºê¹‚?Î¼ê½¦ æ€¨ê¾©ê¶›
         self._calculate_price_elasticities(beta)
         
-        # ±â¼úº¯È­ °è»ê (¼öÁ¤µÈ - ºñ¿ëÇÔ¼ö ±âÁØ)
+        # æ¹²ê³—ë‹ è¹‚Â€??æ€¨ê¾©ê¶› (?ì„ì ™??- é®ê¾©ìŠœ?â‘¥ë‹” æ¹²ê³—?)
         if self.include_time:
             self._calculate_technical_change_cost_corrected(beta)
         
-        # ±Ô¸ğÀÇ °æÁ¦ °è»ê (¼öÁ¤µÈ)
+        # æ´¹ì’•ãˆ??å¯ƒìŒì £ æ€¨ê¾©ê¶› (?ì„ì ™??
         self._calculate_scale_economies(beta)
         
-        # TFP ºĞÇØ °è»ê
+        # TFP éºê¾ªë¹ æ€¨ê¾©ê¶›
         self._calculate_tfp_decomposition()
         
-        print("ºñ¿ëÇÔ¼ö °æÁ¦ÇĞÀû ÁöÇ¥ °è»ê ¿Ï·á")
+        print("é®ê¾©ìŠœ?â‘¥ë‹” å¯ƒìŒì £?ìˆˆìŸ» ï§Â€??æ€¨ê¾©ê¶› ?ê¾¨ì¦º")
         
-        print("\n?? TFP ºĞÇØ °ø½Ä:")
-        print("TFP Áõ°¡À² = ±â¼úº¯È­ + ±â¼úÀûÈ¿À²¼ºº¯È­ + ±Ô¸ğÀÇ°æÁ¦È¿°ú")
-        print("¿©±â¼­:")
-        print("  ? ±â¼úº¯È­: -¡ÓlnC/¡Ót (ºñ¿ë °¨¼Ò È¿°ú)")  
-        print("  ? ±â¼úÀûÈ¿À²¼ºº¯È­: ¡Óln(TE)/¡Ót")
-        print("  ? ±Ô¸ğÀÇ°æÁ¦È¿°ú: (1-1/±Ô¸ğÀÇ°æÁ¦) ¡¿ »êÃâ·®Áõ°¡À²")
+        print("\n?? TFP éºê¾ªë¹ æ€¨ë“­ë–‡:")
+        print("TFP ï§ì•·???= æ¹²ê³—ë‹ è¹‚Â€??+ æ¹²ê³—ë‹ ?ê³¹ìŠš?â‘¥ê½¦è¹‚Â€??+ æ´¹ì’•ãˆ?ì„ê¼?ì’—ìŠšæ€¨?)
+        print("?Ñˆë¦°??")
+        print("  ? æ¹²ê³—ë‹ è¹‚Â€?? -?êµƒnC/?êµ (é®ê¾©ìŠœ åª›ë¨¯ëƒ¼ ?â‘£ë‚µ)")  
+        print("  ? æ¹²ê³—ë‹ ?ê³¹ìŠš?â‘¥ê½¦è¹‚Â€?? ?êµƒn(TE)/?êµ")
+        print("  ? æ´¹ì’•ãˆ?ì„ê¼?ì’—ìŠšæ€¨? (1-1/æ´¹ì’•ãˆ?ì„ê¼?? íš ?ê³—í…§?ë±ì¬†åª›Â€??)
     
     def _calculate_actual_cost_shares(self):
-        """½ÇÁ¦ ºñ¿ë¸ò °è»ê (¿Ã¹Ù¸¥ ¹æ¹ı)"""
+        """?ã…¼ì £ é®ê¾©ìŠœï§?æ€¨ê¾©ê¶› (?Ñ‰ì»®ç‘œ?è«›â‘¸ì¾¿)"""
         data = self.normalized_data
         
-        print("\n½ÇÁ¦ ºñ¿ë¸ò °è»ê Áß...")
+        print("\n?ã…¼ì £ é®ê¾©ìŠœï§?æ€¨ê¾©ê¶› ä»¥?..")
         
-        # ÃÑºñ¿ë °è»ê ¹× °ËÁõ
+        # ç¥ì•¸í‰¬??æ€¨ê¾©ê¶› è«›?å¯ƒÂ€ï§?
         total_cost_calculated = sum(data[price_var] * data[input_var] 
                                   for price_var, input_var in zip(self.price_vars, self.input_vars))
         data['calculated_total_cost'] = total_cost_calculated
         
-        # ½ÇÁ¦ ÃÑºñ¿ë°ú °è»êµÈ ÃÑºñ¿ë ºñ±³
+        # ?ã…¼ì £ ç¥ì•¸í‰¬?â‘·ë‚µ æ€¨ê¾©ê¶›??ç¥ì•¸í‰¬??é®ê¾§íƒ³
         actual_total_cost = data[self.cost_var]
         cost_diff = abs(actual_total_cost - total_cost_calculated).mean()
-        print(f"   ÃÑºñ¿ë °ËÁõ: ½ÇÁ¦ vs °è»ê Â÷ÀÌ Æò±Õ = {cost_diff:.6f}")
+        print(f"   ç¥ì•¸í‰¬??å¯ƒÂ€ï§? ?ã…¼ì £ vs æ€¨ê¾©ê¶› ï§¡â‘¥ì”  ?ë¯í‡ = {cost_diff:.6f}")
         
-        # ½ÇÁ¦ ºñ¿ë¸ò °è»ê: si = pi * xi / TC
+        # ?ã…¼ì £ é®ê¾©ìŠœï§?æ€¨ê¾©ê¶›: si = pi * xi / TC
         for price_var, input_var in zip(self.price_vars, self.input_vars):
             input_cost = data[price_var] * data[input_var]
-            cost_share = input_cost / actual_total_cost  # ½ÇÁ¦ ÃÑºñ¿ë »ç¿ë
+            cost_share = input_cost / actual_total_cost  # ?ã…¼ì £ ç¥ì•¸í‰¬???ÑŠìŠœ
             data[f'share_{input_var}'] = cost_share
         
-        # ºñ¿ë¸ò ÇÕ°è °ËÁõ
+        # é®ê¾©ìŠœï§??â‘·í€ å¯ƒÂ€ï§?
         total_shares = sum(data[f'share_{input_var}'] for input_var in self.input_vars)
         data['total_shares'] = total_shares
         
-        print(f"\n? ºñ¿ë¸ò °ËÁõ:")
-        print(f"   ºñ¿ë¸ò ÇÕ°è Æò±Õ: {total_shares.mean():.6f}")
-        print(f"   ºñ¿ë¸ò ÇÕ°è Ç¥ÁØÆíÂ÷: {total_shares.std():.6f}")
-        print(f"   ºñ¿ë¸ò ÇÕ°è ¹üÀ§: [{total_shares.min():.6f}, {total_shares.max():.6f}]")
+        print(f"\n? é®ê¾©ìŠœï§?å¯ƒÂ€ï§?")
+        print(f"   é®ê¾©ìŠœï§??â‘·í€ ?ë¯í‡: {total_shares.mean():.6f}")
+        print(f"   é®ê¾©ìŠœï§??â‘·í€ ?ì’–??ëª„ê°: {total_shares.std():.6f}")
+        print(f"   é®ê¾©ìŠœï§??â‘·í€ è¸°ë¶¿ì: [{total_shares.min():.6f}, {total_shares.max():.6f}]")
         
-        # °³º° ºñ¿ë¸ò Ãâ·Â
+        # åª›ì’•í€ é®ê¾©ìŠœï§?ç•°ì’•ì °
         for input_var in self.input_vars:
             share_mean = data[f'share_{input_var}'].mean()
-            print(f"   Æò±Õ {input_var.upper()} ºñ¿ë¸ò: {share_mean:.6f}")
+            print(f"   ?ë¯í‡ {input_var.upper()} é®ê¾©ìŠœï§? {share_mean:.6f}")
         
         if abs(total_shares.mean() - 1.0) < 0.01:
-            print("   ? ºñ¿ë¸ò ÇÕ°è°¡ ¿Ã¹Ù¸¨´Ï´Ù (? 1)")
+            print("   ? é®ê¾©ìŠœï§??â‘·í€åª›Â€ ?Ñ‰ì»®ç”±ë‚…ë•²??(? 1)")
         else:
-            print(f"   ??  ºñ¿ë¸ò ÇÕ°è°¡ 1¿¡¼­ ¹ş¾î³µ½À´Ï´Ù: {total_shares.mean():.6f}")
+            print(f"   ??  é®ê¾©ìŠœï§??â‘·í€åª›Â€ 1?ë¨¯ê½Œ è¸°ì€¬ë¼±?ÑŠë’¿?ëˆë–: {total_shares.mean():.6f}")
     
     def _calculate_price_elasticities(self, beta):
-        """°¡°İÅº·Â¼º °è»ê"""
+        """åª›Â€å¯ƒâ‘ºê¹‚?Î¼ê½¦ æ€¨ê¾©ê¶›"""
         data = self.normalized_data
         
-        # ÀÚ±â°¡°İÅº·Â¼º°ú ±³Â÷°¡°İÅº·Â¼º
+        # ?ë¨­ë¦°åª›Â€å¯ƒâ‘ºê¹‚?Î¼ê½¦æ€¨?æ´ë¨¯ê°åª›Â€å¯ƒâ‘ºê¹‚?Î¼ê½¦
         for i, (price_var, input_var) in enumerate(zip(self.price_vars, self.input_vars)):
             share_i = data[f'share_{input_var}']
             
             for j, (price_var_j, input_var_j) in enumerate(zip(self.price_vars, self.input_vars)):
                 if i == j:
-                    # ÀÚ±â°¡°İÅº·Â¼º
+                    # ?ë¨­ë¦°åª›Â€å¯ƒâ‘ºê¹‚?Î¼ê½¦
                     ln_var = f'ln_{price_var}'
                     beta_idx = 1 + i
                     elasticity = beta[beta_idx]
                     
-                    # 2Â÷Ç×
+                    # 2ï§¡â‘¦ë¹†
                     var2_idx = self.translog_vars.index(f'{ln_var}2')
                     elasticity += beta[1 + var2_idx] * data[ln_var]
                     
-                    # ÃÖÁ¾ Åº·Â¼º
+                    # ï§¤ì’–ì¥Œ ?ê¾¨ì °??
                     elasticity = elasticity / share_i - 1
                     
                 else:
-                    # ±³Â÷°¡°İÅº·Â¼º
+                    # æ´ë¨¯ê°åª›Â€å¯ƒâ‘ºê¹‚?Î¼ê½¦
                     ln_var_i = f'ln_{price_var}'
                     ln_var_j = f'ln_{price_var_j}'
                     
@@ -760,27 +760,27 @@ class _StochasticFrontierCostAnalyzer:
                 data[f'elasticity_{input_var}_{input_var_j}'] = elasticity
     
     def _calculate_technical_change_cost_corrected(self, beta):
-        """±â¼úº¯È­ °è»ê (ºñ¿ëÇÔ¼ö) - °è¼ö È®ÀÎ ¹× Á¤Á¤ÇÑ °è»ê"""
+        """æ¹²ê³—ë‹ è¹‚Â€??æ€¨ê¾©ê¶› (é®ê¾©ìŠœ?â‘¥ë‹”) - æ€¨ê¾©ë‹” ?ëº¤ì”¤ è«›??ëº¤ì ™??æ€¨ê¾©ê¶›"""
         if not self.include_time:
             return
         
         data = self.normalized_data
         
-        print(f"\n?? ±â¼úº¯È­ °ü·Ã °è¼ö È®ÀÎ:")
+        print(f"\n?? æ¹²ê³—ë‹ è¹‚Â€??æ„¿Â€??æ€¨ê¾©ë‹” ?ëº¤ì”¤:")
         print("-" * 50)
         
-        # ½Ã°£ÀÇ 1Â÷Ç× °è¼ö È®ÀÎ
+        # ?ì’“ì»™??1ï§¡â‘¦ë¹† æ€¨ê¾©ë‹” ?ëº¤ì”¤
         time_idx = self.translog_vars.index(self.time_var)
-        beta_t = beta[1 + time_idx]  # »ó¼öÇ× Á¦¿Ü
-        print(f"   ¥â_t (½Ã°£ 1Â÷Ç× °è¼ö): {beta_t:.6f}")
+        beta_t = beta[1 + time_idx]  # ?ê³¸ë‹”???ì’–ì‡…
+        print(f"   æ£º_t (?ì’“ì»™ 1ï§¡â‘¦ë¹† æ€¨ê¾©ë‹”): {beta_t:.6f}")
         
-        # ½Ã°£ÀÇ 2Â÷Ç× °è¼ö È®ÀÎ
+        # ?ì’“ì»™??2ï§¡â‘¦ë¹† æ€¨ê¾©ë‹” ?ëº¤ì”¤
         time2_idx = self.translog_vars.index(f'{self.time_var}2')
         beta_t2 = beta[1 + time2_idx]
-        print(f"   ¥â_tt (½Ã°£ 2Â÷Ç× °è¼ö): {beta_t2:.6f}")
+        print(f"   æ£º_tt (?ì’“ì»™ 2ï§¡â‘¦ë¹† æ€¨ê¾©ë‹”): {beta_t2:.6f}")
         
-        # ½Ã°£°ú °¡°İº¯¼öÀÇ ±³Â÷Ç× °è¼ö È®ÀÎ
-        print("   ½Ã°£-°¡°İ ±³Â÷Ç× °è¼ö:")
+        # ?ì’“ì»™æ€¨?åª›Â€å¯ƒâ‘¸??ì„ì“½ æ´ë¨¯ê°??æ€¨ê¾©ë‹” ?ëº¤ì”¤
+        print("   ?ì’“ì»™-åª›Â€å¯ƒ?æ´ë¨¯ê°??æ€¨ê¾©ë‹”:")
         time_price_coeffs = {}
         for var in self.price_vars:
             time_cross = f'ln_{var}_{self.time_var}'
@@ -788,149 +788,149 @@ class _StochasticFrontierCostAnalyzer:
                 cross_idx = self.translog_vars.index(time_cross)
                 beta_cross = beta[1 + cross_idx]
                 time_price_coeffs[var] = beta_cross
-                print(f"     ¥â_{var}_t: {beta_cross:.6f}")
+                print(f"     æ£º_{var}_t: {beta_cross:.6f}")
         
-        # ½Ã°£°ú »êÃâ·®ÀÇ ±³Â÷Ç× °è¼ö È®ÀÎ
+        # ?ì’“ì»™æ€¨??ê³—í…§?ë±ì“½ æ´ë¨¯ê°??æ€¨ê¾©ë‹” ?ëº¤ì”¤
         time_output_cross = f'ln_{self.output_var}_{self.time_var}'
         beta_yt = 0
         if time_output_cross in self.translog_vars:
             cross_idx = self.translog_vars.index(time_output_cross)
             beta_yt = beta[1 + cross_idx]
-            print(f"   ¥â_y_t (½Ã°£-»êÃâ·® ±³Â÷Ç×): {beta_yt:.6f}")
+            print(f"   æ£º_y_t (?ì’“ì»™-?ê³—í…§??æ´ë¨¯ê°??: {beta_yt:.6f}")
         
         print("-" * 50)
         
-        # ±â¼úº¯È­ °è»ê: TECH = -¡ÓlnC/¡Ót (PDF ¹æ¹ı·Ğ)
-        # ¡ÓlnC/¡Ót = ¥â_t + ¥â_tt*t + ¥Ò¥â_it*ln(pi) + ¥â_yt*ln(y)
-        # µû¶ó¼­ TECH = -(¥â_t + ¥â_tt*t + ¥Ò¥â_it*ln(pi) + ¥â_yt*ln(y))
+        # æ¹²ê³—ë‹ è¹‚Â€??æ€¨ê¾©ê¶›: TECH = -?êµƒnC/?êµ (PDF è«›â‘¸ì¾¿æ¿¡?
+        # ?êµƒnC/?êµ = æ£º_t + æ£º_tt*t + èª‡æ£º_it*ln(pi) + æ£º_yt*ln(y)
+        # ?ê³•ì”ª??TECH = -(æ£º_t + æ£º_tt*t + èª‡æ£º_it*ln(pi) + æ£º_yt*ln(y))
         
-        # 1Â÷Ç×: -¥â_t
+        # 1ï§¡â‘¦ë¹†: -æ£º_t
         tech_change = -beta_t
         
-        # 2Â÷Ç×: -¥â_tt * t
+        # 2ï§¡â‘¦ë¹†: -æ£º_tt * t
         tech_change += -beta_t2 * data[self.time_var]
         
-        # ½Ã°£-°¡°İ ±³Â÷Ç×: -¥Ò¥â_it * ln(pi)
+        # ?ì’“ì»™-åª›Â€å¯ƒ?æ´ë¨¯ê°?? -èª‡æ£º_it * ln(pi)
         for var in self.price_vars:
             if var in time_price_coeffs:
                 tech_change += -time_price_coeffs[var] * data[f'ln_{var}']
         
-        # ½Ã°£-»êÃâ·® ±³Â÷Ç×: -¥â_yt * ln(y)
+        # ?ì’“ì»™-?ê³—í…§??æ´ë¨¯ê°?? -æ£º_yt * ln(y)
         if beta_yt != 0:
             tech_change += -beta_yt * data[f'ln_{self.output_var}']
         
         data['tech_change_cost'] = tech_change
         
-        print(f"\n?? ±â¼úº¯È­ °è»ê °á°ú:")
-        print(f"   °ø½Ä: TECH = -¡ÓlnC/¡Ót")
-        print(f"   Æò±Õ ±â¼úº¯È­: {tech_change.mean():.6f}")
-        print(f"   ±â¼úº¯È­ ¹üÀ§: [{tech_change.min():.6f}, {tech_change.max():.6f}]")
+        print(f"\n?? æ¹²ê³—ë‹ è¹‚Â€??æ€¨ê¾©ê¶› å¯ƒê³Œë‚µ:")
+        print(f"   æ€¨ë“­ë–‡: TECH = -?êµƒnC/?êµ")
+        print(f"   ?ë¯í‡ æ¹²ê³—ë‹ è¹‚Â€?? {tech_change.mean():.6f}")
+        print(f"   æ¹²ê³—ë‹ è¹‚Â€??è¸°ë¶¿ì: [{tech_change.min():.6f}, {tech_change.max():.6f}]")
         
-        # ÇØ¼® µµ¿ò¸»
+        # ?ëŒê½ ?ê¾©?ï§?
         if tech_change.mean() > 0:
-            print("   ? ¾ç¼ö ¡æ ±â¼úÁøº¸ (ºñ¿ë °¨¼Ò)")
+            print("   ? ?ë¬’ë‹” ??æ¹²ê³—ë‹ ï§ê¾¨ë‚« (é®ê¾©ìŠœ åª›ë¨¯ëƒ¼)")
         elif tech_change.mean() < 0:
-            print("   ??  À½¼ö ¡æ ±â¼úÅğº¸ ¶Ç´Â ºñ¿ë Áõ°¡")
-            print("   ?? °¡´ÉÇÑ ¿øÀÎ:")
-            print("      - ½Ã°£°è¼ö ¥â_t > 0 (½Ã°£¿¡ µû¶ó ºñ¿ëÁõ°¡)")
-            print("      - µ¥ÀÌÅÍ¿¡ ±â¼úÅğº¸ ¹İ¿µ")
-            print("      - ÃßÁ¤ ¸ğµ¨ÀÇ ÇÑ°è")
+            print("   ??  ?ëš¯ë‹” ??æ¹²ê³—ë‹ ?ëŒ€ë‚« ?ë¨®ë’— é®ê¾©ìŠœ ï§ì•·?")
+            print("   ?? åª›Â€?Î½ë¸³ ?ë¨¯ì”¤:")
+            print("      - ?ì’“ì»™æ€¨ê¾©ë‹” æ£º_t > 0 (?ì’“ì»™???ê³•ì”ª é®ê¾©ìŠœï§ì•·?)")
+            print("      - ?ê³—ì” ?ê³—ë¿‰ æ¹²ê³—ë‹ ?ëŒ€ë‚« è«›ì„ìº")
+            print("      - ç•°ë¶¿ì ™ ï§â‘¤ëœ½???ì’“í€")
         else:
-            print("   ??  ¿µ ¡æ ±â¼úº¯È­ ¾øÀ½")
+            print("   ??  ????æ¹²ê³—ë‹ è¹‚Â€???ë†ì“¬")
         
-        # ±¸¼º¿ä¼Òº° ±â¿©µµ ºĞ¼®
-        print(f"\n?? ±â¼úº¯È­ ±¸¼º¿ä¼Ò ºĞ¼®:")
+        # æ´ÑŠê½¦?ë¶¿ëƒ¼è¹‚?æ¹²ê³—ë¿¬??éºê¾©ê½
+        print(f"\n?? æ¹²ê³—ë‹ è¹‚Â€??æ´ÑŠê½¦?ë¶¿ëƒ¼ éºê¾©ê½:")
         component1 = -beta_t
         component2 = (-beta_t2 * data[self.time_var]).mean()
-        print(f"   1Â÷Ç× ±â¿©µµ (-¥â_t): {component1:.6f}")
-        print(f"   2Â÷Ç× ±â¿©µµ Æò±Õ (-¥â_tt*t): {component2:.6f}")
+        print(f"   1ï§¡â‘¦ë¹† æ¹²ê³—ë¿¬??(-æ£º_t): {component1:.6f}")
+        print(f"   2ï§¡â‘¦ë¹† æ¹²ê³—ë¿¬???ë¯í‡ (-æ£º_tt*t): {component2:.6f}")
         
         total_cross_effect = 0
         for var in self.price_vars:
             if var in time_price_coeffs:
                 cross_effect = (-time_price_coeffs[var] * data[f'ln_{var}']).mean()
                 total_cross_effect += cross_effect
-                print(f"   {var} ±³Â÷Ç× Æò±Õ: {cross_effect:.6f}")
+                print(f"   {var} æ´ë¨¯ê°???ë¯í‡: {cross_effect:.6f}")
         
         if beta_yt != 0:
             output_cross_effect = (-beta_yt * data[f'ln_{self.output_var}']).mean()
             total_cross_effect += output_cross_effect
-            print(f"   »êÃâ·® ±³Â÷Ç× Æò±Õ: {output_cross_effect:.6f}")
+            print(f"   ?ê³—í…§??æ´ë¨¯ê°???ë¯í‡: {output_cross_effect:.6f}")
         
-        print(f"   ÃÑ ±³Â÷Ç× È¿°ú: {total_cross_effect:.6f}")
-        print(f"   ÀüÃ¼ Æò±Õ: {component1 + component2 + total_cross_effect:.6f}")
+        print(f"   ç¥?æ´ë¨¯ê°???â‘£ë‚µ: {total_cross_effect:.6f}")
+        print(f"   ?ê¾©ê»œ ?ë¯í‡: {component1 + component2 + total_cross_effect:.6f}")
         print("-" * 50)
     
     def _calculate_scale_economies(self, beta):
-        """±Ô¸ğÀÇ °æÁ¦ °è»ê (ºñ¿ëÇÔ¼ö)"""
+        """æ´¹ì’•ãˆ??å¯ƒìŒì £ æ€¨ê¾©ê¶› (é®ê¾©ìŠœ?â‘¥ë‹”)"""
         data = self.normalized_data
         
-        # »êÃâ·®¿¡ ´ëÇÑ ºñ¿ëÅº·Â¼º (IRTS = ¡ÓlnC/¡ÓlnY)
+        # ?ê³—í…§?ë±ë¿‰ ?Â€??é®ê¾©ìŠœ?ê¾¨ì °??(IRTS = ?êµƒnC/?êµƒnY)
         ln_output_var = f'ln_{self.output_var}'
         output_idx = self.translog_vars.index(ln_output_var)
         
-        # 1Â÷Ç×: ¥â_y
-        output_elasticity = beta[1 + output_idx]  # »ó¼öÇ× Á¦¿Ü
+        # 1ï§¡â‘¦ë¹†: æ£º_y
+        output_elasticity = beta[1 + output_idx]  # ?ê³¸ë‹”???ì’–ì‡…
         
-        # 2Â÷Ç×: ¥â_yy * ln(y)
+        # 2ï§¡â‘¦ë¹†: æ£º_yy * ln(y)
         output2_idx = self.translog_vars.index(f'{ln_output_var}2')
         output_elasticity += beta[1 + output2_idx] * data[ln_output_var]
         
-        # °¡°İ-»êÃâ·® ±³Â÷Ç×: ¥Ò¥â_iy * ln(wi)
+        # åª›Â€å¯ƒ??ê³—í…§??æ´ë¨¯ê°?? èª‡æ£º_iy * ln(wi)
         for var in self.price_vars:
             output_cross = f'ln_{var}_{self.output_var}'
             if output_cross in self.translog_vars:
                 cross_idx = self.translog_vars.index(output_cross)
                 output_elasticity += beta[1 + cross_idx] * data[f'ln_{var}']
         
-        # ½Ã°£-»êÃâ·® ±³Â÷Ç×: ¥â_yt * t
+        # ?ì’“ì»™-?ê³—í…§??æ´ë¨¯ê°?? æ£º_yt * t
         if self.include_time:
             time_output_cross = f'ln_{self.output_var}_{self.time_var}'
             if time_output_cross in self.translog_vars:
                 cross_idx = self.translog_vars.index(time_output_cross)
                 output_elasticity += beta[1 + cross_idx] * data[self.time_var]
         
-        # ±Ô¸ğÀÇ °æÁ¦ = 1 / IRTS (¿©±â¼­ IRTS = »êÃâÀÇ ºñ¿ëÅº·Â¼º)
+        # æ´¹ì’•ãˆ??å¯ƒìŒì £ = 1 / IRTS (?Ñˆë¦°??IRTS = ?ê³—í…§??é®ê¾©ìŠœ?ê¾¨ì °??
         scale_economies = 1 / output_elasticity
         
-        # µ¥ÀÌÅÍ¿¡ ÀúÀå (TFP ºĞÇØ¿¡¼­ »ç¿ë)
-        data['irts'] = output_elasticity  # »êÃâÀÇ ºñ¿ëÅº·Â¼º (1/RTS)
-        data['output_elasticity'] = output_elasticity  # ±âÁ¸ È£È¯¼º
+        # ?ê³—ì” ?ê³—ë¿‰ ?Â€??(TFP éºê¾ªë¹?ë¨¯ê½Œ ?ÑŠìŠœ)
+        data['irts'] = output_elasticity  # ?ê³—í…§??é®ê¾©ìŠœ?ê¾¨ì °??(1/RTS)
+        data['output_elasticity'] = output_elasticity  # æ¹²ê³—ã€ˆ ?ëª…ì†š??
         data['scale_economies'] = scale_economies
     
     def _calculate_tfp_decomposition(self):
-        """TFP Áõ°¡À²°ú ±¸¼º¿äÀÎ ºĞÇØ °è»ê"""
+        """TFP ï§ì•·??â‘£ë‚µ æ´ÑŠê½¦?ë¶¿ì”¤ éºê¾ªë¹ æ€¨ê¾©ê¶›"""
         data = self.normalized_data.sort_values([self.id_var, self.time_var])
         
-        # 1. ±â¼úÀû È¿À²¼º º¯È­ °è»ê (TEÀÇ ·Î±× Â÷ºĞ)
+        # 1. æ¹²ê³—ë‹ ???â‘¥ì‘‰??è¹‚Â€??æ€¨ê¾©ê¶› (TE??æ¿¡ì’“ë ‡ ï§¡â‘¤í…‡)
         data['ln_te'] = np.log(data['technical_efficiency'])
         data['tech_efficiency_change'] = data.groupby(self.id_var)['ln_te'].diff()
         
-        # 2. »êÃâ·® Áõ°¡À² °è»ê (±Ô¸ğÈ¿°ú °è»ê¿ë)
+        # 2. ?ê³—í…§??ï§ì•·???æ€¨ê¾©ê¶› (æ´¹ì’•ãˆ?â‘£ë‚µ æ€¨ê¾©ê¶›??
         data['ln_output'] = data[f'ln_{self.output_var}']
         data['output_growth'] = data.groupby(self.id_var)['ln_output'].diff()
         
-        # 3. ±â¼úº¯È­ È¿°ú (¼öÁ¤µÈ - ÀÌ¹Ì ¿Ã¹Ù¸¥ ºÎÈ£·Î °è»êµÊ)
+        # 3. æ¹²ê³—ë‹ è¹‚Â€???â‘£ë‚µ (?ì„ì ™??- ?ëŒ€? ?Ñ‰ì»®ç‘œ?éºÂ€?ëªƒì¤ˆ æ€¨ê¾©ê¶›??
         if 'tech_change_cost' in data.columns:
-            # ÀÌ¹Ì Stata ¹æ½ÄÀ¸·Î °è»êµÇ¾î ¿Ã¹Ù¸¥ ºÎÈ£¸¦ °¡Áü
+            # ?ëŒ€? Stata è«›â‘¹ë–‡?ì‡°ì¤ˆ æ€¨ê¾©ê¶›?ì„ë¼± ?Ñ‰ì»®ç‘œ?éºÂ€?ëªƒ? åª›Â€ï§?
             data['tech_change_effect'] = data['tech_change_cost']
         else:
             data['tech_change_effect'] = 0
         
-        # 4. ±Ô¸ğÈ¿°ú °è»ê = (1-IRTS) ¡¿ »êÃâÁõ°¡À² (PDF ¹æ¹ı·Ğ)
+        # 4. æ´¹ì’•ãˆ?â‘£ë‚µ æ€¨ê¾©ê¶› = (1-IRTS) íš ?ê³—í…§ï§ì•·???(PDF è«›â‘¸ì¾¿æ¿¡?
         # Stata: gen SCALE = (1-IRTS)*gr_y
         if 'irts' in data.columns:
             data['scale_effect'] = (1 - data['irts']) * data['output_growth']
         else:
             data['scale_effect'] = 0
         
-        # 5. TFP Áõ°¡À² °è»ê = SCALE + TECH + TEFF (PDF ¹æ¹ı·Ğ)
+        # 5. TFP ï§ì•·???æ€¨ê¾©ê¶› = SCALE + TECH + TEFF (PDF è«›â‘¸ì¾¿æ¿¡?
         # Stata: gen TFP = SCALE + TECH + TEFF
         data['tfp_growth'] = (data['scale_effect'] + 
                              data['tech_change_effect'] + 
                              data['tech_efficiency_change'])
         
-        # 6. ¹éºĞÀ² º¯È¯À» À§ÇÑ º¯¼öµé
+        # 6. è«›ê¹…í…‡??è¹‚Â€?ì„ì“£ ?ê¾ªë¸³ è¹‚Â€?ì„ë±¾
         for var in ['tech_efficiency_change', 'tech_change_effect', 'scale_effect', 
                    'tfp_growth', 'output_growth']:
             if var in data.columns:
@@ -938,41 +938,41 @@ class _StochasticFrontierCostAnalyzer:
         
         self.normalized_data = data
         
-        print(f"\n?? TFP ºĞÇØ °è»ê ¿Ï·á:")
+        print(f"\n?? TFP éºê¾ªë¹ æ€¨ê¾©ê¶› ?ê¾¨ì¦º:")
         valid_data = data.dropna(subset=['tfp_growth', 'tech_change_effect', 'tech_efficiency_change', 'scale_effect'])
         if len(valid_data) > 0:
-            print(f"   Æò±Õ TFP Áõ°¡À²: {valid_data['tfp_growth'].mean()*100:.4f}%")
-            print(f"   Æò±Õ ±â¼úº¯È­: {valid_data['tech_change_effect'].mean()*100:.4f}%")
-            print(f"   Æò±Õ ±â¼úÀûÈ¿À²¼ºº¯È­: {valid_data['tech_efficiency_change'].mean()*100:.4f}%")
-            print(f"   Æò±Õ ±Ô¸ğÀÇ°æÁ¦È¿°ú: {valid_data['scale_effect'].mean()*100:.4f}%")
+            print(f"   ?ë¯í‡ TFP ï§ì•·??? {valid_data['tfp_growth'].mean()*100:.4f}%")
+            print(f"   ?ë¯í‡ æ¹²ê³—ë‹ è¹‚Â€?? {valid_data['tech_change_effect'].mean()*100:.4f}%")
+            print(f"   ?ë¯í‡ æ¹²ê³—ë‹ ?ê³¹ìŠš?â‘¥ê½¦è¹‚Â€?? {valid_data['tech_efficiency_change'].mean()*100:.4f}%")
+            print(f"   ?ë¯í‡ æ´¹ì’•ãˆ?ì„ê¼?ì’—ìŠšæ€¨? {valid_data['scale_effect'].mean()*100:.4f}%")
     
     def print_results(self, save_path='cost_results.csv'):
-        """°á°ú Ãâ·Â - TFP ºĞÇØ 4°¡Áö ¿ä¼Ò¸¸ Ãâ·Â"""
+        """å¯ƒê³Œë‚µ ç•°ì’•ì ° - TFP éºê¾ªë¹ 4åª›Â€ï§Â€ ?ë¶¿ëƒ¼ï§?ç•°ì’•ì °"""
         print("\n" + "=" * 100)
-        print("È®·üº¯°æºñ¿ëÇÔ¼ö ÃßÁ¤ °á°ú")
+        print("?ëº£ìª§è¹‚Â€å¯ƒìˆí‰¬?â‘ºë¸¿??ç•°ë¶¿ì ™ å¯ƒê³Œë‚µ")
         print("=" * 100)
         
-        # 1. ÆÄ¶ó¹ÌÅÍ ÃßÁ¤Ä¡ Ãâ·Â
+        # 1. ?ëš®ì”ªèª˜ëª…ê½£ ç•°ë¶¿ì ™ç§»?ç•°ì’•ì °
         if 'frontier' in self.results:
             frontier = self.results['frontier']
             beta = frontier['beta']
             std_errors = frontier.get('std_errors', np.full(len(beta), np.nan))
             
-            print("\n1. ÆÄ¶ó¹ÌÅÍ ÃßÁ¤Ä¡")
+            print("\n1. ?ëš®ì”ªèª˜ëª…ê½£ ç•°ë¶¿ì ™ç§»?)
             print("-" * 100)
-            print(f"{'º¯¼ö¸í':<20} {'°è¼ö':<12} {'Ç¥ÁØ¿ÀÂ÷':<12} {'t-°ª':<10} {'p-°ª':<10} {'À¯ÀÇ¼º':<8}")
+            print(f"{'è¹‚Â€?ì„ì±¸':<20} {'æ€¨ê¾©ë‹”':<12} {'?ì’–??ã…¼ê°':<12} {'t-åª›?:<10} {'p-åª›?:<10} {'?ì¢ì“½??:<8}")
             print("-" * 100)
             
-            # »ó¼öÇ×
+            # ?ê³¸ë‹”??
             t_stat = beta[0] / std_errors[0] if not np.isnan(std_errors[0]) and std_errors[0] != 0 else np.nan
             p_value = 2 * (1 - norm.cdf(abs(t_stat))) if not np.isnan(t_stat) else np.nan
             significance = "***" if p_value < 0.01 else "**" if p_value < 0.05 else "*" if p_value < 0.1 else ""
             
-            print(f"{'»ó¼öÇ×':<20} {beta[0]:>8.6f} {std_errors[0]:>8.4f} {t_stat:>8.3f} {p_value:>8.4f} {significance:<8}")
+            print(f"{'?ê³¸ë‹”??:<20} {beta[0]:>8.6f} {std_errors[0]:>8.4f} {t_stat:>8.3f} {p_value:>8.4f} {significance:<8}")
             
-            # º¯¼öº° °è¼ö
+            # è¹‚Â€?ì„í€ æ€¨ê¾©ë‹”
             for i, var_name in enumerate(self.translog_vars):
-                coef = beta[i + 1]  # »ó¼öÇ× Á¦¿Ü
+                coef = beta[i + 1]  # ?ê³¸ë‹”???ì’–ì‡…
                 se = std_errors[i + 1] if i + 1 < len(std_errors) else np.nan
                 t_stat = coef / se if not np.isnan(se) and se != 0 else np.nan
                 p_value = 2 * (1 - norm.cdf(abs(t_stat))) if not np.isnan(t_stat) else np.nan
@@ -981,200 +981,200 @@ class _StochasticFrontierCostAnalyzer:
                 print(f"{var_name:<20} {coef:>8.6f} {se:>8.4f} {t_stat:>8.3f} {p_value:>8.4f} {significance:<8}")
             
             print("-" * 100)
-            print("À¯ÀÇ¼º: *** p<0.01, ** p<0.05, * p<0.1")
+            print("?ì¢ì“½?? *** p<0.01, ** p<0.05, * p<0.1")
             
-            # ?? ±â¼úº¯È­ °ü·Ã °è¼ö ÇØ¼® Ãß°¡
-            print(f"\n?? ±â¼úº¯È­ °ü·Ã °è¼ö ÇØ¼®:")
+            # ?? æ¹²ê³—ë‹ è¹‚Â€??æ„¿Â€??æ€¨ê¾©ë‹” ?ëŒê½ ç•°ë¶½?
+            print(f"\n?? æ¹²ê³—ë‹ è¹‚Â€??æ„¿Â€??æ€¨ê¾©ë‹” ?ëŒê½:")
             print("-" * 50)
             
-            # ½Ã°£ º¯¼ö °è¼ö Ã£±â ¹× ÇØ¼®
+            # ?ì’“ì»™ è¹‚Â€??æ€¨ê¾©ë‹” ï§¡ì–˜ë¦° è«›??ëŒê½
             if self.include_time and self.time_var in self.translog_vars:
                 time_idx = self.translog_vars.index(self.time_var)
-                beta_t = beta[time_idx + 1]  # »ó¼öÇ× Á¦¿Ü
+                beta_t = beta[time_idx + 1]  # ?ê³¸ë‹”???ì’–ì‡…
                 
-                print(f"   ½Ã°£(t) °è¼ö ¥â_t = {beta_t:.6f}")
+                print(f"   ?ì’“ì»™(t) æ€¨ê¾©ë‹” æ£º_t = {beta_t:.6f}")
                 if beta_t > 0:
-                    print("   ¡æ ¥â_t > 0: ½Ã°£¿¡ µû¶ó ºñ¿ëÁõ°¡ (±â¼úÅğº¸ ¶Ç´Â ºñ¿ë»ó½Â ¿äÀÎ)")
-                    print("   ¡æ ±â¼úº¯È­ TECH = -¥â_t = {:.6f} (À½¼ö)".format(-beta_t))
+                    print("   ??æ£º_t > 0: ?ì’“ì»™???ê³•ì”ª é®ê¾©ìŠœï§ì•·? (æ¹²ê³—ë‹ ?ëŒ€ë‚« ?ë¨®ë’— é®ê¾©ìŠœ?ê³¸ë“… ?ë¶¿ì”¤)")
+                    print("   ??æ¹²ê³—ë‹ è¹‚Â€??TECH = -æ£º_t = {:.6f} (?ëš¯ë‹”)".format(-beta_t))
                 elif beta_t < 0:
-                    print("   ¡æ ¥â_t < 0: ½Ã°£¿¡ µû¶ó ºñ¿ë°¨¼Ò (±â¼úÁøº¸)")
-                    print("   ¡æ ±â¼úº¯È­ TECH = -¥â_t = {:.6f} (¾ç¼ö)".format(-beta_t))
+                    print("   ??æ£º_t < 0: ?ì’“ì»™???ê³•ì”ª é®ê¾©ìŠœåª›ë¨¯ëƒ¼ (æ¹²ê³—ë‹ ï§ê¾¨ë‚«)")
+                    print("   ??æ¹²ê³—ë‹ è¹‚Â€??TECH = -æ£º_t = {:.6f} (?ë¬’ë‹”)".format(-beta_t))
                 else:
-                    print("   ¡æ ¥â_t = 0: ½Ã°£¿¡ µû¸¥ ºñ¿ëº¯È­ ¾øÀ½")
+                    print("   ??æ£º_t = 0: ?ì’“ì»™???ê³•â…¨ é®ê¾©ìŠœè¹‚Â€???ë†ì“¬")
                 
-                print(f"   ?? ±â¼úº¯È­ °ø½Ä: TECH = -¡ÓlnC/¡Ót = -¥â_t - ¥â_tt¡¿t - ¥Ò¥â_it¡¿ln(pi) - ¥â_yt¡¿ln(y)")
+                print(f"   ?? æ¹²ê³—ë‹ è¹‚Â€??æ€¨ë“­ë–‡: TECH = -?êµƒnC/?êµ = -æ£º_t - æ£º_ttíšt - èª‡æ£º_itíšln(pi) - æ£º_ytíšln(y)")
             
             print("-" * 50)
             
-            # 2. ¸ğµ¨ Åë°è·®
-            print(f"\n2. ¸ğµ¨ Åë°è·®")
+            # 2. ï§â‘¤ëœ½ ?ë“¦í€??
+            print(f"\n2. ï§â‘¤ëœ½ ?ë“¦í€??)
             print("-" * 40)
-            print(f"°üÃø¼ö: {frontier.get('n_obs', 'N/A'):>20}")
-            print(f"ÆÄ¶ó¹ÌÅÍ ¼ö: {frontier.get('n_params', 'N/A'):>15}")
-            print(f"·Î±×¿ìµµ: {frontier['log_likelihood']:>15.4f}")
-            print(f"½Ã±×¸¶_u: {frontier['sigma_u']:>15.4f}")
-            print(f"½Ã±×¸¶_v: {frontier['sigma_v']:>15.4f}")
-            print(f"½Ã±×¸¶©÷: {frontier['sigma_u']**2 + frontier['sigma_v']**2:>15.4f}")
-            print(f"¶÷´Ù (¥òu/¥òv): {frontier['sigma_u']/frontier['sigma_v']:>10.4f}")
-            print(f"¥ã = ¥òu©÷/¥ò©÷: {frontier['sigma_u']**2/(frontier['sigma_u']**2 + frontier['sigma_v']**2):>13.4f}")
+            print(f"æ„¿Â€ï§¥â‰ªë‹”: {frontier.get('n_obs', 'N/A'):>20}")
+            print(f"?ëš®ì”ªèª˜ëª…ê½£ ?? {frontier.get('n_params', 'N/A'):>15}")
+            print(f"æ¿¡ì’“ë ‡?ê³•ë£„: {frontier['log_likelihood']:>15.4f}")
+            print(f"?ì’“ë ‡ï§?u: {frontier['sigma_u']:>15.4f}")
+            print(f"?ì’“ë ‡ï§?v: {frontier['sigma_v']:>15.4f}")
+            print(f"?ì’“ë ‡ï§ëŒŸ? {frontier['sigma_u']**2 + frontier['sigma_v']**2:>15.4f}")
+            print(f"?ëš®ë– (?u/?v): {frontier['sigma_u']/frontier['sigma_v']:>10.4f}")
+            print(f"æ¬¾ = ?uì§¼/?ì§¼: {frontier['sigma_u']**2/(frontier['sigma_u']**2 + frontier['sigma_v']**2):>13.4f}")
         
-        # 3. ±â¼úÀû È¿À²¼º(TE) Åë°è
+        # 3. æ¹²ê³—ë‹ ???â‘¥ì‘‰??TE) ?ë“¦í€
         if 'technical_efficiency' in self.normalized_data.columns:
             te = self.normalized_data['technical_efficiency']
-            print(f"\n3. ±â¼úÀû È¿À²¼º(TE) Åë°è")
+            print(f"\n3. æ¹²ê³—ë‹ ???â‘¥ì‘‰??TE) ?ë“¦í€")
             print("-" * 40)
-            print(f"Æò±Õ: {te.mean():>20.4f}")
-            print(f"Ç¥ÁØÆíÂ÷: {te.std():>15.4f}")
-            print(f"ÃÖ¼Ò°ª: {te.min():>16.4f}")
-            print(f"ÃÖ´ë°ª: {te.max():>16.4f}")
-            print(f"ÁßÀ§¼ö: {te.median():>16.4f}")
+            print(f"?ë¯í‡: {te.mean():>20.4f}")
+            print(f"?ì’–??ëª„ê°: {te.std():>15.4f}")
+            print(f"ï§¤ì’–ëƒ¼åª›? {te.min():>16.4f}")
+            print(f"ï§¤ì’•?åª›? {te.max():>16.4f}")
+            print(f"ä»¥ë¬’ì?? {te.median():>16.4f}")
         
-        # 4. TFP ºĞÇØ °á°ú (ÇÙ½É 4°¡Áö ±¸¼º¿äÀÎ)
+        # 4. TFP éºê¾ªë¹ å¯ƒê³Œë‚µ (?ë“­ë–– 4åª›Â€ï§Â€ æ´ÑŠê½¦?ë¶¿ì”¤)
         display_cols = [self.id_var, self.time_var]
         
-        # TFP ÇÙ½É ±¸¼º¿äÀÎµé¸¸ Ãß°¡
+        # TFP ?ë“­ë–– æ´ÑŠê½¦?ë¶¿ì”¤?ã…»ì­” ç•°ë¶½?
         tfp_core_components = ['tfp_growth', 'tech_change_effect', 'tech_efficiency_change', 'scale_effect']
         
         for comp in tfp_core_components:
             if comp in self.normalized_data.columns:
                 display_cols.append(comp)
         
-        # °áÃøÄ¡ Á¦°Å
+        # å¯ƒê³—ë¥«ç§»??ì’“êµ…
         cost_display = self.normalized_data[display_cols].dropna()
         
         if len(cost_display) > 0:
-            print(f"\n4. TFP ºĞÇØ °á°ú (ÇÙ½É 4°¡Áö ±¸¼º¿äÀÎ)")
+            print(f"\n4. TFP éºê¾ªë¹ å¯ƒê³Œë‚µ (?ë“­ë–– 4åª›Â€ï§Â€ æ´ÑŠê½¦?ë¶¿ì”¤)")
             print("=" * 80)
             
-            # ÄÃ·³¸í º¯°æ (°¡µ¶¼º)
+            # è€ŒÑ‰ì†ï§?è¹‚Â€å¯ƒ?(åª›Â€?ë‚†ê½¦)
             col_rename = {
-                'tfp_growth': 'TFPÁõ°¡À²',
-                'tech_change_effect': '±â¼úº¯È­',
-                'tech_efficiency_change': '±â¼úÀûÈ¿À²¼ºº¯È­',
-                'scale_effect': '±Ô¸ğÀÇ°æÁ¦È¿°ú'
+                'tfp_growth': 'TFPï§ì•·???,
+                'tech_change_effect': 'æ¹²ê³—ë‹ è¹‚Â€??,
+                'tech_efficiency_change': 'æ¹²ê³—ë‹ ?ê³¹ìŠš?â‘¥ê½¦è¹‚Â€??,
+                'scale_effect': 'æ´¹ì’•ãˆ?ì„ê¼?ì’—ìŠšæ€¨?
             }
             
             cost_display_renamed = cost_display.rename(columns=col_rename)
             
-            # ÀüÃ¼ µ¥ÀÌÅÍ Ãâ·Â
-            print("TFP ºĞÇØ °á°ú:")
+            # ?ê¾©ê»œ ?ê³—ì” ??ç•°ì’•ì °
+            print("TFP éºê¾ªë¹ å¯ƒê³Œë‚µ:")
             print(cost_display_renamed.round(6).to_string(index=False))
-            print(f"\nÃÑ {len(cost_display_renamed)}°³ °üÃøÄ¡")
+            print(f"\nç¥?{len(cost_display_renamed)}åª›?æ„¿Â€ï§¥â‰ªíŠ‚")
             
-            # TFP ºĞÇØ ±¸¼º¿äÀÎ Åë°è
-            tfp_stats_cols = ['TFPÁõ°¡À²', '±â¼úº¯È­', '±â¼úÀûÈ¿À²¼ºº¯È­', '±Ô¸ğÀÇ°æÁ¦È¿°ú']
+            # TFP éºê¾ªë¹ æ´ÑŠê½¦?ë¶¿ì”¤ ?ë“¦í€
+            tfp_stats_cols = ['TFPï§ì•·???, 'æ¹²ê³—ë‹ è¹‚Â€??, 'æ¹²ê³—ë‹ ?ê³¹ìŠš?â‘¥ê½¦è¹‚Â€??, 'æ´¹ì’•ãˆ?ì„ê¼?ì’—ìŠšæ€¨?]
             available_tfp_cols = [col for col in tfp_stats_cols if col in cost_display_renamed.columns]
             
             if available_tfp_cols:
                 print("\n" + "-" * 70)
-                print("TFP ±¸¼º¿äÀÎ Åë°è (¿¬°£ º¯È­À², %)")
+                print("TFP æ´ÑŠê½¦?ë¶¿ì”¤ ?ë“¦í€ (?ê³Œì»™ è¹‚Â€?ë¶¿ì‘‰, %)")
                 print("-" * 70)
-                print(f"{'±¸¼º¿äÀÎ':<20} {'Æò±Õ':<12} {'Ç¥ÁØÆíÂ÷':<12} {'ÃÖ¼Ò°ª':<12} {'ÃÖ´ë°ª':<12}")
+                print(f"{'æ´ÑŠê½¦?ë¶¿ì”¤':<20} {'?ë¯í‡':<12} {'?ì’–??ëª„ê°':<12} {'ï§¤ì’–ëƒ¼åª›?:<12} {'ï§¤ì’•?åª›?:<12}")
                 print("-" * 70)
                 
                 for col in available_tfp_cols:
                     if col in cost_display_renamed.columns:
-                        col_data = cost_display_renamed[col].dropna() * 100  # ¹éºĞÀ²
+                        col_data = cost_display_renamed[col].dropna() * 100  # è«›ê¹…í…‡??
                         if len(col_data) > 0:
                             print(f"{col:<20} {col_data.mean():>8.4f} {col_data.std():>12.4f} {col_data.min():>12.4f} {col_data.max():>12.4f}")
                 
                 print("-" * 70)
                 
-                # TFP ºĞÇØ °ËÁõ
-                if all(col in cost_display_renamed.columns for col in ['TFPÁõ°¡À²', '±â¼úº¯È­', '±â¼úÀûÈ¿À²¼ºº¯È­', '±Ô¸ğÀÇ°æÁ¦È¿°ú']):
-                    calculated_tfp = (cost_display_renamed['±â¼úº¯È­'] + 
-                                    cost_display_renamed['±â¼úÀûÈ¿À²¼ºº¯È­'] + 
-                                    cost_display_renamed['±Ô¸ğÀÇ°æÁ¦È¿°ú'])
-                    decomposition_error = cost_display_renamed['TFPÁõ°¡À²'] - calculated_tfp
+                # TFP éºê¾ªë¹ å¯ƒÂ€ï§?
+                if all(col in cost_display_renamed.columns for col in ['TFPï§ì•·???, 'æ¹²ê³—ë‹ è¹‚Â€??, 'æ¹²ê³—ë‹ ?ê³¹ìŠš?â‘¥ê½¦è¹‚Â€??, 'æ´¹ì’•ãˆ?ì„ê¼?ì’—ìŠšæ€¨?]):
+                    calculated_tfp = (cost_display_renamed['æ¹²ê³—ë‹ è¹‚Â€??] + 
+                                    cost_display_renamed['æ¹²ê³—ë‹ ?ê³¹ìŠš?â‘¥ê½¦è¹‚Â€??] + 
+                                    cost_display_renamed['æ´¹ì’•ãˆ?ì„ê¼?ì’—ìŠšæ€¨?])
+                    decomposition_error = cost_display_renamed['TFPï§ì•·???] - calculated_tfp
                     
-                    print(f"\n?? TFP ºĞÇØ Á¤È®¼º:")
-                    print(f"   Æò±Õ ºĞÇØ¿ÀÂ÷: {decomposition_error.mean()*100:>8.6f}%")
-                    print(f"   ÃÖ´ë Àı´ë¿ÀÂ÷: {decomposition_error.abs().max()*100:>8.6f}%")
+                    print(f"\n?? TFP éºê¾ªë¹ ?ëº¥ì†—??")
+                    print(f"   ?ë¯í‡ éºê¾ªë¹?ã…¼ê°: {decomposition_error.mean()*100:>8.6f}%")
+                    print(f"   ï§¤ì’•? ?ëˆ??ã…¼ê°: {decomposition_error.abs().max()*100:>8.6f}%")
                     
-                    if decomposition_error.abs().max() < 0.05:  # 5% ÀÌÇÏ
-                        print("   ? ºĞÇØ°¡ Á¤È®ÇÕ´Ï´Ù")
-                    elif decomposition_error.abs().max() < 0.10:  # 10% ÀÌÇÏ
-                        print("   ??  ºĞÇØ ¿ÀÂ÷°¡ ´Ù¼Ò ÀÖ½À´Ï´Ù")
+                    if decomposition_error.abs().max() < 0.05:  # 5% ?ëŒ„ë¸¯
+                        print("   ? éºê¾ªë¹åª›Â€ ?ëº¥ì†—?â‘¸ë•²??)
+                    elif decomposition_error.abs().max() < 0.10:  # 10% ?ëŒ„ë¸¯
+                        print("   ??  éºê¾ªë¹ ?ã…¼ê°åª›Â€ ?ã…¼ëƒ¼ ?ë‰ë’¿?ëˆë–")
                     else:
-                        print("   ? ºĞÇØ ¿ÀÂ÷°¡ Å®´Ï´Ù")
+                        print("   ? éºê¾ªë¹ ?ã…¼ê°åª›Â€ ?ìˆë•²??)
             
-            # ½Ã°£º° Æò±Õ
+            # ?ì’“ì»™è¹‚??ë¯í‡
             if self.include_time and len(cost_display) > 0:
-                print(f"\n½Ã°£º° Æò±Õ:")
+                print(f"\n?ì’“ì»™è¹‚??ë¯í‡:")
                 time_avg = cost_display.groupby(self.time_var)[tfp_core_components].mean()
                 time_avg_renamed = time_avg.rename(columns=col_rename)
                 print(time_avg_renamed.round(6).to_string())
             
-            # IDº° Æò±Õ (°³Ã¼º° ºñ±³)
-            print(f"\nIDº° Æò±Õ (°³Ã¼º° ºñ±³):")
+            # IDè¹‚??ë¯í‡ (åª›ì’–ê»œè¹‚?é®ê¾§íƒ³)
+            print(f"\nIDè¹‚??ë¯í‡ (åª›ì’–ê»œè¹‚?é®ê¾§íƒ³):")
             print("-" * 60)
             id_avg = cost_display.groupby(self.id_var)[tfp_core_components].mean()
             id_avg_renamed = id_avg.rename(columns=col_rename)
             print(id_avg_renamed.round(6).to_string())
             
-            # ÆÄÀÏ ÀúÀå
-            print(f"\n?? TFP ºĞÇØ ºĞ¼® µ¥ÀÌÅÍ ÀúÀå: {save_path}")
+            # ?ëš¯ì”ª ?Â€??
+            print(f"\n?? TFP éºê¾ªë¹ éºê¾©ê½ ?ê³—ì” ???Â€?? {save_path}")
             
-            # µğ·ºÅä¸®°¡ ¾øÀ¸¸é »ı¼º
+            # ?ë¶¾ì †?ì¢Šâ”åª›Â€ ?ë†ì‘ï§??ì•¹ê½¦
             import os
             save_dir = os.path.dirname(save_path)
             if save_dir and not os.path.exists(save_dir):
                 os.makedirs(save_dir)
             
             cost_display_renamed.to_csv(save_path, index=False, encoding='utf-8-sig')
-            print("ÀúÀå ¿Ï·á!")
+            print("?Â€???ê¾¨ì¦º!")
         
         else:
-            print("TFP ºĞÇØ ºĞ¼® µ¥ÀÌÅÍ°¡ ¾ø½À´Ï´Ù")
+            print("TFP éºê¾ªë¹ éºê¾©ê½ ?ê³—ì” ?ê³Œ? ?ë†ë’¿?ëˆë–")
         
         print("\n" + "=" * 100)
     
     def plot_results(self):
-        """°á°ú ½Ã°¢È­"""
+        """å¯ƒê³Œë‚µ ?ì’“ì»–??""
         if 'technical_efficiency' not in self.normalized_data.columns:
-            print("±â¼úÀû È¿À²¼º(TE)ÀÌ °è»êµÇÁö ¾Ê¾Ò½À´Ï´Ù.")
+            print("æ¹²ê³—ë‹ ???â‘¥ì‘‰??TE)??æ€¨ê¾©ê¶›?ì„? ?ë”†ë¸¯?ë“¬ë•²??")
             return
         
         fig, axes = plt.subplots(2, 2, figsize=(15, 12))
         
-        # ±â¼úÀû È¿À²¼º ºĞÆ÷
+        # æ¹²ê³—ë‹ ???â‘¥ì‘‰??éºê¾ªë£·
         axes[0, 0].hist(self.normalized_data['technical_efficiency'], bins=30, alpha=0.7, edgecolor='black')
-        axes[0, 0].set_title('±â¼úÀû È¿À²¼º(TE) ºĞÆ÷')
-        axes[0, 0].set_xlabel('±â¼úÀû È¿À²¼º')
-        axes[0, 0].set_ylabel('ºóµµ')
+        axes[0, 0].set_title('æ¹²ê³—ë‹ ???â‘¥ì‘‰??TE) éºê¾ªë£·')
+        axes[0, 0].set_xlabel('æ¹²ê³—ë‹ ???â‘¥ì‘‰??)
+        axes[0, 0].set_ylabel('é®ëˆë£„')
         
-        # TFP Áõ°¡À² ½Ã°è¿­
+        # TFP ï§ì•·????ì’“í€??
         if self.include_time and 'tfp_growth' in self.normalized_data.columns:
             tfp_by_time = self.normalized_data.groupby(self.time_var)['tfp_growth'].mean()
             axes[0, 1].plot(tfp_by_time.index, tfp_by_time.values * 100, marker='o')
-            axes[0, 1].set_title('½Ã°£º° Æò±Õ TFP Áõ°¡À²')
-            axes[0, 1].set_xlabel('½Ã°£')
-            axes[0, 1].set_ylabel('TFP Áõ°¡À² (%)')
+            axes[0, 1].set_title('?ì’“ì»™è¹‚??ë¯í‡ TFP ï§ì•·???)
+            axes[0, 1].set_xlabel('?ì’“ì»™')
+            axes[0, 1].set_ylabel('TFP ï§ì•·???(%)')
             axes[0, 1].axhline(y=0, color='red', linestyle='--', alpha=0.5)
         
-        # TFP ±¸¼º¿äÀÎº° ½Ã°è¿­
+        # TFP æ´ÑŠê½¦?ë¶¿ì”¤è¹‚??ì’“í€??
         if self.include_time and all(col in self.normalized_data.columns for col in ['tech_change_effect', 'tech_efficiency_change', 'scale_effect']):
             components = ['tech_change_effect', 'tech_efficiency_change', 'scale_effect']
-            component_names = ['±â¼úº¯È­', '±â¼úÀûÈ¿À²¼ºº¯È­', '±Ô¸ğÀÇ°æÁ¦È¿°ú']
+            component_names = ['æ¹²ê³—ë‹ è¹‚Â€??, 'æ¹²ê³—ë‹ ?ê³¹ìŠš?â‘¥ê½¦è¹‚Â€??, 'æ´¹ì’•ãˆ?ì„ê¼?ì’—ìŠšæ€¨?]
             
             for comp, name in zip(components, component_names):
                 comp_by_time = self.normalized_data.groupby(self.time_var)[comp].mean()
                 axes[1, 0].plot(comp_by_time.index, comp_by_time.values * 100, marker='o', label=name)
             
-            axes[1, 0].set_title('TFP ±¸¼º¿äÀÎº° ½Ã°è¿­')
-            axes[1, 0].set_xlabel('½Ã°£')
-            axes[1, 0].set_ylabel('º¯È­À² (%)')
+            axes[1, 0].set_title('TFP æ´ÑŠê½¦?ë¶¿ì”¤è¹‚??ì’“í€??)
+            axes[1, 0].set_xlabel('?ì’“ì»™')
+            axes[1, 0].set_ylabel('è¹‚Â€?ë¶¿ì‘‰ (%)')
             axes[1, 0].legend()
             axes[1, 0].axhline(y=0, color='red', linestyle='--', alpha=0.5)
         
-        # ºñ¿ë¸ò ºĞÆ÷
+        # é®ê¾©ìŠœï§?éºê¾ªë£·
         share_vars = [f'share_{input_var}' for input_var in self.input_vars if f'share_{input_var}' in self.normalized_data.columns]
         if share_vars:
             share_data = self.normalized_data[share_vars].mean()
             axes[1, 1].bar(range(len(share_data)), share_data.values)
-            axes[1, 1].set_title('Æò±Õ ºñ¿ë¸ò')
-            axes[1, 1].set_xlabel('»ı»ê¿ä¼Ò')
-            axes[1, 1].set_ylabel('ºñ¿ë¸ò')
+            axes[1, 1].set_title('?ë¯í‡ é®ê¾©ìŠœï§?)
+            axes[1, 1].set_xlabel('?ì•¹ê¶›?ë¶¿ëƒ¼')
+            axes[1, 1].set_ylabel('é®ê¾©ìŠœï§?)
             axes[1, 1].set_xticks(range(len(share_data)))
             axes[1, 1].set_xticklabels([var.replace('share_', '').upper() for var in share_vars])
         
@@ -1182,29 +1182,29 @@ class _StochasticFrontierCostAnalyzer:
         plt.show()
 
     def run_complete_analysis(self, save_path='cost_tfp_results.csv'):
-        """ÀüÃ¼ TFP ºĞÇØ ºĞ¼® ½ÇÇà"""
-        print("È®·üº¯°æºñ¿ëÇÔ¼ö ¹× TFP ºĞÇØ ºĞ¼®À» ½ÃÀÛÇÕ´Ï´Ù...")
+        """?ê¾©ê»œ TFP éºê¾ªë¹ éºê¾©ê½ ?ã…½ë»¾"""
+        print("?ëº£ìª§è¹‚Â€å¯ƒìˆí‰¬?â‘ºë¸¿??è«›?TFP éºê¾ªë¹ éºê¾©ê½???ì’–ì˜‰?â‘¸ë•²??..")
         
         # 1. EDA
         self.exploratory_data_analysis()
         
-        # 2. µ¥ÀÌÅÍ ÁØºñ
+        # 2. ?ê³—ì” ??ä»¥Â€é®?
         self.normalize_data()
         self.create_translog_variables()
         
-        # 3. ÃßÁ¤
+        # 3. ç•°ë¶¿ì ™
         self.estimate_ols()
         self.estimate_stochastic_frontier()
         
-        # 4. TFP ¹× ±¸¼º¿äÀÎ ºĞ¼®
+        # 4. TFP è«›?æ´ÑŠê½¦?ë¶¿ì”¤ éºê¾©ê½
         self.calculate_efficiency()
         self.calculate_cost_economics()
         
-        # 5. °á°ú Ãâ·Â
+        # 5. å¯ƒê³Œë‚µ ç•°ì’•ì °
         self.print_results(save_path)
         self.plot_results()
         
-        print("\nTFP ºĞÇØ ºĞ¼®ÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù!")
+        print("\nTFP éºê¾ªë¹ éºê¾©ê½???ê¾¨ì¦º?ì„ë¿€?ë“¬ë•²??")
         
         return self.results, self.normalized_data
 
@@ -1212,14 +1212,14 @@ class _StochasticFrontierCostAnalyzer:
 def Run_StochasticFrontierCost(data, cost_var, output_var, price_vars, input_vars, 
                           time_var='year', id_var='id', include_time=True, save_path='cost_results.csv'):
     """
-    È®·üº¯°æºñ¿ëÇÔ¼ö¸¦ ÀÌ¿ëÇÑ TFP ºĞÇØ ºĞ¼® - »ç¿ëÀÚ Ä£È­Àû ÀÎÅÍÆäÀÌ½º
+    ?ëº£ìª§è¹‚Â€å¯ƒìˆí‰¬?â‘ºë¸¿?ì„? ?ëŒìŠœ??TFP éºê¾ªë¹ éºê¾©ê½ - ?ÑŠìŠœ??ç§»ì’—ì†•???ëª…ê½£?ì„ì” ??
     """
     
-    print("?? È®·üº¯°æºñ¿ëÇÔ¼ö¸¦ ÀÌ¿ëÇÑ TFP ºĞÇØ ºĞ¼®À» ½ÃÀÛÇÕ´Ï´Ù...")
+    print("?? ?ëº£ìª§è¹‚Â€å¯ƒìˆí‰¬?â‘ºë¸¿?ì„? ?ëŒìŠœ??TFP éºê¾ªë¹ éºê¾©ê½???ì’–ì˜‰?â‘¸ë•²??..")
     print("=" * 80)
     
     try:
-        # ºĞ¼®±â »ı¼º
+        # éºê¾©ê½æ¹²??ì•¹ê½¦
         analyzer = _StochasticFrontierCostAnalyzer(
             data=data,
             cost_var=cost_var,
@@ -1231,16 +1231,16 @@ def Run_StochasticFrontierCost(data, cost_var, output_var, price_vars, input_var
             include_time=include_time
         )
         
-        # ÀüÃ¼ ºĞ¼® ½ÇÇà
+        # ?ê¾©ê»œ éºê¾©ê½ ?ã…½ë»¾
         results, processed_data = analyzer.run_complete_analysis(save_path)
         
-        print("? ºĞ¼®ÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù!")
+        print("? éºê¾©ê½???ê¾¨ì¦º?ì„ë¿€?ë“¬ë•²??")
         
         return results, processed_data
         
     except Exception as e:
-        print(f"? ºĞ¼® Áß ¿À·ù ¹ß»ı: {str(e)}")
-        print("»ó¼¼ ¿À·ù:")
+        print(f"? éºê¾©ê½ ä»¥??ã…»ìªŸ è«›ì’–ê¹®: {str(e)}")
+        print("?ê³¸ê½­ ?ã…»ìªŸ:")
         import traceback
         traceback.print_exc()
         return None, None

@@ -6,206 +6,206 @@ from statsmodels.tsa.stattools import adfuller, kpss
 import matplotlib.pyplot as plt
 import warnings
 
-# VARResultsWrapper Å¬·¡½º¸¦ Á÷Á¢ ÀÓÆ÷Æ®
+# VARResultsWrapper í´ë˜ìŠ¤ë¥¼ ì§ì ‘ ì„í¬íŠ¸
 from statsmodels.tsa.vector_ar.var_model import VARResultsWrapper
 
-# °æ°í ¸Ş½ÃÁö ¹«½Ã (±ò²ûÇÑ Ãâ·ÂÀ» À§ÇØ)
+# ê²½ê³  ë©”ì‹œì§€ ë¬´ì‹œ (ê¹”ë”í•œ ì¶œë ¥ì„ ìœ„í•´)
 warnings.filterwarnings("ignore")
 
 def Run_VAR_analysis(
     data: pd.DataFrame,
     endog_vars: list,
     exog_vars: list = None,
-    # ¾Æ·¡ ÆÄ¶ó¹ÌÅÍµéÀº ¸ğµÎ µğÆúÆ® °ªÀ» °¡Áı´Ï´Ù.
+    # ì•„ë˜ íŒŒë¼ë¯¸í„°ë“¤ì€ ëª¨ë‘ ë””í´íŠ¸ ê°’ì„ ê°€ì§‘ë‹ˆë‹¤.
     maxlags_order_selection: int = 8,
-    ic_criterion: str = 'aic', # Â÷¼ö ¼±ÅÃ ±âÁØ: 'aic', 'bic', 'fpe', 'hqic'
-    diff_type: str = 'log_diff', # ¾ÈÁ¤È­ ¹æ¹ı: 'none', 'diff', 'pct_change', 'log_diff'
-    pct_change_periods: int = 4, # 'pct_change' »ç¿ë ½Ã °ú°Å ¸î ±â°£°ú ºñ±³ÇÒÁö (¿¹: ºĞ±â µ¥ÀÌÅÍÀÇ Àü³â µ¿±â ´ëºñ 4)
-    start_date: str = None, # µ¥ÀÌÅÍ¼ÂÀ» Æ¯Á¤ ³¯Â¥ºÎÅÍ ½½¶óÀÌ½ÌÇÒ °æ¿ì (¿¹: '1970-01-31')
-    fixed_lag_order: int = None, # ¼öµ¿À¸·Î VAR ½ÃÂ÷¸¦ ÁöÁ¤ (NoneÀÌ¸é ÀÚµ¿ ¼±ÅÃ)
+    ic_criterion: str = 'aic', # ì°¨ìˆ˜ ì„ íƒ ê¸°ì¤€: 'aic', 'bic', 'fpe', 'hqic'
+    diff_type: str = 'log_diff', # ì•ˆì •í™” ë°©ë²•: 'none', 'diff', 'pct_change', 'log_diff'
+    pct_change_periods: int = 4, # 'pct_change' ì‚¬ìš© ì‹œ ê³¼ê±° ëª‡ ê¸°ê°„ê³¼ ë¹„êµí• ì§€ (ì˜ˆ: ë¶„ê¸° ë°ì´í„°ì˜ ì „ë…„ ë™ê¸° ëŒ€ë¹„ 4)
+    start_date: str = None, # ë°ì´í„°ì…‹ì„ íŠ¹ì • ë‚ ì§œë¶€í„° ìŠ¬ë¼ì´ì‹±í•  ê²½ìš° (ì˜ˆ: '1970-01-31')
+    fixed_lag_order: int = None, # ìˆ˜ë™ìœ¼ë¡œ VAR ì‹œì°¨ë¥¼ ì§€ì • (Noneì´ë©´ ìë™ ì„ íƒ)
     nlags_irf: int = 10,
     nsteps_fevd: int = 20,
     nsteps_forecast: int = 20
 ):
     """
-    VAR (Vector Autoregression) ¸ğÇüÀÇ ÀüÃ¼ ºĞ¼® ÀıÂ÷¸¦ ¼öÇàÇÏ´Â ÇÔ¼ö.
-    µ¥ÀÌÅÍ¼Â°ú ³»»ı/¿Ü»ı º¯¼ö¸¸ ÇÊ¼ö·Î ÀÔ·Â¹Ş°í, ³ª¸ÓÁö ¿É¼ÇÀº µğÆúÆ® °ªÀ» °¡Áı´Ï´Ù.
+    VAR (Vector Autoregression) ëª¨í˜•ì˜ ì „ì²´ ë¶„ì„ ì ˆì°¨ë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜.
+    ë°ì´í„°ì…‹ê³¼ ë‚´ìƒ/ì™¸ìƒ ë³€ìˆ˜ë§Œ í•„ìˆ˜ë¡œ ì…ë ¥ë°›ê³ , ë‚˜ë¨¸ì§€ ì˜µì…˜ì€ ë””í´íŠ¸ ê°’ì„ ê°€ì§‘ë‹ˆë‹¤.
 
     Args:
-        data (pd.DataFrame): ½Ã°è¿­ µ¥ÀÌÅÍÇÁ·¹ÀÓ. ÀÎµ¦½º´Â datetime Çü½ÄÀÌ¾î¾ß ÇÔ.
-        endog_vars (list): VAR ¸ğÇü¿¡ Æ÷ÇÔµÉ ³»»ı º¯¼ö(Á¾¼Ó º¯¼ö) ¸®½ºÆ®.
-        exog_vars (list, optional): VARX ¸ğÇü¿¡ Æ÷ÇÔµÉ ¿Ü»ı º¯¼ö ¸®½ºÆ®. Defaults to None.
-        maxlags_order_selection (int, optional): VAR Â÷¼ö °áÁ¤À» À§ÇÑ ÃÖ´ë ½ÃÂ÷. Defaults to 8.
-        ic_criterion (str, optional): VAR Â÷¼ö ¼±ÅÃ ±âÁØ ('aic', 'bic', 'fpe', 'hqic'). Defaults to 'aic'.
-        diff_type (str, optional): ½Ã°è¿­ ¾ÈÁ¤È­¸¦ À§ÇÑ º¯È¯ ¹æ¹ı.
-                                    'none': º¯È¯ ¾øÀ½ (¿ø°è¿­ »ç¿ë)
-                                    'diff': 1Â÷ Â÷ºĞ
-                                    'pct_change': ÆÛ¼¾Æ® º¯È­
-                                    'log_diff': ·Î±× Â÷ºĞ (Áõ°¡À²)
+        data (pd.DataFrame): ì‹œê³„ì—´ ë°ì´í„°í”„ë ˆì„. ì¸ë±ìŠ¤ëŠ” datetime í˜•ì‹ì´ì–´ì•¼ í•¨.
+        endog_vars (list): VAR ëª¨í˜•ì— í¬í•¨ë  ë‚´ìƒ ë³€ìˆ˜(ì¢…ì† ë³€ìˆ˜) ë¦¬ìŠ¤íŠ¸.
+        exog_vars (list, optional): VARX ëª¨í˜•ì— í¬í•¨ë  ì™¸ìƒ ë³€ìˆ˜ ë¦¬ìŠ¤íŠ¸. Defaults to None.
+        maxlags_order_selection (int, optional): VAR ì°¨ìˆ˜ ê²°ì •ì„ ìœ„í•œ ìµœëŒ€ ì‹œì°¨. Defaults to 8.
+        ic_criterion (str, optional): VAR ì°¨ìˆ˜ ì„ íƒ ê¸°ì¤€ ('aic', 'bic', 'fpe', 'hqic'). Defaults to 'aic'.
+        diff_type (str, optional): ì‹œê³„ì—´ ì•ˆì •í™”ë¥¼ ìœ„í•œ ë³€í™˜ ë°©ë²•.
+                                    'none': ë³€í™˜ ì—†ìŒ (ì›ê³„ì—´ ì‚¬ìš©)
+                                    'diff': 1ì°¨ ì°¨ë¶„
+                                    'pct_change': í¼ì„¼íŠ¸ ë³€í™”
+                                    'log_diff': ë¡œê·¸ ì°¨ë¶„ (ì¦ê°€ìœ¨)
                                     Defaults to 'log_diff'.
-        pct_change_periods (int, optional): 'pct_change' »ç¿ë ½Ã °ú°Å ¸î ±â°£°ú ºñ±³ÇÒÁö. Defaults to 4 (ºĞ±â µ¥ÀÌÅÍ Àü³â µ¿±â ´ëºñ).
-        start_date (str, optional): º¯È¯µÈ µ¥ÀÌÅÍ¼ÂÀÇ ½ÃÀÛ ³¯Â¥¸¦ ÁöÁ¤ÇÕ´Ï´Ù (¿¹: '1970-01-31'). Defaults to None (½½¶óÀÌ½Ì ¾øÀ½).
-        fixed_lag_order (int, optional): »ç¿ëÀÚ°¡ ¼öµ¿À¸·Î VAR ¸ğÇüÀÇ ½ÃÂ÷¸¦ ÁöÁ¤. NoneÀÌ¸é ic_criterion¿¡ µû¶ó ÀÚµ¿ ¼±ÅÃ. Defaults to None.
-        nlags_irf (int, optional): Ãæ°İ¹İÀÀ ÇÔ¼ö¸¦ ±×¸± ½ÃÂ÷ÀÇ ¼ö. Defaults to 10.
-        nsteps_fevd (int, optional): ¿¹Ãø ¿ÀÂ÷ ºĞ»ê ºĞÇØ¸¦ À§ÇÑ ´Ü°è ¼ö. Defaults to 20.
-        nsteps_forecast (int, optional): ¿¹ÃøÀ» À§ÇÑ ´Ü°è ¼ö. Defaults to 20.
+        pct_change_periods (int, optional): 'pct_change' ì‚¬ìš© ì‹œ ê³¼ê±° ëª‡ ê¸°ê°„ê³¼ ë¹„êµí• ì§€. Defaults to 4 (ë¶„ê¸° ë°ì´í„° ì „ë…„ ë™ê¸° ëŒ€ë¹„).
+        start_date (str, optional): ë³€í™˜ëœ ë°ì´í„°ì…‹ì˜ ì‹œì‘ ë‚ ì§œë¥¼ ì§€ì •í•©ë‹ˆë‹¤ (ì˜ˆ: '1970-01-31'). Defaults to None (ìŠ¬ë¼ì´ì‹± ì—†ìŒ).
+        fixed_lag_order (int, optional): ì‚¬ìš©ìê°€ ìˆ˜ë™ìœ¼ë¡œ VAR ëª¨í˜•ì˜ ì‹œì°¨ë¥¼ ì§€ì •. Noneì´ë©´ ic_criterionì— ë”°ë¼ ìë™ ì„ íƒ. Defaults to None.
+        nlags_irf (int, optional): ì¶©ê²©ë°˜ì‘ í•¨ìˆ˜ë¥¼ ê·¸ë¦´ ì‹œì°¨ì˜ ìˆ˜. Defaults to 10.
+        nsteps_fevd (int, optional): ì˜ˆì¸¡ ì˜¤ì°¨ ë¶„ì‚° ë¶„í•´ë¥¼ ìœ„í•œ ë‹¨ê³„ ìˆ˜. Defaults to 20.
+        nsteps_forecast (int, optional): ì˜ˆì¸¡ì„ ìœ„í•œ ë‹¨ê³„ ìˆ˜. Defaults to 20.
 
     Returns:
-        results (statsmodels.tsa.vector_ar.var_model.VARResultsWrapper): VAR ¸ğÇü ÃßÁ¤ °á°ú °´Ã¼.
+        results (statsmodels.tsa.vector_ar.var_model.VARResultsWrapper): VAR ëª¨í˜• ì¶”ì • ê²°ê³¼ ê°ì²´.
     """
 
-    print("--- VAR ¸ğÇü ºĞ¼® ½ÃÀÛ ---")
-    print(f"³»»ı º¯¼ö: {endog_vars}")
+    print("--- VAR ëª¨í˜• ë¶„ì„ ì‹œì‘ ---")
+    print(f"ë‚´ìƒ ë³€ìˆ˜: {endog_vars}")
     if exog_vars:
-        print(f"¿Ü»ı º¯¼ö: {exog_vars}")
+        print(f"ì™¸ìƒ ë³€ìˆ˜: {exog_vars}")
     print("-" * 30)
 
-    # 0. µ¥ÀÌÅÍ ÁØºñ ¹× ÀüÃ³¸®
+    # 0. ë°ì´í„° ì¤€ë¹„ ë° ì „ì²˜ë¦¬
     required_cols = endog_vars + (exog_vars if exog_vars else [])
     missing_cols = [col for col in required_cols if col not in data.columns]
     if missing_cols:
-        raise ValueError(f"µ¥ÀÌÅÍÇÁ·¹ÀÓ¿¡ ´ÙÀ½ º¯¼öµéÀÌ ¾ø½À´Ï´Ù: {missing_cols}")
+        raise ValueError(f"ë°ì´í„°í”„ë ˆì„ì— ë‹¤ìŒ ë³€ìˆ˜ë“¤ì´ ì—†ìŠµë‹ˆë‹¤: {missing_cols}")
 
     df = data[required_cols].copy()
 
-    # 1. ½Ã°è¿­ÀÇ ¾ÈÁ¤¼º °ËÁ¤ ¹× ¾ÈÁ¤È­
-    print("\n1. ½Ã°è¿­ÀÇ ¾ÈÁ¤¼º °ËÁ¤ ¹× ¾ÈÁ¤È­")
-    print("¿ø°è¿­ ½Ã°¢È­ (¾ÈÁ¤¼º À°¾È È®ÀÎ):")
+    # 1. ì‹œê³„ì—´ì˜ ì•ˆì •ì„± ê²€ì • ë° ì•ˆì •í™”
+    print("\n1. ì‹œê³„ì—´ì˜ ì•ˆì •ì„± ê²€ì • ë° ì•ˆì •í™”")
+    print("ì›ê³„ì—´ ì‹œê°í™” (ì•ˆì •ì„± ìœ¡ì•ˆ í™•ì¸):")
     df[endog_vars].plot(title="Original Series (Endogenous Variables)", figsize=(12, 6))
     plt.tight_layout()
     plt.show()
-    print("¿ø°è¿­Àº Á¡Â÷ Áõ°¡ÇÏ´Â ÇüÅÂÀÇ ºÒ¾ÈÁ¤ÇÑ ½Ã°è¿­Ã³·³ º¸ÀÏ ¼ö ÀÖ½À´Ï´Ù.")
+    print("ì›ê³„ì—´ì€ ì ì°¨ ì¦ê°€í•˜ëŠ” í˜•íƒœì˜ ë¶ˆì•ˆì •í•œ ì‹œê³„ì—´ì²˜ëŸ¼ ë³´ì¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
     df_transformed = df.copy()
     if diff_type == 'diff':
         df_transformed = df.diff().dropna()
-        print(f"-> 1Â÷ Â÷ºĞ ({diff_type})À» ÅëÇØ ½Ã°è¿­ ¾ÈÁ¤È­ ½Ãµµ.")
+        print(f"-> 1ì°¨ ì°¨ë¶„ ({diff_type})ì„ í†µí•´ ì‹œê³„ì—´ ì•ˆì •í™” ì‹œë„.")
     elif diff_type == 'pct_change':
         df_transformed = 100 * df.pct_change(periods=pct_change_periods).dropna()
-        print(f"-> ÆÛ¼¾Æ® º¯È­ ({diff_type}, periods={pct_change_periods})¸¦ ÅëÇØ ½Ã°è¿­ ¾ÈÁ¤È­ ½Ãµµ.")
-        print(f"   (ÁÖÀÇ: periods´Â ºĞ±â/¿ù°£ µî µ¥ÀÌÅÍ ÁÖ±â¿Í ÀÏÄ¡ÇØ¾ß ÇÕ´Ï´Ù. ¿¹: ºĞ±â µ¥ÀÌÅÍ´Â 4, ¿ù°£ µ¥ÀÌÅÍ´Â 12)")
+        print(f"-> í¼ì„¼íŠ¸ ë³€í™” ({diff_type}, periods={pct_change_periods})ë¥¼ í†µí•´ ì‹œê³„ì—´ ì•ˆì •í™” ì‹œë„.")
+        print(f"   (ì£¼ì˜: periodsëŠ” ë¶„ê¸°/ì›”ê°„ ë“± ë°ì´í„° ì£¼ê¸°ì™€ ì¼ì¹˜í•´ì•¼ í•©ë‹ˆë‹¤. ì˜ˆ: ë¶„ê¸° ë°ì´í„°ëŠ” 4, ì›”ê°„ ë°ì´í„°ëŠ” 12)")
     elif diff_type == 'log_diff':
         df_transformed = np.log(df).diff().dropna() * 100
-        print(f"-> ·Î±× Â÷ºĞ ({diff_type}, Áõ°¡À² ½Ã°è¿­)À» ÅëÇØ ½Ã°è¿­ ¾ÈÁ¤È­ ½Ãµµ.")
+        print(f"-> ë¡œê·¸ ì°¨ë¶„ ({diff_type}, ì¦ê°€ìœ¨ ì‹œê³„ì—´)ì„ í†µí•´ ì‹œê³„ì—´ ì•ˆì •í™” ì‹œë„.")
     else:
-        print("-> ½Ã°è¿­ º¯È¯À» ¼öÇàÇÏÁö ¾Ê°í ¿ø°è¿­·Î ÁøÇàÇÕ´Ï´Ù (diff_type='none').")
+        print("-> ì‹œê³„ì—´ ë³€í™˜ì„ ìˆ˜í–‰í•˜ì§€ ì•Šê³  ì›ê³„ì—´ë¡œ ì§„í–‰í•©ë‹ˆë‹¤ (diff_type='none').")
 
-    # Ãß°¡µÈ ºÎºĞ: Æ¯Á¤ ³¯Â¥ºÎÅÍ µ¥ÀÌÅÍ ½½¶óÀÌ½Ì
+    # ì¶”ê°€ëœ ë¶€ë¶„: íŠ¹ì • ë‚ ì§œë¶€í„° ë°ì´í„° ìŠ¬ë¼ì´ì‹±
     if start_date is not None:
         try:
-            # pd.to_datetimeÀ¸·Î ³¯Â¥ ¹®ÀÚ¿­À» Datetime °´Ã¼·Î º¯È¯ÇÏ¿© »ç¿ë
+            # pd.to_datetimeìœ¼ë¡œ ë‚ ì§œ ë¬¸ìì—´ì„ Datetime ê°ì²´ë¡œ ë³€í™˜í•˜ì—¬ ì‚¬ìš©
             df_transformed = df_transformed.loc[pd.to_datetime(start_date):]
-            print(f"-> µ¥ÀÌÅÍ¼ÂÀ» '{start_date}'ºÎÅÍ ½ÃÀÛÇÏµµ·Ï ½½¶óÀÌ½ÌÇß½À´Ï´Ù.")
+            print(f"-> ë°ì´í„°ì…‹ì„ '{start_date}'ë¶€í„° ì‹œì‘í•˜ë„ë¡ ìŠ¬ë¼ì´ì‹±í–ˆìŠµë‹ˆë‹¤.")
         except KeyError:
-            print(f"°æ°í: ÁöÁ¤µÈ ½ÃÀÛ ³¯Â¥ '{start_date}' ÀÌÈÄÀÇ µ¥ÀÌÅÍ°¡ ¾ø½À´Ï´Ù. ½½¶óÀÌ½ÌÀÌ Àû¿ëµÇÁö ¾Ê¾ÒÀ» ¼ö ÀÖ½À´Ï´Ù.")
+            print(f"ê²½ê³ : ì§€ì •ëœ ì‹œì‘ ë‚ ì§œ '{start_date}' ì´í›„ì˜ ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤. ìŠ¬ë¼ì´ì‹±ì´ ì ìš©ë˜ì§€ ì•Šì•˜ì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
         except Exception as e:
-            print(f"°æ°í: start_date ½½¶óÀÌ½Ì Áß ¿À·ù ¹ß»ı: {e}. ½½¶óÀÌ½ÌÀ» °Ç³Ê¶İ´Ï´Ù.")
+            print(f"ê²½ê³ : start_date ìŠ¬ë¼ì´ì‹± ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}. ìŠ¬ë¼ì´ì‹±ì„ ê±´ë„ˆëœë‹ˆë‹¤.")
 
 
-    # º¯È¯ ÈÄ µ¥ÀÌÅÍ°¡ ³Ê¹« Âª¾ÆÁö¸é ¹®Á¦ ¹ß»ı °¡´É¼º ¹æÁö
+    # ë³€í™˜ í›„ ë°ì´í„°ê°€ ë„ˆë¬´ ì§§ì•„ì§€ë©´ ë¬¸ì œ ë°œìƒ ê°€ëŠ¥ì„± ë°©ì§€
     min_required_len = max(maxlags_order_selection, 1) + len(endog_vars) + 1 
     if len(df_transformed) < min_required_len:
-        raise ValueError(f"µ¥ÀÌÅÍ º¯È¯ ÈÄ °üÃøÄ¡ ¼ö°¡ ³Ê¹« Àû½À´Ï´Ù ({len(df_transformed)}°³). VAR ¸ğµ¨ ÃßÁ¤À» À§ÇÑ ÃÖ¼Ò °üÃøÄ¡ ¼ö´Â ¾à {min_required_len}°³ ÀÔ´Ï´Ù. `diff_type`À» º¯°æÇÏ°Å³ª ´õ ±ä ½Ã°è¿­ µ¥ÀÌÅÍ¸¦ »ç¿ëÇÏ¼¼¿ä.")
+        raise ValueError(f"ë°ì´í„° ë³€í™˜ í›„ ê´€ì¸¡ì¹˜ ìˆ˜ê°€ ë„ˆë¬´ ì ìŠµë‹ˆë‹¤ ({len(df_transformed)}ê°œ). VAR ëª¨ë¸ ì¶”ì •ì„ ìœ„í•œ ìµœì†Œ ê´€ì¸¡ì¹˜ ìˆ˜ëŠ” ì•½ {min_required_len}ê°œ ì…ë‹ˆë‹¤. `diff_type`ì„ ë³€ê²½í•˜ê±°ë‚˜ ë” ê¸´ ì‹œê³„ì—´ ë°ì´í„°ë¥¼ ì‚¬ìš©í•˜ì„¸ìš”.")
 
-    print("\nº¯È¯µÈ ½Ã°è¿­ ½Ã°¢È­:")
+    print("\në³€í™˜ëœ ì‹œê³„ì—´ ì‹œê°í™”:")
     df_transformed[endog_vars].plot(title=f"Transformed Series ({diff_type})", figsize=(12, 6))
     plt.tight_layout()
     plt.show()
-    print("¾ÈÁ¤ÀûÀ¸·Î º¸ÀÌ´Â Áõ°¡À² ½Ã°è¿­Àº Æ¯Á¤ Áõ°¡À² ¼öÁØ¿¡¼­ ¾Æ·¡À§·Î ºĞÆ÷ÇÏ´Â ¾ÈÁ¤Àû ½Ã°è¿­ÀÇ ¸ğ½ÀÀ» º¸ÀÔ´Ï´Ù.")
-    print("\n--- º¯È¯µÈ µ¥ÀÌÅÍ (Transformed Data) ¹Ì¸®º¸±â ---")
+    print("ì•ˆì •ì ìœ¼ë¡œ ë³´ì´ëŠ” ì¦ê°€ìœ¨ ì‹œê³„ì—´ì€ íŠ¹ì • ì¦ê°€ìœ¨ ìˆ˜ì¤€ì—ì„œ ì•„ë˜ìœ„ë¡œ ë¶„í¬í•˜ëŠ” ì•ˆì •ì  ì‹œê³„ì—´ì˜ ëª¨ìŠµì„ ë³´ì…ë‹ˆë‹¤.")
+    print("\n--- ë³€í™˜ëœ ë°ì´í„° (Transformed Data) ë¯¸ë¦¬ë³´ê¸° ---")
     print(df_transformed.head())
     print("-" * 30)
 
 
-    print("\nADF (Augmented Dickey-Fuller) ´ÜÀ§±Ù °ËÁ¤:")
-    print("±Í¹«°¡¼³ (H0): ½Ã°è¿­¿¡ ´ÜÀ§±ÙÀÌ Á¸ÀçÇÑ´Ù (ºÒ¾ÈÁ¤ÇÏ´Ù).")
-    print("´ë¸³°¡¼³ (H1): ½Ã°è¿­¿¡ ´ÜÀ§±ÙÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù (¾ÈÁ¤ÇÏ´Ù).")
-    print("°ËÁ¤Åë°è·®ÀÌ ÀÓ°èÄ¡º¸´Ù ÀÛ°í (´õ À½¼ö), p-°ªÀÌ À¯ÀÇ¼öÁØ(¿¹: 0.05)º¸´Ù ÀÛÀ¸¸é H0¸¦ ±â°¢ÇÏ°í ¾ÈÁ¤ÀûÀÌ¶ó°í ÆÇ´ÜÇÕ´Ï´Ù.")
+    print("\nADF (Augmented Dickey-Fuller) ë‹¨ìœ„ê·¼ ê²€ì •:")
+    print("ê·€ë¬´ê°€ì„¤ (H0): ì‹œê³„ì—´ì— ë‹¨ìœ„ê·¼ì´ ì¡´ì¬í•œë‹¤ (ë¶ˆì•ˆì •í•˜ë‹¤).")
+    print("ëŒ€ë¦½ê°€ì„¤ (H1): ì‹œê³„ì—´ì— ë‹¨ìœ„ê·¼ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ (ì•ˆì •í•˜ë‹¤).")
+    print("ê²€ì •í†µê³„ëŸ‰ì´ ì„ê³„ì¹˜ë³´ë‹¤ ì‘ê³  (ë” ìŒìˆ˜), p-ê°’ì´ ìœ ì˜ìˆ˜ì¤€(ì˜ˆ: 0.05)ë³´ë‹¤ ì‘ìœ¼ë©´ H0ë¥¼ ê¸°ê°í•˜ê³  ì•ˆì •ì ì´ë¼ê³  íŒë‹¨í•©ë‹ˆë‹¤.")
 
     for col in endog_vars:
         print(f"\n--- {col} ---")
         adf_results_c = adfuller(df_transformed[col], regression='c')
-        print(f"»ó¼öÇ×(drift) Æ÷ÇÔ °ËÁ¤ (regression='c'):")
+        print(f"ìƒìˆ˜í•­(drift) í¬í•¨ ê²€ì • (regression='c'):")
         print(f"  ADF Statistic: {adf_results_c[0]:.4f}")
         print(f"  p-value: {adf_results_c[1]:.4f}")
         print(f"  Critical Values: {adf_results_c[4]}")
         if adf_results_c[1] <= 0.05:
-            print("  => 5% À¯ÀÇ¼öÁØ¿¡¼­ ´ÜÀ§±ÙÀÌ ¾ø´Ù°í ÆÇ´Ü (¾ÈÁ¤Àû).")
+            print("  => 5% ìœ ì˜ìˆ˜ì¤€ì—ì„œ ë‹¨ìœ„ê·¼ì´ ì—†ë‹¤ê³  íŒë‹¨ (ì•ˆì •ì ).")
         else:
-            print("  => 5% À¯ÀÇ¼öÁØ¿¡¼­ ´ÜÀ§±ÙÀÌ ÀÖ´Ù°í ÆÇ´Ü (ºÒ¾ÈÁ¤).")
+            print("  => 5% ìœ ì˜ìˆ˜ì¤€ì—ì„œ ë‹¨ìœ„ê·¼ì´ ìˆë‹¤ê³  íŒë‹¨ (ë¶ˆì•ˆì •).")
 
 
-    # 2. VAR ¸ğÇüÀÇ Â÷¼ö °áÁ¤
-    print("\n\n2. VAR ¸ğÇüÀÇ Â÷¼ö °áÁ¤")
+    # 2. VAR ëª¨í˜•ì˜ ì°¨ìˆ˜ ê²°ì •
+    print("\n\n2. VAR ëª¨í˜•ì˜ ì°¨ìˆ˜ ê²°ì •")
     if fixed_lag_order is not None:
         optimal_lag_order = fixed_lag_order
-        print(f"»ç¿ëÀÚ°¡ °íÁ¤ ½ÃÂ÷ {optimal_lag_order}¸¦ ÁöÁ¤Çß½À´Ï´Ù.")
+        print(f"ì‚¬ìš©ìê°€ ê³ ì • ì‹œì°¨ {optimal_lag_order}ë¥¼ ì§€ì •í–ˆìŠµë‹ˆë‹¤.")
     else:
         model_for_order = VAR(df_transformed[endog_vars])
-        print(f"ÃÖ´ë ½ÃÂ÷ {maxlags_order_selection}±îÁö {ic_criterion.upper()} ±âÁØ Â÷¼ö ¼±ÅÃ:")
+        print(f"ìµœëŒ€ ì‹œì°¨ {maxlags_order_selection}ê¹Œì§€ {ic_criterion.upper()} ê¸°ì¤€ ì°¨ìˆ˜ ì„ íƒ:")
 
         adjusted_maxlags = maxlags_order_selection
         if len(df_transformed) <= maxlags_order_selection:
             adjusted_maxlags = max(1, len(df_transformed) - 1)
-            print(f"°æ°í: µ¥ÀÌÅÍ ±æÀÌ°¡ Âª¾Æ `maxlags_order_selection`({maxlags_order_selection})ÀÌ ³Ê¹« Å®´Ï´Ù. `maxlags`¸¦ {adjusted_maxlags}·Î Á¶Á¤ÇÕ´Ï´Ù.")
+            print(f"ê²½ê³ : ë°ì´í„° ê¸¸ì´ê°€ ì§§ì•„ `maxlags_order_selection`({maxlags_order_selection})ì´ ë„ˆë¬´ í½ë‹ˆë‹¤. `maxlags`ë¥¼ {adjusted_maxlags}ë¡œ ì¡°ì •í•©ë‹ˆë‹¤.")
         
         selected_order = model_for_order.select_order(maxlags=adjusted_maxlags)
             
         print(selected_order.summary())
         optimal_lag_order_by_ic = selected_order.selected_orders[ic_criterion]
-        print(f"\n'{ic_criterion.upper()}' ±âÁØ ÃÖÀû ½ÃÂ÷: {optimal_lag_order_by_ic}")
+        print(f"\n'{ic_criterion.upper()}' ê¸°ì¤€ ìµœì  ì‹œì°¨: {optimal_lag_order_by_ic}")
         
         optimal_lag_order = optimal_lag_order_by_ic
 
         if optimal_lag_order == 0:
-            print("\n!!! °æ°í: ¼±ÅÃµÈ ÃÖÀû ½ÃÂ÷°¡ 0ÀÔ´Ï´Ù. ÀÌ °æ¿ì Granger ÀÎ°ú¼º, IRF, FEVD µî¿¡ ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.")
-            print("   `fixed_lag_order` ÆÄ¶ó¹ÌÅÍ¸¦ »ç¿ëÇÏ¿© ½ÃÂ÷¸¦ ¼öµ¿À¸·Î ÁöÁ¤ÇØº¸¼¼¿ä (¿¹: `fixed_lag_order=1` ¶Ç´Â `2`).")
-            print("   ¶Ç´Â `ic_criterion`À» 'bic' µîÀ¸·Î º¯°æÇÏ¿© ´Ù½Ã ½ÃµµÇØº¸¼¼¿ä.")
+            print("\n!!! ê²½ê³ : ì„ íƒëœ ìµœì  ì‹œì°¨ê°€ 0ì…ë‹ˆë‹¤. ì´ ê²½ìš° Granger ì¸ê³¼ì„±, IRF, FEVD ë“±ì— ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
+            print("   `fixed_lag_order` íŒŒë¼ë¯¸í„°ë¥¼ ì‚¬ìš©í•˜ì—¬ ì‹œì°¨ë¥¼ ìˆ˜ë™ìœ¼ë¡œ ì§€ì •í•´ë³´ì„¸ìš” (ì˜ˆ: `fixed_lag_order=1` ë˜ëŠ” `2`).")
+            print("   ë˜ëŠ” `ic_criterion`ì„ 'bic' ë“±ìœ¼ë¡œ ë³€ê²½í•˜ì—¬ ë‹¤ì‹œ ì‹œë„í•´ë³´ì„¸ìš”.")
         else:
-            print("¿©·¯ Åë°è·®ÀÌ ¸ğµÎ µ¿ÀÏÇÑ Â÷¼ö¸¦ ÀûÀıÇÑ Â÷¼ö·Î Á¦½ÃÇÏÁö ¾ÊÀ¸¹Ç·Î Ãß°¡ÀûÀÎ Áø´Ü°úÁ¤À» ÅëÇØ ÀûÁ¤ Â÷¼ö¸¦ °áÁ¤ÇØ¾ß ÇÕ´Ï´Ù.")
+            print("ì—¬ëŸ¬ í†µê³„ëŸ‰ì´ ëª¨ë‘ ë™ì¼í•œ ì°¨ìˆ˜ë¥¼ ì ì ˆí•œ ì°¨ìˆ˜ë¡œ ì œì‹œí•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì¶”ê°€ì ì¸ ì§„ë‹¨ê³¼ì •ì„ í†µí•´ ì ì • ì°¨ìˆ˜ë¥¼ ê²°ì •í•´ì•¼ í•©ë‹ˆë‹¤.")
 
 
-    # 3. ¸ğÇü ÃßÁ¤
-    print("\n\n3. VAR ¸ğÇü ÃßÁ¤")
-    print(f"¼±ÅÃµÈ ÃÖÀû ½ÃÂ÷ {optimal_lag_order}·Î VAR ¸ğÇüÀ» ÃßÁ¤ÇÕ´Ï´Ù.")
+    # 3. ëª¨í˜• ì¶”ì •
+    print("\n\n3. VAR ëª¨í˜• ì¶”ì •")
+    print(f"ì„ íƒëœ ìµœì  ì‹œì°¨ {optimal_lag_order}ë¡œ VAR ëª¨í˜•ì„ ì¶”ì •í•©ë‹ˆë‹¤.")
     if exog_vars:
         try:
             model = VARMAX(endog=df_transformed[endog_vars], order=(optimal_lag_order, 0), exog=df_transformed[exog_vars])
             results = model.fit(maxiter=1000, disp=False)
-            print("VARX ¸ğÇüÀÌ ÃßÁ¤µÇ¾ú½À´Ï´Ù.")
+            print("VARX ëª¨í˜•ì´ ì¶”ì •ë˜ì—ˆìŠµë‹ˆë‹¤.")
         except Exception as e:
-            print(f"VARX ¸ğÇü ÃßÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
-            print("VARX ¸ğÇü ´ë½Å VAR ¸ğÇüÀ¸·Î ÃßÁ¤À» ½ÃµµÇÕ´Ï´Ù.")
+            print(f"VARX ëª¨í˜• ì¶”ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+            print("VARX ëª¨í˜• ëŒ€ì‹  VAR ëª¨í˜•ìœ¼ë¡œ ì¶”ì •ì„ ì‹œë„í•©ë‹ˆë‹¤.")
             model = VAR(df_transformed[endog_vars])
             results = model.fit(optimal_lag_order)
-            print("VAR ¸ğÇüÀÌ ÃßÁ¤µÇ¾ú½À´Ï´Ù.")
+            print("VAR ëª¨í˜•ì´ ì¶”ì •ë˜ì—ˆìŠµë‹ˆë‹¤.")
     else:
         model = VAR(df_transformed[endog_vars])
         results = model.fit(optimal_lag_order)
-        print("VAR ¸ğÇüÀÌ ÃßÁ¤µÇ¾ú½À´Ï´Ù.")
+        print("VAR ëª¨í˜•ì´ ì¶”ì •ë˜ì—ˆìŠµë‹ˆë‹¤.")
 
     actual_lag_order = results.k_ar if hasattr(results, 'k_ar') else optimal_lag_order
-    print(f"**½ÇÁ¦ ÃßÁ¤µÈ ¸ğÇüÀÇ ½ÃÂ÷ (results.k_ar): {actual_lag_order}**")
-    print("\n--- ¸ğÇü ÃßÁ¤ °á°ú ¿ä¾à (Summary) ---")
+    print(f"**ì‹¤ì œ ì¶”ì •ëœ ëª¨í˜•ì˜ ì‹œì°¨ (results.k_ar): {actual_lag_order}**")
+    print("\n--- ëª¨í˜• ì¶”ì • ê²°ê³¼ ìš”ì•½ (Summary) ---")
     print(results.summary())
-    print("\n°³º° ¹æÁ¤½Äº° ÆÄ¶ó¹ÌÅÍ ÃßÁ¤Ä¡¿Í À¯ÀÇ¼º °ËÁ¤Àº ¸ğÇü Æò°¡¿¡¼­ Áß¿ä½ÃµÇÁö ¾Ê½À´Ï´Ù.")
-    print("´ë½Å ±×·£Á® ÀÎ°ú °ËÁ¤, Ãæ°İ¹İÀÀ ÇÔ¼ö, ¿¹Ãø ¿ÀÂ÷ÀÇ ºĞÇØ¿Í °°Àº Åë°è·®µéÀÌ ÀÚÁÖ »ç¿ëµË´Ï´Ù.")
+    print("\nê°œë³„ ë°©ì •ì‹ë³„ íŒŒë¼ë¯¸í„° ì¶”ì •ì¹˜ì™€ ìœ ì˜ì„± ê²€ì •ì€ ëª¨í˜• í‰ê°€ì—ì„œ ì¤‘ìš”ì‹œë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.")
+    print("ëŒ€ì‹  ê·¸ëœì ¸ ì¸ê³¼ ê²€ì •, ì¶©ê²©ë°˜ì‘ í•¨ìˆ˜, ì˜ˆì¸¡ ì˜¤ì°¨ì˜ ë¶„í•´ì™€ ê°™ì€ í†µê³„ëŸ‰ë“¤ì´ ìì£¼ ì‚¬ìš©ë©ë‹ˆë‹¤.")
 
 
-    # 4. Áø´Ü
-    print("\n\n4. ¸ğÇü Áø´Ü")
+    # 4. ì§„ë‹¨
+    print("\n\n4. ëª¨í˜• ì§„ë‹¨")
 
-    # 4-1. ÀÜÂ÷ÀÇ ÀÚ±â»ó°ü ¿©ºÎ °ËÁ¤
-    print("\n4-1. ÀÜÂ÷ÀÇ ÀÚ±â»ó°ü ¿©ºÎ °ËÁ¤ (ACF Plots):")
+    # 4-1. ì”ì°¨ì˜ ìê¸°ìƒê´€ ì—¬ë¶€ ê²€ì •
+    print("\n4-1. ì”ì°¨ì˜ ìê¸°ìƒê´€ ì—¬ë¶€ ê²€ì • (ACF Plots):")
     if isinstance(results, VARResultsWrapper):
         results.plot_acorr()
         plt.suptitle("ACF plots for residuals", y=1.02)
         plt.tight_layout()
         plt.show()
-        print("ACF ÇÃ·Ô¿¡¼­ ½Å·Ú±¸°£(Á¡¼±)À» ¹ş¾î³ª´Â ¸·´ë°¡ ÀÖ´Ù¸é ÀÚ±â»ó°ü ¹®Á¦°¡ ÀÖÀ» ¼ö ÀÖ½À´Ï´Ù.")
-        print("Â÷¼öº°·Î ÀÚ±â»ó°ü ¹®Á¦°¡ ÀÖ´ÂÁö Ä«ÀÌÁ¦°ö Åë°è·®°ú À¯ÀÇ¼öÁØÀ¸·Î ÆÇ´ÜÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+        print("ACF í”Œë¡¯ì—ì„œ ì‹ ë¢°êµ¬ê°„(ì ì„ )ì„ ë²—ì–´ë‚˜ëŠ” ë§‰ëŒ€ê°€ ìˆë‹¤ë©´ ìê¸°ìƒê´€ ë¬¸ì œê°€ ìˆì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
+        print("ì°¨ìˆ˜ë³„ë¡œ ìê¸°ìƒê´€ ë¬¸ì œê°€ ìˆëŠ”ì§€ ì¹´ì´ì œê³± í†µê³„ëŸ‰ê³¼ ìœ ì˜ìˆ˜ì¤€ìœ¼ë¡œ íŒë‹¨í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
     else:
-        print("VARMAX °á°ú °´Ã¼¿¡¼­´Â plot_acorr()¸¦ Á÷Á¢ Áö¿øÇÏÁö ¾Ê½À´Ï´Ù. ¼öµ¿À¸·Î ÀÜÂ÷ ACF¸¦ È®ÀÎÇØ¾ß ÇÕ´Ï´Ù.")
+        print("VARMAX ê²°ê³¼ ê°ì²´ì—ì„œëŠ” plot_acorr()ë¥¼ ì§ì ‘ ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ìˆ˜ë™ìœ¼ë¡œ ì”ì°¨ ACFë¥¼ í™•ì¸í•´ì•¼ í•©ë‹ˆë‹¤.")
         residuals = results.resid
         fig, axes = plt.subplots(len(endog_vars), 1, figsize=(10, 3 * len(endog_vars)))
         if len(endog_vars) == 1:
@@ -216,19 +216,19 @@ def Run_VAR_analysis(
         plt.show()
 
 
-    # 4-2. ÀÜÂ÷ÀÇ Á¤±Ô¼º °ËÁ¤ (Jarque-Bera test)
-    print("\n4-2. ÀÜÂ÷ÀÇ Á¤±Ô¼º °ËÁ¤ (Jarque-Bera test):")
-    print("±Í¹«°¡¼³ (H0): ¿ÀÂ÷Ç×ÀÌ Á¤±ÔºĞÆ÷¸¦ µû¸¥´Ù.")
-    print("´ë¸³°¡¼³ (H1): ¿ÀÂ÷Ç×ÀÌ Á¤±ÔºĞÆ÷¸¦ µû¸£Áö ¾Ê´Â´Ù.")
+    # 4-2. ì”ì°¨ì˜ ì •ê·œì„± ê²€ì • (Jarque-Bera test)
+    print("\n4-2. ì”ì°¨ì˜ ì •ê·œì„± ê²€ì • (Jarque-Bera test):")
+    print("ê·€ë¬´ê°€ì„¤ (H0): ì˜¤ì°¨í•­ì´ ì •ê·œë¶„í¬ë¥¼ ë”°ë¥¸ë‹¤.")
+    print("ëŒ€ë¦½ê°€ì„¤ (H1): ì˜¤ì°¨í•­ì´ ì •ê·œë¶„í¬ë¥¼ ë”°ë¥´ì§€ ì•ŠëŠ”ë‹¤.")
     if isinstance(results, VARResultsWrapper):
         normality_test = results.test_normality()
         print(normality_test.summary())
         if normality_test.pvalue <= 0.05:
-            print("=> 5% À¯ÀÇ¼öÁØ¿¡¼­ ±Í¹«°¡¼³À» ±â°¢ÇÕ´Ï´Ù. ¿ÀÂ÷Ç×Àº Á¤±ÔºĞÆ÷¸¦ µû¸£Áö ¾ÊÀ» ¼ö ÀÖ½À´Ï´Ù.")
+            print("=> 5% ìœ ì˜ìˆ˜ì¤€ì—ì„œ ê·€ë¬´ê°€ì„¤ì„ ê¸°ê°í•©ë‹ˆë‹¤. ì˜¤ì°¨í•­ì€ ì •ê·œë¶„í¬ë¥¼ ë”°ë¥´ì§€ ì•Šì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
         else:
-            print("=> 5% À¯ÀÇ¼öÁØ¿¡¼­ ±Í¹«°¡¼³À» ±â°¢ÇÏÁö ¸øÇÕ´Ï´Ù. ¿ÀÂ÷Ç×Àº Á¤±ÔºĞÆ÷¸¦ µû¸¥´Ù°í º¼ ¼ö ÀÖ½À´Ï´Ù.")
+            print("=> 5% ìœ ì˜ìˆ˜ì¤€ì—ì„œ ê·€ë¬´ê°€ì„¤ì„ ê¸°ê°í•˜ì§€ ëª»í•©ë‹ˆë‹¤. ì˜¤ì°¨í•­ì€ ì •ê·œë¶„í¬ë¥¼ ë”°ë¥¸ë‹¤ê³  ë³¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
     else:
-        print("VARMAX °á°ú °´Ã¼¿¡¼­´Â test_normality()¸¦ Á÷Á¢ Áö¿øÇÏÁö ¾Ê½À´Ï´Ù. ¼öµ¿À¸·Î ÀÜÂ÷ Á¤±Ô¼ºÀ» °ËÁ¤ÇØ¾ß ÇÕ´Ï´Ù.")
+        print("VARMAX ê²°ê³¼ ê°ì²´ì—ì„œëŠ” test_normality()ë¥¼ ì§ì ‘ ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ìˆ˜ë™ìœ¼ë¡œ ì”ì°¨ ì •ê·œì„±ì„ ê²€ì •í•´ì•¼ í•©ë‹ˆë‹¤.")
         for col in endog_vars:
             print(f"\n--- {col} Residuals Normality Test ---")
             jb_test = sm.stats.stattools.jarque_bera(results.resid[col])
@@ -237,17 +237,17 @@ def Run_VAR_analysis(
             print(f"  Skewness: {jb_test[2]:.4f}")
             print(f"  Kurtosis: {jb_test[3]:.4f}")
             if jb_test[1] <= 0.05:
-                print("  => 5% À¯ÀÇ¼öÁØ¿¡¼­ Á¤±ÔºĞÆ÷ °¡¼³À» ±â°¢ÇÕ´Ï´Ù.")
+                print("  => 5% ìœ ì˜ìˆ˜ì¤€ì—ì„œ ì •ê·œë¶„í¬ ê°€ì„¤ì„ ê¸°ê°í•©ë‹ˆë‹¤.")
             else:
-                print("  => 5% À¯ÀÇ¼öÁØ¿¡¼­ Á¤±ÔºĞÆ÷ °¡¼³À» ±â°¢ÇÏÁö ¸øÇÕ´Ï´Ù.")
+                print("  => 5% ìœ ì˜ìˆ˜ì¤€ì—ì„œ ì •ê·œë¶„í¬ ê°€ì„¤ì„ ê¸°ê°í•˜ì§€ ëª»í•©ë‹ˆë‹¤.")
 
 
-    # 4-3. Granger ÀÎ°ú¼º °ËÁ¤
-    print("\n\n4-3. Granger ÀÎ°ú¼º °ËÁ¤:")
-    print("Granger ÀÎ°ú¼º °ËÁ¤Àº º¯¼öµé °£ÀÇ ½ÇÁ¦ ÀÎ°ú°ü°è ¹æÇâÀ» ºĞ¼®ÇÕ´Ï´Ù.")
+    # 4-3. Granger ì¸ê³¼ì„± ê²€ì •
+    print("\n\n4-3. Granger ì¸ê³¼ì„± ê²€ì •:")
+    print("Granger ì¸ê³¼ì„± ê²€ì •ì€ ë³€ìˆ˜ë“¤ ê°„ì˜ ì‹¤ì œ ì¸ê³¼ê´€ê³„ ë°©í–¥ì„ ë¶„ì„í•©ë‹ˆë‹¤.")
     if optimal_lag_order == 0:
-        print("  !!! °æ°í: VAR ¸ğÇüÀÇ ½ÃÂ÷°¡ 0ÀÌ¹Ç·Î Granger ÀÎ°ú¼º °ËÁ¤À» ¼öÇàÇÒ ¼ö ¾ø½À´Ï´Ù.")
-        print("  ½ÃÂ÷°¡ 0ÀÎ ¸ğÇü¿¡¼­´Â º¯¼ö °£ÀÇ µ¿ÅÂÀûÀÎ ÀÎ°ú °ü°è¸¦ ºĞ¼®ÇÒ ¼ö ¾ø½À´Ï´Ù.")
+        print("  !!! ê²½ê³ : VAR ëª¨í˜•ì˜ ì‹œì°¨ê°€ 0ì´ë¯€ë¡œ Granger ì¸ê³¼ì„± ê²€ì •ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.")
+        print("  ì‹œì°¨ê°€ 0ì¸ ëª¨í˜•ì—ì„œëŠ” ë³€ìˆ˜ ê°„ì˜ ë™íƒœì ì¸ ì¸ê³¼ ê´€ê³„ë¥¼ ë¶„ì„í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.")
     else:
         for target_var in endog_vars:
             other_vars = [v for v in endog_vars if v != target_var]
@@ -255,51 +255,51 @@ def Run_VAR_analysis(
                 try:
                     if isinstance(results, VARResultsWrapper):
                         causality_test = results.test_causality(target_var, other_vars, kind='f')
-                        print(f"\n{other_vars}°¡ {target_var}¸¦ Granger-ÀÎ°úÇÏ´ÂÁö °ËÁ¤:")
+                        print(f"\n{other_vars}ê°€ {target_var}ë¥¼ Granger-ì¸ê³¼í•˜ëŠ”ì§€ ê²€ì •:")
                         print(causality_test.summary())
                         if causality_test.pvalue <= 0.05:
-                            print(f"  => 5% À¯ÀÇ¼öÁØ¿¡¼­ ±Í¹«°¡¼³À» ±â°¢ÇÕ´Ï´Ù. {other_vars}´Â {target_var}¸¦ Granger-ÀÎ°úÇÑ´Ù°í º¼ ¼ö ÀÖ½À´Ï´Ù.")
+                            print(f"  => 5% ìœ ì˜ìˆ˜ì¤€ì—ì„œ ê·€ë¬´ê°€ì„¤ì„ ê¸°ê°í•©ë‹ˆë‹¤. {other_vars}ëŠ” {target_var}ë¥¼ Granger-ì¸ê³¼í•œë‹¤ê³  ë³¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
                         else:
-                            print(f"  => 5% À¯ÀÇ¼öÁØ¿¡¼­ ±Í¹«°¡¼³À» ±â°¢ÇÏÁö ¸øÇÕ´Ï´Ù. {other_vars}´Â {target_var}¸¦ Granger-ÀÎ°úÇÏÁö ¾Ê´Â´Ù°í º¼ ¼ö ÀÖ½À´Ï´Ù.")
+                            print(f"  => 5% ìœ ì˜ìˆ˜ì¤€ì—ì„œ ê·€ë¬´ê°€ì„¤ì„ ê¸°ê°í•˜ì§€ ëª»í•©ë‹ˆë‹¤. {other_vars}ëŠ” {target_var}ë¥¼ Granger-ì¸ê³¼í•˜ì§€ ì•ŠëŠ”ë‹¤ê³  ë³¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
                     else:
-                        print(f"VARMAX °á°ú °´Ã¼¿¡¼­´Â test_causality()¸¦ Á÷Á¢ Áö¿øÇÏÁö ¾Ê½À´Ï´Ù. ¼öµ¿À¸·Î ±×·£Á® ÀÎ°ú¼º °ËÁ¤À» ¼öÇàÇØ¾ß ÇÕ´Ï´Ù.")
+                        print(f"VARMAX ê²°ê³¼ ê°ì²´ì—ì„œëŠ” test_causality()ë¥¼ ì§ì ‘ ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ìˆ˜ë™ìœ¼ë¡œ ê·¸ëœì ¸ ì¸ê³¼ì„± ê²€ì •ì„ ìˆ˜í–‰í•´ì•¼ í•©ë‹ˆë‹¤.")
                 except Exception as e:
-                    print(f"  {target_var}¿¡ ´ëÇÑ Granger ÀÎ°ú¼º °ËÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
+                    print(f"  {target_var}ì— ëŒ€í•œ Granger ì¸ê³¼ì„± ê²€ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
             else:
-                print(f"{target_var}´Â ´Ù¸¥ ³»»ı º¯¼ö°¡ ¾øÀ¸¹Ç·Î Granger ÀÎ°ú¼º °ËÁ¤À» °Ç³Ê¶İ´Ï´Ù.")
+                print(f"{target_var}ëŠ” ë‹¤ë¥¸ ë‚´ìƒ ë³€ìˆ˜ê°€ ì—†ìœ¼ë¯€ë¡œ Granger ì¸ê³¼ì„± ê²€ì •ì„ ê±´ë„ˆëœë‹ˆë‹¤.")
 
-    # 5. Ãæ°İ ¹İÀÀ ÇÔ¼ö (Impulse Response Function, IRF)
-    print("\n\n5. Ãæ°İ ¹İÀÀ ÇÔ¼ö (IRF)")
+    # 5. ì¶©ê²© ë°˜ì‘ í•¨ìˆ˜ (Impulse Response Function, IRF)
+    print("\n\n5. ì¶©ê²© ë°˜ì‘ í•¨ìˆ˜ (IRF)")
     if optimal_lag_order == 0:
-        print("  !!! °æ°í: VAR ¸ğÇüÀÇ ½ÃÂ÷°¡ 0ÀÌ¹Ç·Î Ãæ°İ ¹İÀÀ ÇÔ¼ö¸¦ °è»êÇÒ ¼ö ¾ø½À´Ï´Ù.")
-        print("  ½ÃÂ÷°¡ 0ÀÎ ¸ğÇü¿¡¼­´Â µ¿ÅÂÀûÀÎ Ãæ°İ È¿°ú¸¦ ºĞ¼®ÇÒ ¼ö ¾ø½À´Ï´Ù.")
+        print("  !!! ê²½ê³ : VAR ëª¨í˜•ì˜ ì‹œì°¨ê°€ 0ì´ë¯€ë¡œ ì¶©ê²© ë°˜ì‘ í•¨ìˆ˜ë¥¼ ê³„ì‚°í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.")
+        print("  ì‹œì°¨ê°€ 0ì¸ ëª¨í˜•ì—ì„œëŠ” ë™íƒœì ì¸ ì¶©ê²© íš¨ê³¼ë¥¼ ë¶„ì„í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.")
     else:
-        print("Ãæ°İ¹İÀÀ ÇÔ¼ö´Â VAR ¸ğÇü¿¡¼­ Æ¯Á¤ ¹æÁ¤½ÄÀÇ ¿ÀÂ÷Ç×¿¡ ´ëÇÑ Ãæ°İÀÌ ´Ù¸¥ ³»»ı º¯¼öµéÀÇ ¹Ì·¡°ª¿¡ ¹ÌÄ¡´Â ¿µÇâÀ» »ìÆìº¾´Ï´Ù.")
-        print("¿ÀÂ÷Ç×ÀÇ 1 Ç¥ÁØÆíÂ÷ Ãæ°İ¿¡ ´ëÇÑ ¹İÀÀ Á¤µµ¸¦ °è»êÇÕ´Ï´Ù.")
+        print("ì¶©ê²©ë°˜ì‘ í•¨ìˆ˜ëŠ” VAR ëª¨í˜•ì—ì„œ íŠ¹ì • ë°©ì •ì‹ì˜ ì˜¤ì°¨í•­ì— ëŒ€í•œ ì¶©ê²©ì´ ë‹¤ë¥¸ ë‚´ìƒ ë³€ìˆ˜ë“¤ì˜ ë¯¸ë˜ê°’ì— ë¯¸ì¹˜ëŠ” ì˜í–¥ì„ ì‚´í´ë´…ë‹ˆë‹¤.")
+        print("ì˜¤ì°¨í•­ì˜ 1 í‘œì¤€í¸ì°¨ ì¶©ê²©ì— ëŒ€í•œ ë°˜ì‘ ì •ë„ë¥¼ ê³„ì‚°í•©ë‹ˆë‹¤.")
 
         try:
             irf = results.irf(nlags_irf)
             
-            print("\n--- ºñÁ÷±³È­µÈ Ãæ°İ ¹İÀÀ ÇÔ¼ö (Non-Orthogonalized IRF) ---")
+            print("\n--- ë¹„ì§êµí™”ëœ ì¶©ê²© ë°˜ì‘ í•¨ìˆ˜ (Non-Orthogonalized IRF) ---")
             irf.plot_cum_effects(orth=False)
             plt.suptitle("Cumulative responses (Non-Orthogonalized)", y=1.02)
             plt.tight_layout()
             plt.show()
 
-            print("\n--- Á÷±³È­µÈ Ãæ°İ ¹İÀÀ ÇÔ¼ö (Orthogonalized IRF) ---")
-            print("Á÷±³È­µÈ Ãæ°İ¹İÀÀ ÇÔ¼ö´Â º¯¼ö ¼ø¼­¿¡ ¹Î°¨ÇÕ´Ï´Ù. ÃÍ·¹½ºÅ° ºĞÇØ¸¦ ÅëÇØ ±¸ÇØÁı´Ï´Ù.")
+            print("\n--- ì§êµí™”ëœ ì¶©ê²© ë°˜ì‘ í•¨ìˆ˜ (Orthogonalized IRF) ---")
+            print("ì§êµí™”ëœ ì¶©ê²©ë°˜ì‘ í•¨ìˆ˜ëŠ” ë³€ìˆ˜ ìˆœì„œì— ë¯¼ê°í•©ë‹ˆë‹¤. ì´ë ˆìŠ¤í‚¤ ë¶„í•´ë¥¼ í†µí•´ êµ¬í•´ì§‘ë‹ˆë‹¤.")
             irf.plot(orth=True)
             plt.suptitle("Impulse responses (Orthogonalized)", y=1.02)
             plt.tight_layout()
             plt.show()
-            print("Ãæ°İ ¹İÀÀ ÇÔ¼ö¸¦ ÅëÇØ °æÁ¦ º¯¼ö °£ÀÇ ÀÎ°ú°ü°è ºĞ¼®ÀÌ³ª Á¤Ã¥ È¿°ú ºĞ¼®À» ÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+            print("ì¶©ê²© ë°˜ì‘ í•¨ìˆ˜ë¥¼ í†µí•´ ê²½ì œ ë³€ìˆ˜ ê°„ì˜ ì¸ê³¼ê´€ê³„ ë¶„ì„ì´ë‚˜ ì •ì±… íš¨ê³¼ ë¶„ì„ì„ í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
         except Exception as e:
-            print(f"Ãæ°İ ¹İÀÀ ÇÔ¼ö °è»ê ¶Ç´Â ÇÃ·ÎÆÃ Áß ¿À·ù ¹ß»ı: {e}")
-            print("VARMAX ¸ğÇüÀÇ °æ¿ì impulse_responses ¸Ş¼­µå »ç¿ë¹ıÀÌ ´Ù¸¦ ¼ö ÀÖ½À´Ï´Ù.")
+            print(f"ì¶©ê²© ë°˜ì‘ í•¨ìˆ˜ ê³„ì‚° ë˜ëŠ” í”Œë¡œíŒ… ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+            print("VARMAX ëª¨í˜•ì˜ ê²½ìš° impulse_responses ë©”ì„œë“œ ì‚¬ìš©ë²•ì´ ë‹¤ë¥¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
             if exog_vars:
-                print("VARMAX ¸ğÇüÀÇ °æ¿ì impulse_responses´Â VARMAX °´Ã¼¿¡¼­ Á÷Á¢ È£ÃâÇØ¾ß ÇÕ´Ï´Ù.")
-                print("ÀÚµ¿È­¸¦ À§ÇØ Ã¹ ¹øÂ° º¯¼ö¿¡ ´ëÇÑ Ãæ°İ¸¸ ¿¹½Ã·Î ÇÃ·ÔÇÕ´Ï´Ù.")
+                print("VARMAX ëª¨í˜•ì˜ ê²½ìš° impulse_responsesëŠ” VARMAX ê°ì²´ì—ì„œ ì§ì ‘ í˜¸ì¶œí•´ì•¼ í•©ë‹ˆë‹¤.")
+                print("ìë™í™”ë¥¼ ìœ„í•´ ì²« ë²ˆì§¸ ë³€ìˆ˜ì— ëŒ€í•œ ì¶©ê²©ë§Œ ì˜ˆì‹œë¡œ í”Œë¡¯í•©ë‹ˆë‹¤.")
                 try:
                     impulse_array = np.zeros(len(endog_vars))
                     impulse_array[0] = 1
@@ -308,16 +308,16 @@ def Run_VAR_analysis(
                     plt.tight_layout()
                     plt.show()
                 except Exception as e_varmax_irf:
-                    print(f"VARMAX Ãæ°İ¹İÀÀ ÇÔ¼ö ÇÃ·ÎÆÃ Áß ¿À·ù ¹ß»ı: {e_varmax_irf}")
+                    print(f"VARMAX ì¶©ê²©ë°˜ì‘ í•¨ìˆ˜ í”Œë¡œíŒ… ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e_varmax_irf}")
 
 
-    # 6. ¿¹Ãø ¿ÀÂ÷ ºĞ»êÀÇ ºĞÇØ (Forecast Error Variance Decomposition, FEVD)
-    print("\n\n6. ¿¹Ãø ¿ÀÂ÷ ºĞ»êÀÇ ºĞÇØ (FEVD)")
+    # 6. ì˜ˆì¸¡ ì˜¤ì°¨ ë¶„ì‚°ì˜ ë¶„í•´ (Forecast Error Variance Decomposition, FEVD)
+    print("\n\n6. ì˜ˆì¸¡ ì˜¤ì°¨ ë¶„ì‚°ì˜ ë¶„í•´ (FEVD)")
     if optimal_lag_order == 0:
-        print("  !!! °æ°í: VAR ¸ğÇüÀÇ ½ÃÂ÷°¡ 0ÀÌ¹Ç·Î ¿¹Ãø ¿ÀÂ÷ ºĞ»ê ºĞÇØ¸¦ °è»êÇÒ ¼ö ¾ø½À´Ï´Ù.")
-        print("  ½ÃÂ÷°¡ 0ÀÎ ¸ğÇü¿¡¼­´Â ¿¹Ãø ¿ÀÂ÷ÀÇ µ¿ÅÂÀûÀÎ ºĞÇØ¸¦ ÇÒ ¼ö ¾ø½À´Ï´Ù.")
+        print("  !!! ê²½ê³ : VAR ëª¨í˜•ì˜ ì‹œì°¨ê°€ 0ì´ë¯€ë¡œ ì˜ˆì¸¡ ì˜¤ì°¨ ë¶„ì‚° ë¶„í•´ë¥¼ ê³„ì‚°í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.")
+        print("  ì‹œì°¨ê°€ 0ì¸ ëª¨í˜•ì—ì„œëŠ” ì˜ˆì¸¡ ì˜¤ì°¨ì˜ ë™íƒœì ì¸ ë¶„í•´ë¥¼ í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.")
     else:
-        print("FEVD´Â ½Ã°£ÀÇ º¯È­¿¡ µû¶ó Á¾¼Óº¯¼öÀÇ º¯ÀÌ°¡ °ú°Å ÀÚ±â ÀÚ½ÅÀÇ ºĞ»ê°ú ´Ù¸¥ º¯¼öÀÇ ºĞ»ê¿¡ ÀÇÇØ ¼³¸íµÇ´Â Á¤µµ¸¦ º¸¿©Áİ´Ï´Ù.")
+        print("FEVDëŠ” ì‹œê°„ì˜ ë³€í™”ì— ë”°ë¼ ì¢…ì†ë³€ìˆ˜ì˜ ë³€ì´ê°€ ê³¼ê±° ìê¸° ìì‹ ì˜ ë¶„ì‚°ê³¼ ë‹¤ë¥¸ ë³€ìˆ˜ì˜ ë¶„ì‚°ì— ì˜í•´ ì„¤ëª…ë˜ëŠ” ì •ë„ë¥¼ ë³´ì—¬ì¤ë‹ˆë‹¤.")
         try:
             fevd = results.fevd(nsteps_fevd)
             fevd.plot()
@@ -325,38 +325,38 @@ def Run_VAR_analysis(
             plt.tight_layout()
             plt.show()
         except Exception as e:
-            print(f"¿¹Ãø ¿ÀÂ÷ ºĞ»ê ºĞÇØ °è»ê ¶Ç´Â ÇÃ·ÎÆÃ Áß ¿À·ù ¹ß»ı: {e}")
-            print("VARMAX ¸ğÇüÀÇ °æ¿ì fevd¸¦ Á÷Á¢ Áö¿øÇÏÁö ¾Ê°Å³ª »ç¿ë¹ıÀÌ ´Ù¸¦ ¼ö ÀÖ½À´Ï´Ù.")
+            print(f"ì˜ˆì¸¡ ì˜¤ì°¨ ë¶„ì‚° ë¶„í•´ ê³„ì‚° ë˜ëŠ” í”Œë¡œíŒ… ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+            print("VARMAX ëª¨í˜•ì˜ ê²½ìš° fevdë¥¼ ì§ì ‘ ì§€ì›í•˜ì§€ ì•Šê±°ë‚˜ ì‚¬ìš©ë²•ì´ ë‹¤ë¥¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
             if exog_vars:
-                print("VARMAX ¸ğÇüÀº fevd ¸Ş¼­µå¸¦ Á÷Á¢ Áö¿øÇÏÁö ¾Ê½À´Ï´Ù. ¼öµ¿ °è»êÀÌ ÇÊ¿äÇÕ´Ï´Ù.")
+                print("VARMAX ëª¨í˜•ì€ fevd ë©”ì„œë“œë¥¼ ì§ì ‘ ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ìˆ˜ë™ ê³„ì‚°ì´ í•„ìš”í•©ë‹ˆë‹¤.")
 
 
-    # 7. ¿¹Ãø (Forecast)
-    print("\n\n7. ¿¹Ãø")
+    # 7. ì˜ˆì¸¡ (Forecast)
+    print("\n\n7. ì˜ˆì¸¡")
     if optimal_lag_order == 0:
-        print("  !!! °æ°í: VAR ¸ğÇüÀÇ ½ÃÂ÷°¡ 0ÀÌ¹Ç·Î ¿¹ÃøÀ» Á¦´ë·Î ¼öÇàÇÏ±â ¾î·Æ½À´Ï´Ù.")
-        print("  ½ÃÂ÷°¡ 0ÀÎ ¸ğÇüÀº °ú°Å Á¤º¸°¡ ¹Ì·¡¿¡ ¿µÇâÀ» ÁÖÁö ¾Ê´Â´Ù°í °¡Á¤ÇÕ´Ï´Ù. ´Ü¼ø Æò±Õ ¿¹Ãø°ú À¯»çÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+        print("  !!! ê²½ê³ : VAR ëª¨í˜•ì˜ ì‹œì°¨ê°€ 0ì´ë¯€ë¡œ ì˜ˆì¸¡ì„ ì œëŒ€ë¡œ ìˆ˜í–‰í•˜ê¸° ì–´ë µìŠµë‹ˆë‹¤.")
+        print("  ì‹œì°¨ê°€ 0ì¸ ëª¨í˜•ì€ ê³¼ê±° ì •ë³´ê°€ ë¯¸ë˜ì— ì˜í–¥ì„ ì£¼ì§€ ì•ŠëŠ”ë‹¤ê³  ê°€ì •í•©ë‹ˆë‹¤. ë‹¨ìˆœ í‰ê·  ì˜ˆì¸¡ê³¼ ìœ ì‚¬í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
     else:
-        print("VAR ¸ğÇüÀ» ÀÌ¿ëÇÑ ¿¹Ãø¿¡¼­´Â »çÈÄ ¿¹Ãø°ú »çÀü ¿¹ÃøÀ» ÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+        print("VAR ëª¨í˜•ì„ ì´ìš©í•œ ì˜ˆì¸¡ì—ì„œëŠ” ì‚¬í›„ ì˜ˆì¸¡ê³¼ ì‚¬ì „ ì˜ˆì¸¡ì„ í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
         try:
             lag_order_for_forecast = results.k_ar if hasattr(results, 'k_ar') else optimal_lag_order
 
             if exog_vars:
-                print("VARX/VARMA ¸ğÇüÀÇ predict/forecast ¸Ş¼­µå »ç¿ë¹ıÀº VAR°ú ´Ù¸¦ ¼ö ÀÖ½À´Ï´Ù.")
-                print("plot_forecast´Â VARX/VARMA¿¡¼­µµ »ç¿ë °¡´ÉÇÕ´Ï´Ù.")
+                print("VARX/VARMA ëª¨í˜•ì˜ predict/forecast ë©”ì„œë“œ ì‚¬ìš©ë²•ì€ VARê³¼ ë‹¤ë¥¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
+                print("plot_forecastëŠ” VARX/VARMAì—ì„œë„ ì‚¬ìš© ê°€ëŠ¥í•©ë‹ˆë‹¤.")
                 results.plot_forecast(steps=nsteps_forecast)
                 plt.suptitle(f"Forecast for {nsteps_forecast} steps (VARX)", y=1.02)
                 plt.tight_layout()
                 plt.show()
             else:
-                print("\n--- ¿¹Ãø ½Ã°¢È­ ---")
+                print("\n--- ì˜ˆì¸¡ ì‹œê°í™” ---")
                 results.plot_forecast(steps=nsteps_forecast)
                 plt.suptitle(f"Forecast for {nsteps_forecast} steps (VAR)", y=1.02)
                 plt.tight_layout()
                 plt.show()
 
         except Exception as e:
-            print(f"¿¹Ãø °è»ê ¶Ç´Â ÇÃ·ÎÆÃ Áß ¿À·ù ¹ß»ı: {e}")
+            print(f"ì˜ˆì¸¡ ê³„ì‚° ë˜ëŠ” í”Œë¡œíŒ… ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
 
-    print("\n--- VAR ¸ğÇü ºĞ¼® ¿Ï·á ---")
+    print("\n--- VAR ëª¨í˜• ë¶„ì„ ì™„ë£Œ ---")
     return results

@@ -9,7 +9,7 @@ from linearmodels.panel import (
     compare
 )
 from linearmodels.panel.data import PanelData
-from collections import OrderedDict # °á°ú ºñ±³¸¦ À§ÇØ ¼ø¼­ À¯Áö µñ¼Å³Ê¸® »ç¿ë
+from collections import OrderedDict # ê²°ê³¼ ë¹„êµë¥¼ ìœ„í•´ ìˆœì„œ ìœ ì§€ ë”•ì…”ë„ˆë¦¬ ì‚¬ìš©
 
 def Run_all_Panel_estimations(data_df: pd.DataFrame, 
                               id_col: str, 
@@ -17,57 +17,57 @@ def Run_all_Panel_estimations(data_df: pd.DataFrame,
                               dependent_var: str, 
                               independent_vars: list):
     """
-    ÁÖ¾îÁø ÆĞ³Î µ¥ÀÌÅÍ¿¡ ´ëÇØ linearmodels ¶óÀÌºê·¯¸®ÀÇ ´Ù¾çÇÑ ÆĞ³Î ÃßÁ¤¹ıÀ» Àû¿ëÇÏ°í °á°ú¸¦ Ãâ·ÂÇÕ´Ï´Ù.
+    ì£¼ì–´ì§„ íŒ¨ë„ ë°ì´í„°ì— ëŒ€í•´ linearmodels ë¼ì´ë¸ŒëŸ¬ë¦¬ì˜ ë‹¤ì–‘í•œ íŒ¨ë„ ì¶”ì •ë²•ì„ ì ìš©í•˜ê³  ê²°ê³¼ë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤.
 
     Parameters
     ----------
     data_df : pandas.DataFrame
-        ÆĞ³Î µ¥ÀÌÅÍ°¡ Æ÷ÇÔµÈ DataFrame.
+        íŒ¨ë„ ë°ì´í„°ê°€ í¬í•¨ëœ DataFrame.
     id_col : str
-        °³Ã¼(entity) ID¸¦ ³ªÅ¸³»´Â ÄÃ·³ ÀÌ¸§.
+        ê°œì²´(entity) IDë¥¼ ë‚˜íƒ€ë‚´ëŠ” ì»¬ëŸ¼ ì´ë¦„.
     year_col : str
-        ½Ã°£(time) ID¸¦ ³ªÅ¸³»´Â ÄÃ·³ ÀÌ¸§.
+        ì‹œê°„(time) IDë¥¼ ë‚˜íƒ€ë‚´ëŠ” ì»¬ëŸ¼ ì´ë¦„.
     dependent_var : str
-        Á¾¼Ó º¯¼öÀÇ ÄÃ·³ ÀÌ¸§.
+        ì¢…ì† ë³€ìˆ˜ì˜ ì»¬ëŸ¼ ì´ë¦„.
     independent_vars : list
-        µ¶¸³ º¯¼öµéÀÇ ÄÃ·³ ÀÌ¸§ ¸®½ºÆ®.
+        ë…ë¦½ ë³€ìˆ˜ë“¤ì˜ ì»¬ëŸ¼ ì´ë¦„ ë¦¬ìŠ¤íŠ¸.
 
     Notes
     -----
-    ÀÌ ÇÔ¼ö´Â Á¦°øµÈ ¸Å´º¾óÀÇ ¿¹½Ã¸¦ ±â¹İÀ¸·Î °¢ ¸ğµ¨¿¡ ÇÊ¿äÇÑ µ¶¸³ º¯¼öµéÀ» ¼±º°ÇÏ¿© »ç¿ëÇÕ´Ï´Ù.
-    µû¶ó¼­, ÀÏºÎ µ¶¸³ º¯¼ö´Â Æ¯Á¤ ¸ğµ¨¿¡¼­ Á¦¿ÜµÉ ¼ö ÀÖ½À´Ï´Ù.
+    ì´ í•¨ìˆ˜ëŠ” ì œê³µëœ ë§¤ë‰´ì–¼ì˜ ì˜ˆì‹œë¥¼ ê¸°ë°˜ìœ¼ë¡œ ê° ëª¨ë¸ì— í•„ìš”í•œ ë…ë¦½ ë³€ìˆ˜ë“¤ì„ ì„ ë³„í•˜ì—¬ ì‚¬ìš©í•©ë‹ˆë‹¤.
+    ë”°ë¼ì„œ, ì¼ë¶€ ë…ë¦½ ë³€ìˆ˜ëŠ” íŠ¹ì • ëª¨ë¸ì—ì„œ ì œì™¸ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
     """
 
-    print("µ¥ÀÌÅÍ ÁØºñ Áß...\n")
+    print("ë°ì´í„° ì¤€ë¹„ ì¤‘...\n")
 
-    # ¿øº» DataFrame º¹»ç (º¯°æ ¹æÁö)
+    # ì›ë³¸ DataFrame ë³µì‚¬ (ë³€ê²½ ë°©ì§€)
     processed_data = data_df.copy()
 
-    # MultiIndex ¼³Á¤
-    # year_colÀ» Categorical·Î º¯È¯ÇÏÁö ¾Ê°í ¿øº» ¼ıÀÚÇüÀ¸·Î À¯ÁöÇÏ¿© linearmodels ¿ä±¸»çÇ×À» ÃæÁ·
+    # MultiIndex ì„¤ì •
+    # year_colì„ Categoricalë¡œ ë³€í™˜í•˜ì§€ ì•Šê³  ì›ë³¸ ìˆ«ìí˜•ìœ¼ë¡œ ìœ ì§€í•˜ì—¬ linearmodels ìš”êµ¬ì‚¬í•­ì„ ì¶©ì¡±
     processed_data = processed_data.set_index([id_col, year_col])
 
-    # Á¾¼Ó º¯¼ö ¼³Á¤
+    # ì¢…ì† ë³€ìˆ˜ ì„¤ì •
     endog = processed_data[dependent_var]
 
-    # °¢ ¸ğµ¨¿¡ »ç¿ëµÉ µ¶¸³ º¯¼öµéÀ» ¼³Á¤ (¸Å´º¾ó ¿¹½Ã ±â¹İ)
-    # independent_vars´Â 'year_col'À» Æ÷ÇÔÇÏÁö ¾Ê´Â ¼ø¼ö µ¶¸³ º¯¼ö ¸®½ºÆ®·Î °¡Á¤
-    # 'year_col'Àº ÇÊ¿äÇÑ °æ¿ì º°µµ·Î Ã³¸®ÇÏ¿© ´õ¹Ì º¯¼ö·Î Æ÷ÇÔ
+    # ê° ëª¨ë¸ì— ì‚¬ìš©ë  ë…ë¦½ ë³€ìˆ˜ë“¤ì„ ì„¤ì • (ë§¤ë‰´ì–¼ ì˜ˆì‹œ ê¸°ë°˜)
+    # independent_varsëŠ” 'year_col'ì„ í¬í•¨í•˜ì§€ ì•ŠëŠ” ìˆœìˆ˜ ë…ë¦½ ë³€ìˆ˜ ë¦¬ìŠ¤íŠ¸ë¡œ ê°€ì •
+    # 'year_col'ì€ í•„ìš”í•œ ê²½ìš° ë³„ë„ë¡œ ì²˜ë¦¬í•˜ì—¬ ë”ë¯¸ ë³€ìˆ˜ë¡œ í¬í•¨
 
-    # ¸ğµ¨ °á°úµéÀ» ÀúÀåÇÒ µñ¼Å³Ê¸®
+    # ëª¨ë¸ ê²°ê³¼ë“¤ì„ ì €ì¥í•  ë”•ì…”ë„ˆë¦¬
     results = OrderedDict()
 
-    # --- 2. PooledOLS (±âº» OLS) ---
+    # --- 2. PooledOLS (ê¸°ë³¸ OLS) ---
     print("----------------------------------------------------------------")
-    print("PooledOLS (ÇÕµ¿ OLS) ÃßÁ¤ Áß...")
-    # PooledOLS¿Í RandomEffects´Â 'year_col'À» µ¶¸³ º¯¼ö·Î »ç¿ëÇÏ¿© ½Ã°£ ´õ¹Ì¸¦ »ı¼º
+    print("PooledOLS (í•©ë™ OLS) ì¶”ì • ì¤‘...")
+    # PooledOLSì™€ RandomEffectsëŠ” 'year_col'ì„ ë…ë¦½ ë³€ìˆ˜ë¡œ ì‚¬ìš©í•˜ì—¬ ì‹œê°„ ë”ë¯¸ë¥¼ ìƒì„±
     
-    # ¸ÕÀú µ¶¸³ º¯¼öµéÀÇ DataFrameÀ» »ı¼º.
-    # MultiIndex¿¡¼­ 'year_col'À» ÄÃ·³À¸·Î °¡Á®¿Í¼­ Categorical·Î º¯È¯ ÈÄ »ç¿ë.
-    exog_common = processed_data[independent_vars].copy() # ±âÁ¸ µ¶¸³ º¯¼öµé
-    exog_common[year_col] = pd.Categorical(processed_data.index.get_level_values(year_col)) # year_colÀ» Categorical ÄÃ·³À¸·Î Ãß°¡
+    # ë¨¼ì € ë…ë¦½ ë³€ìˆ˜ë“¤ì˜ DataFrameì„ ìƒì„±.
+    # MultiIndexì—ì„œ 'year_col'ì„ ì»¬ëŸ¼ìœ¼ë¡œ ê°€ì ¸ì™€ì„œ Categoricalë¡œ ë³€í™˜ í›„ ì‚¬ìš©.
+    exog_common = processed_data[independent_vars].copy() # ê¸°ì¡´ ë…ë¦½ ë³€ìˆ˜ë“¤
+    exog_common[year_col] = pd.Categorical(processed_data.index.get_level_values(year_col)) # year_colì„ Categorical ì»¬ëŸ¼ìœ¼ë¡œ ì¶”ê°€
 
-    # sm.add_constant¸¦ »ç¿ëÇÏ¿© »ó¼öÇ× Ãß°¡ ¹× categorical º¯¼ö Ã³¸®
+    # sm.add_constantë¥¼ ì‚¬ìš©í•˜ì—¬ ìƒìˆ˜í•­ ì¶”ê°€ ë° categorical ë³€ìˆ˜ ì²˜ë¦¬
     exog_pooled_re = sm.add_constant(exog_common, has_constant='add')
     
     mod_pooled = PooledOLS(endog, exog_pooled_re)
@@ -76,24 +76,24 @@ def Run_all_Panel_estimations(data_df: pd.DataFrame,
     results["PooledOLS"] = pooled_res
     print("\n")
 
-    # --- 3. RandomEffects (È®·ü È¿°ú ¸ğµ¨) ---
+    # --- 3. RandomEffects (í™•ë¥  íš¨ê³¼ ëª¨ë¸) ---
     print("----------------------------------------------------------------")
-    print("RandomEffects (È®·ü È¿°ú) ÃßÁ¤ Áß...")
-    # PooledOLS¿Í µ¿ÀÏÇÑ exog »ç¿ë
+    print("RandomEffects (í™•ë¥  íš¨ê³¼) ì¶”ì • ì¤‘...")
+    # PooledOLSì™€ ë™ì¼í•œ exog ì‚¬ìš©
     mod_re = RandomEffects(endog, exog_pooled_re)
     re_res = mod_re.fit()
     print(re_res)
     results["RandomEffects"] = re_res
-    print("\nºĞ»ê ºĞÇØ °á°ú:")
+    print("\në¶„ì‚° ë¶„í•´ ê²°ê³¼:")
     print(re_res.variance_decomposition)
-    print("\ntheta °ª (ÀÏºÎ):")
+    print("\ntheta ê°’ (ì¼ë¶€):")
     print(re_res.theta.head())
     print("\n")
 
-    # --- 4. BetweenOLS (°³Ã¼°£ OLS) ---
+    # --- 4. BetweenOLS (ê°œì²´ê°„ OLS) ---
     print("----------------------------------------------------------------")
-    print("BetweenOLS (°³Ã¼°£ OLS) ÃßÁ¤ Áß...")
-    # ¸Å´º¾ó ¿¹½Ã: 'expersq' º¯¼ö Á¦¿Ü. 'year' º¯¼ö´Â BetweenOLS¿¡¼­ ÀÇ¹Ì ¾øÀ½.
+    print("BetweenOLS (ê°œì²´ê°„ OLS) ì¶”ì • ì¤‘...")
+    # ë§¤ë‰´ì–¼ ì˜ˆì‹œ: 'expersq' ë³€ìˆ˜ ì œì™¸. 'year' ë³€ìˆ˜ëŠ” BetweenOLSì—ì„œ ì˜ë¯¸ ì—†ìŒ.
     exog_between_vars = [var for var in independent_vars if var != 'expersq']
     exog_between = sm.add_constant(processed_data[exog_between_vars], has_constant='add')
     
@@ -103,18 +103,18 @@ def Run_all_Panel_estimations(data_df: pd.DataFrame,
     results["BetweenOLS"] = be_res
     print("\n")
 
-    # --- 5. PanelOLS (Fixed Effects - °íÁ¤ È¿°ú) ---
+    # --- 5. PanelOLS (Fixed Effects - ê³ ì • íš¨ê³¼) ---
     print("----------------------------------------------------------------")
-    print("PanelOLS (°íÁ¤ È¿°ú - Entity Effects) ÃßÁ¤ Áß...")
-    # ¸Å´º¾ó ¿¹½Ã: 'expersq', 'union', 'married', 'year' (´õ¹Ì)¸¸ Æ÷ÇÔ.
-    # ½Ã°£ ºÒº¯ º¯¼ö ('black', 'hisp', 'educ', 'exper') Á¦¿Ü
+    print("PanelOLS (ê³ ì • íš¨ê³¼ - Entity Effects) ì¶”ì • ì¤‘...")
+    # ë§¤ë‰´ì–¼ ì˜ˆì‹œ: 'expersq', 'union', 'married', 'year' (ë”ë¯¸)ë§Œ í¬í•¨.
+    # ì‹œê°„ ë¶ˆë³€ ë³€ìˆ˜ ('black', 'hisp', 'educ', 'exper') ì œì™¸
     
-    # fe_base_vars ±¸¼º: 'expersq', 'union', 'married'
+    # fe_base_vars êµ¬ì„±: 'expersq', 'union', 'married'
     fe_base_vars = [var for var in independent_vars if var in ["expersq", "union", "married"]]
     
-    # 'year_col'À» ÄÃ·³À¸·Î Æ÷ÇÔ½ÃÄÑ ½Ã°£ ´õ¹Ì »ı¼º
+    # 'year_col'ì„ ì»¬ëŸ¼ìœ¼ë¡œ í¬í•¨ì‹œì¼œ ì‹œê°„ ë”ë¯¸ ìƒì„±
     exog_fe_with_year = processed_data[fe_base_vars].copy()
-    exog_fe_with_year[year_col] = pd.Categorical(processed_data.index.get_level_values(year_col)) # Categorical·Î º¯È¯
+    exog_fe_with_year[year_col] = pd.Categorical(processed_data.index.get_level_values(year_col)) # Categoricalë¡œ ë³€í™˜
     exog_fe = sm.add_constant(exog_fe_with_year, has_constant='add')
     
     mod_fe = PanelOLS(endog, exog_fe, entity_effects=True)
@@ -125,10 +125,10 @@ def Run_all_Panel_estimations(data_df: pd.DataFrame,
 
     # --- 6. PanelOLS (Fixed Effects - Entity + Time Effects) ---
     print("----------------------------------------------------------------")
-    print("PanelOLS (°íÁ¤ È¿°ú - Entity + Time Effects) ÃßÁ¤ Áß...")
-    # ¸Å´º¾ó ¿¹½Ã: 'expersq', 'union', 'married'¸¸ »ç¿ë (year ´õ¹Ì´Â time_effects·Î ´ëÃ¼)
+    print("PanelOLS (ê³ ì • íš¨ê³¼ - Entity + Time Effects) ì¶”ì • ì¤‘...")
+    # ë§¤ë‰´ì–¼ ì˜ˆì‹œ: 'expersq', 'union', 'married'ë§Œ ì‚¬ìš© (year ë”ë¯¸ëŠ” time_effectsë¡œ ëŒ€ì²´)
     exog_fe_te_vars = [var for var in independent_vars if var in ["expersq", "union", "married"]]
-    exog_fe_te = sm.add_constant(processed_data[exog_fe_te_vars], has_constant='add') # year_col Á¦¿Ü
+    exog_fe_te = sm.add_constant(processed_data[exog_fe_te_vars], has_constant='add') # year_col ì œì™¸
     mod_fe_te = PanelOLS(endog, exog_fe_te, entity_effects=True, time_effects=True)
     fe_te_res = mod_fe_te.fit()
     print(fe_te_res)
@@ -137,39 +137,39 @@ def Run_all_Panel_estimations(data_df: pd.DataFrame,
 
     # --- 7. PanelOLS (Fixed Effects - Entity + Other Effects) ---
     print("----------------------------------------------------------------")
-    print("PanelOLS (°íÁ¤ È¿°ú - Entity + Other Effects (Time)) ÃßÁ¤ Áß...")
+    print("PanelOLS (ê³ ì • íš¨ê³¼ - Entity + Other Effects (Time)) ì¶”ì • ì¤‘...")
     
-    # pd.factorize¸¦ »ç¿ëÇÏ¿© ½Ã°£ ÁÖ±â¸¦ 0-indexed Á¤¼ö ·¹ÀÌºí·Î º¯È¯
+    # pd.factorizeë¥¼ ì‚¬ìš©í•˜ì—¬ ì‹œê°„ ì£¼ê¸°ë¥¼ 0-indexed ì •ìˆ˜ ë ˆì´ë¸”ë¡œ ë³€í™˜
     time_levels = processed_data.index.get_level_values(year_col)
     factorized_time_ids, _ = pd.factorize(time_levels)
     
-    # Series·Î º¯È¯ÇÏ°í MultiIndex¸¦ À¯Áö
+    # Seriesë¡œ ë³€í™˜í•˜ê³  MultiIndexë¥¼ ìœ ì§€
     internal_time_ids = pd.Series(factorized_time_ids, index=processed_data.index)
     time_ids_df = pd.DataFrame(internal_time_ids, index=processed_data.index, columns=["Other Effect"])
     
-    # exog´Â »ó¼öÇ×°ú ÇÔ²² 'expersq', 'union', 'married' º¯¼ö¸¦ »ç¿ëÇÕ´Ï´Ù.
-    # ¸Å´º¾ó ¿¹½ÃÀÇ ´Ù¸¥ È¿°ú ºÎºĞ¿¡¼­´Â ´Ù¸¥ µ¶¸³ º¯¼ö¸¦ »ç¿ëÇÏÁö¸¸, ¿©±â¼­´Â consistency¸¦ À§ÇØ fe_te_vars »ç¿ë
+    # exogëŠ” ìƒìˆ˜í•­ê³¼ í•¨ê»˜ 'expersq', 'union', 'married' ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
+    # ë§¤ë‰´ì–¼ ì˜ˆì‹œì˜ ë‹¤ë¥¸ íš¨ê³¼ ë¶€ë¶„ì—ì„œëŠ” ë‹¤ë¥¸ ë…ë¦½ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì§€ë§Œ, ì—¬ê¸°ì„œëŠ” consistencyë¥¼ ìœ„í•´ fe_te_vars ì‚¬ìš©
     try:
-        # ¸Å´º¾óÀÇ ÅØ½ºÆ®("½Ã°£ È¿°ú¸¸ ÀçÇö")¸¦ µû¸£±â À§ÇØ entity_effects=False·Î ¼³Á¤
-        # ÀÌ ¼³Á¤ÀÌ Æ¯Á¤ ¹öÀüÀÇ linearmodels¿¡¼­ °üÃøÄ¡ ºÒÀÏÄ¡ ¿¡·¯¸¦ À¯¹ßÇÒ ¼ö ÀÖÀ½.
+        # ë§¤ë‰´ì–¼ì˜ í…ìŠ¤íŠ¸("ì‹œê°„ íš¨ê³¼ë§Œ ì¬í˜„")ë¥¼ ë”°ë¥´ê¸° ìœ„í•´ entity_effects=Falseë¡œ ì„¤ì •
+        # ì´ ì„¤ì •ì´ íŠ¹ì • ë²„ì „ì˜ linearmodelsì—ì„œ ê´€ì¸¡ì¹˜ ë¶ˆì¼ì¹˜ ì—ëŸ¬ë¥¼ ìœ ë°œí•  ìˆ˜ ìˆìŒ.
         mod_fe_oe = PanelOLS(endog, exog_fe_te, entity_effects=False, other_effects=time_ids_df)
         fe_oe_res = mod_fe_oe.fit()
         print(fe_oe_res)
-        results["FixedEffects (Other-Time)"] = fe_oe_res # ¸ğµ¨ ÀÌ¸§µµ º¯°æ
+        results["FixedEffects (Other-Time)"] = fe_oe_res # ëª¨ë¸ ì´ë¦„ë„ ë³€ê²½
     except ValueError as e:
-        print(f"FixedEffects (Other-Time) ¸ğµ¨ ÃßÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
-        print("ÀÌ ¸ğµ¨Àº 'entity_effects=False'¿Í 'other_effects' Á¶ÇÕ¿¡¼­ µ¥ÀÌÅÍ Á¤·Ä ¶Ç´Â È¿°ú ÁßÃ¸°ú °ü·ÃµÈ ¹®Á¦·Î ÀÎÇØ °Ç³Ê¶İ´Ï´Ù.")
-        print("´Ù¸¥ ÃßÁ¤¹ı °á°ú´Â Á¤»óÀûÀ¸·Î Ãâ·ÂµË´Ï´Ù.")
+        print(f"FixedEffects (Other-Time) ëª¨ë¸ ì¶”ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+        print("ì´ ëª¨ë¸ì€ 'entity_effects=False'ì™€ 'other_effects' ì¡°í•©ì—ì„œ ë°ì´í„° ì •ë ¬ ë˜ëŠ” íš¨ê³¼ ì¤‘ì²©ê³¼ ê´€ë ¨ëœ ë¬¸ì œë¡œ ì¸í•´ ê±´ë„ˆëœë‹ˆë‹¤.")
+        print("ë‹¤ë¥¸ ì¶”ì •ë²• ê²°ê³¼ëŠ” ì •ìƒì ìœ¼ë¡œ ì¶œë ¥ë©ë‹ˆë‹¤.")
     print("\n")
     
-    # --- 8. FirstDifferenceOLS (Ã¹ ¹øÂ° Â÷ºĞ OLS) ---
+    # --- 8. FirstDifferenceOLS (ì²« ë²ˆì§¸ ì°¨ë¶„ OLS) ---
     print("----------------------------------------------------------------")
-    print("FirstDifferenceOLS (Ã¹ ¹øÂ° Â÷ºĞ) ÃßÁ¤ Áß...")
-    # ¸Å´º¾ó ¿¹½Ã: 'exper', 'expersq', 'union', 'married' »ç¿ë
-    # ½Ã°£ ºÒº¯ º¯¼ö ('black', 'hisp', 'educ') ¹× year ´õ¹Ì´Â Ã¹ ¹øÂ° Â÷ºĞ¿¡¼­ Á¦¿ÜµÊ.
+    print("FirstDifferenceOLS (ì²« ë²ˆì§¸ ì°¨ë¶„) ì¶”ì • ì¤‘...")
+    # ë§¤ë‰´ì–¼ ì˜ˆì‹œ: 'exper', 'expersq', 'union', 'married' ì‚¬ìš©
+    # ì‹œê°„ ë¶ˆë³€ ë³€ìˆ˜ ('black', 'hisp', 'educ') ë° year ë”ë¯¸ëŠ” ì²« ë²ˆì§¸ ì°¨ë¶„ì—ì„œ ì œì™¸ë¨.
     fd_vars = [var for var in independent_vars if var in ["exper", "expersq", "union", "married"]]
-    # FirstDifferenceOLS´Â »ó¼öÇ×À» ÀÚµ¿À¸·Î Ã³¸®ÇÏ°Å³ª ¸ğµ¨¿¡¼­ Á¦¿ÜÇÔ.
-    # sm.add_constant ¾øÀÌ Á÷Á¢ µ¶¸³ º¯¼ö DataFrameÀ» Àü´Ş.
+    # FirstDifferenceOLSëŠ” ìƒìˆ˜í•­ì„ ìë™ìœ¼ë¡œ ì²˜ë¦¬í•˜ê±°ë‚˜ ëª¨ë¸ì—ì„œ ì œì™¸í•¨.
+    # sm.add_constant ì—†ì´ ì§ì ‘ ë…ë¦½ ë³€ìˆ˜ DataFrameì„ ì „ë‹¬.
     exog_fd = processed_data[fd_vars]
     
     mod_fd = FirstDifferenceOLS(endog, exog_fd)
@@ -180,8 +180,8 @@ def Run_all_Panel_estimations(data_df: pd.DataFrame,
 
     # --- 9. Covariance options for PooledOLS ---
     print("----------------------------------------------------------------")
-    print("PooledOLSÀÇ Robust, Clustered Covariance ÃßÁ¤ Áß...")
-    # `exog_pooled_re` (const Æ÷ÇÔ) »ç¿ë
+    print("PooledOLSì˜ Robust, Clustered Covariance ì¶”ì • ì¤‘...")
+    # `exog_pooled_re` (const í¬í•¨) ì‚¬ìš©
     mod_pooled_cov = PooledOLS(endog, exog_pooled_re)
 
     # Heteroskedasticity Robust Covariance
@@ -201,8 +201,8 @@ def Run_all_Panel_estimations(data_df: pd.DataFrame,
     print("\n--- PooledOLS with Clustered by Entity-Time Covariance ---")
     print(clust_entity_time_res)
 
-    # Covariance option °á°ú ºñ±³
-    print("\n--- PooledOLS Covariance Options ºñ±³ ---")
+    # Covariance option ê²°ê³¼ ë¹„êµ
+    print("\n--- PooledOLS Covariance Options ë¹„êµ ---")
     cov_results_comp = OrderedDict()
     cov_results_comp["Robust"] = robust_res
     cov_results_comp["Entity Clustered"] = clust_entity_res
@@ -212,38 +212,38 @@ def Run_all_Panel_estimations(data_df: pd.DataFrame,
 
     # --- 10. Hausman Test (FE vs RE) ---
     print("----------------------------------------------------------------")
-    print("Hausman Test (Fixed Effects vs Random Effects) ½ÇÇà Áß...")
+    print("Hausman Test (Fixed Effects vs Random Effects) ì‹¤í–‰ ì¤‘...")
     if "FixedEffects (Entity)" in results and "RandomEffects" in results:
         try:
-            # linearmodelsÀÇ compare ÇÔ¼ö´Â FE¿Í RE ºñ±³ ½Ã ÀÚµ¿À¸·Î Hausman test¸¦ Æ÷ÇÔ
+            # linearmodelsì˜ compare í•¨ìˆ˜ëŠ” FEì™€ RE ë¹„êµ ì‹œ ìë™ìœ¼ë¡œ Hausman testë¥¼ í¬í•¨
             hausman_comp = compare({"FE": results["FixedEffects (Entity)"], "RE": results["RandomEffects"]})
             print(hausman_comp)
-            print("\nÀ§ °á°úÀÇ 'Hausman' ¼½¼Ç¿¡¼­ Hausman Test Åë°è·® ¹× p-°ªÀ» È®ÀÎÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+            print("\nìœ„ ê²°ê³¼ì˜ 'Hausman' ì„¹ì…˜ì—ì„œ Hausman Test í†µê³„ëŸ‰ ë° p-ê°’ì„ í™•ì¸í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
         except Exception as e:
-            print(f"Hausman Test ½ÇÇà Áß ¿À·ù ¹ß»ı: {e}")
-            print("Hausman Test´Â FE¿Í RE ¸ğµ¨ °£ÀÇ °è¼ö ¹× °øºĞ»ê Çà·Ä È£È¯¼º¿¡ µû¶ó ½ÇÆĞÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+            print(f"Hausman Test ì‹¤í–‰ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+            print("Hausman TestëŠ” FEì™€ RE ëª¨ë¸ ê°„ì˜ ê³„ìˆ˜ ë° ê³µë¶„ì‚° í–‰ë ¬ í˜¸í™˜ì„±ì— ë”°ë¼ ì‹¤íŒ¨í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
     else:
-        print("Hausman Test¸¦ ½ÇÇàÇÏ±â À§ÇÑ Fixed Effects (Entity) ¶Ç´Â Random Effects ¸ğµ¨ °á°ú°¡ ¾ø½À´Ï´Ù.")
+        print("Hausman Testë¥¼ ì‹¤í–‰í•˜ê¸° ìœ„í•œ Fixed Effects (Entity) ë˜ëŠ” Random Effects ëª¨ë¸ ê²°ê³¼ê°€ ì—†ìŠµë‹ˆë‹¤.")
     print("\n")
 
-    # --- ¸ğµç ¸ğµ¨ °á°ú ¿ä¾à ºñ±³ ---
+    # --- ëª¨ë“  ëª¨ë¸ ê²°ê³¼ ìš”ì•½ ë¹„êµ ---
     print("----------------------------------------------------------------")
-    print("¸ğµç ÆĞ³Î ÃßÁ¤ ¸ğµ¨ °á°ú ¿ä¾à ºñ±³ Áß...")
-    # `results` µñ¼Å³Ê¸®¿¡¼­ ÀûÀıÇÑ ¸ğµ¨µéÀ» ¼±ÅÃÇÏ¿© ºñ±³
-    # ¸Å´º¾ó ¿¹½Ã¿Í À¯»çÇÏ°Ô ÀÏºÎ ¸ğµ¨¸¸ ¼±ÅÃÇÏ¿© ºñ±³
+    print("ëª¨ë“  íŒ¨ë„ ì¶”ì • ëª¨ë¸ ê²°ê³¼ ìš”ì•½ ë¹„êµ ì¤‘...")
+    # `results` ë”•ì…”ë„ˆë¦¬ì—ì„œ ì ì ˆí•œ ëª¨ë¸ë“¤ì„ ì„ íƒí•˜ì—¬ ë¹„êµ
+    # ë§¤ë‰´ì–¼ ì˜ˆì‹œì™€ ìœ ì‚¬í•˜ê²Œ ì¼ë¶€ ëª¨ë¸ë§Œ ì„ íƒí•˜ì—¬ ë¹„êµ
     selected_for_comparison = OrderedDict()
     if "BetweenOLS" in results: selected_for_comparison["BE"] = results["BetweenOLS"]
     if "RandomEffects" in results: selected_for_comparison["RE"] = results["RandomEffects"]
     if "PooledOLS" in results: selected_for_comparison["Pooled"] = results["PooledOLS"]
     if "FixedEffects (Entity)" in results: selected_for_comparison["FE (Entity)"] = results["FixedEffects (Entity)"]
     if "FixedEffects (Entity+Time)" in results: selected_for_comparison["FE (E+T)"] = results["FixedEffects (Entity+Time)"]
-    # "FixedEffects (Other-Time)" ¸ğµ¨ÀÌ ¼º°øÀûÀ¸·Î ½ÇÇàµÇ¾úÀ» ¶§¸¸ ºñ±³¿¡ Æ÷ÇÔ
+    # "FixedEffects (Other-Time)" ëª¨ë¸ì´ ì„±ê³µì ìœ¼ë¡œ ì‹¤í–‰ë˜ì—ˆì„ ë•Œë§Œ ë¹„êµì— í¬í•¨
     if "FixedEffects (Other-Time)" in results: selected_for_comparison["FE (Other-Time)"] = results["FixedEffects (Other-Time)"] 
     if "FirstDifferenceOLS" in results: selected_for_comparison["FD"] = results["FirstDifferenceOLS"]
 
     if selected_for_comparison:
         print(compare(selected_for_comparison))
     else:
-        print("ºñ±³ÇÒ ¸ğµ¨ °á°ú°¡ ¾ø½À´Ï´Ù.")
+        print("ë¹„êµí•  ëª¨ë¸ ê²°ê³¼ê°€ ì—†ìŠµë‹ˆë‹¤.")
     print("----------------------------------------------------------------")
-    print("¸ğµç ÆĞ³Î ÃßÁ¤¹ı Àû¿ë ¿Ï·á!")
+    print("ëª¨ë“  íŒ¨ë„ ì¶”ì •ë²• ì ìš© ì™„ë£Œ!")

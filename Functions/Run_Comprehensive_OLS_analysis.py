@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-°è·®°æÁ¦ÇĞ Á¾ÇÕ ºĞ¼® ÇÔ¼ö
-ÆÄÀÏ¸í: Functions/econometric_analysis.py
+ê³„ëŸ‰ê²½ì œí•™ ì¢…í•© ë¶„ì„ í•¨ìˆ˜
+íŒŒì¼ëª…: Functions/econometric_analysis.py
 """
 
 import numpy as np
@@ -20,14 +20,14 @@ from stargazer.stargazer import Stargazer
 import warnings
 warnings.filterwarnings("ignore")
 
-# ÇÑ±Û ÆùÆ® ¼³Á¤ (matplotlib¿¡¼­ ÇÑ±Û ±úÁü ¹æÁö)
+# í•œê¸€ í°íŠ¸ ì„¤ì • (matplotlibì—ì„œ í•œê¸€ ê¹¨ì§ ë°©ì§€)
 plt.rcParams['font.family'] = 'DejaVu Sans'
 try:
-    # WindowsÀÇ °æ¿ì
+    # Windowsì˜ ê²½ìš°
     plt.rcParams['font.family'] = 'Malgun Gothic'
 except:
     try:
-        # ´Ù¸¥ OSÀÇ °æ¿ì
+        # ë‹¤ë¥¸ OSì˜ ê²½ìš°
         plt.rcParams['font.family'] = 'AppleGothic'
     except:
         pass
@@ -35,63 +35,63 @@ plt.rcParams['axes.unicode_minus'] = False
 
 def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_type='cross_section', alpha=0.05, output_format='text'):
     """
-    °è·®°æÁ¦ÇĞ Á¾ÇÕ ºĞ¼® ÇÔ¼ö
+    ê³„ëŸ‰ê²½ì œí•™ ì¢…í•© ë¶„ì„ í•¨ìˆ˜
     
     Parameters:
     -----------
     data : pandas.DataFrame
-        ºĞ¼®ÇÒ µ¥ÀÌÅÍ
+        ë¶„ì„í•  ë°ì´í„°
     dependent_var : str
-        Á¾¼Óº¯¼ö¸í
+        ì¢…ì†ë³€ìˆ˜ëª…
     independent_vars : list
-        µ¶¸³º¯¼ö¸í ¸®½ºÆ®
+        ë…ë¦½ë³€ìˆ˜ëª… ë¦¬ìŠ¤íŠ¸
     data_type : str, default='cross_section'
-        µ¥ÀÌÅÍ À¯Çü ('cross_section' ¶Ç´Â 'time_series')
+        ë°ì´í„° ìœ í˜• ('cross_section' ë˜ëŠ” 'time_series')
     alpha : float, default=0.05
-        À¯ÀÇ¼öÁØ
+        ìœ ì˜ìˆ˜ì¤€
     output_format : str, default='text'
-        Ãâ·Â Çü½Ä ('text', 'latex', 'html')
+        ì¶œë ¥ í˜•ì‹ ('text', 'latex', 'html')
     
     Returns:
     --------
-    dict: ºĞ¼® °á°ú¸¦ ´ãÀº µñ¼Å³Ê¸®
+    dict: ë¶„ì„ ê²°ê³¼ë¥¼ ë‹´ì€ ë”•ì…”ë„ˆë¦¬
     """
     
     print("="*80)
-    print("                   °è·®°æÁ¦ÇĞ Á¾ÇÕ ºĞ¼® °á°ú")
+    print("                   ê³„ëŸ‰ê²½ì œí•™ ì¢…í•© ë¶„ì„ ê²°ê³¼")
     print("="*80)
     
-    # 1. ±âÃÊ µ¥ÀÌÅÍ Á¤º¸
-    print("\n1. µ¥ÀÌÅÍ ±âº» Á¤º¸")
+    # 1. ê¸°ì´ˆ ë°ì´í„° ì •ë³´
+    print("\n1. ë°ì´í„° ê¸°ë³¸ ì •ë³´")
     print("-"*50)
-    print(f"°üÃøÄ¡ ¼ö: {len(data)}")
-    print(f"Á¾¼Óº¯¼ö: {dependent_var}")
-    print(f"µ¶¸³º¯¼ö: {', '.join(independent_vars)}")
-    print(f"µ¥ÀÌÅÍ À¯Çü: {data_type}")
+    print(f"ê´€ì¸¡ì¹˜ ìˆ˜: {len(data)}")
+    print(f"ì¢…ì†ë³€ìˆ˜: {dependent_var}")
+    print(f"ë…ë¦½ë³€ìˆ˜: {', '.join(independent_vars)}")
+    print(f"ë°ì´í„° ìœ í˜•: {data_type}")
     
-    # ºĞ¼®¿¡ »ç¿ëÇÒ º¯¼öµé
+    # ë¶„ì„ì— ì‚¬ìš©í•  ë³€ìˆ˜ë“¤
     all_vars = [dependent_var] + independent_vars
     analysis_data = data[all_vars].dropna()
     
-    print(f"°áÃøÄ¡ Á¦°Å ÈÄ °üÃøÄ¡ ¼ö: {len(analysis_data)}")
+    print(f"ê²°ì¸¡ì¹˜ ì œê±° í›„ ê´€ì¸¡ì¹˜ ìˆ˜: {len(analysis_data)}")
     
-    # 2. ±âÃÊ Åë°è·®
-    print("\n2. ±âÃÊ Åë°è·®")
+    # 2. ê¸°ì´ˆ í†µê³„ëŸ‰
+    print("\n2. ê¸°ì´ˆ í†µê³„ëŸ‰")
     print("-"*50)
     desc_stats = analysis_data.describe().round(4)
     display(desc_stats)
     
-    # 3. »ó°ü°è¼ö Çà·Ä
-    print("\n3. »ó°ü°è¼ö Çà·Ä")
+    # 3. ìƒê´€ê³„ìˆ˜ í–‰ë ¬
+    print("\n3. ìƒê´€ê³„ìˆ˜ í–‰ë ¬")
     print("-"*50)
     corr_matrix = analysis_data.corr().round(4)
     display(corr_matrix)
     
-    # 4. ½Ã°¢È­
-    print("\n4. µ¥ÀÌÅÍ ½Ã°¢È­")
+    # 4. ì‹œê°í™”
+    print("\n4. ë°ì´í„° ì‹œê°í™”")
     print("-"*50)
     
-    # È÷½ºÅä±×·¥
+    # íˆìŠ¤í† ê·¸ë¨
     fig, axes = plt.subplots(2, 2, figsize=(12, 8))
     axes = axes.ravel()
     
@@ -105,7 +105,7 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
     plt.tight_layout()
     plt.show()
     
-    # Á¾¼Óº¯¼ö¿Í µ¶¸³º¯¼ö°£ »êÁ¡µµ
+    # ì¢…ì†ë³€ìˆ˜ì™€ ë…ë¦½ë³€ìˆ˜ê°„ ì‚°ì ë„
     fig, axes = plt.subplots(1, len(independent_vars), figsize=(5*len(independent_vars), 4))
     if len(independent_vars) == 1:
         axes = [axes]
@@ -119,14 +119,14 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
     plt.tight_layout()
     plt.show()
     
-    # 5. OLS È¸±ÍºĞ¼®
-    print("\n5. OLS È¸±ÍºĞ¼® °á°ú")
+    # 5. OLS íšŒê·€ë¶„ì„
+    print("\n5. OLS íšŒê·€ë¶„ì„ ê²°ê³¼")
     print("-"*50)
     
-    # È¸±Í½Ä ±¸¼º
+    # íšŒê·€ì‹ êµ¬ì„±
     formula = f"{dependent_var} ~ {' + '.join(independent_vars)}"
     
-    # OLS ÃßÁ¤
+    # OLS ì¶”ì •
     ols_model = smf.ols(formula=formula, data=analysis_data)
     ols_results = ols_model.fit()
     
@@ -138,27 +138,27 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
         'data': analysis_data
     }
     
-    # 6. Á¤±Ô¼º °ËÁ¤
-    print("\n6. ÀÜÂ÷ÀÇ Á¤±Ô¼º °ËÁ¤")
+    # 6. ì •ê·œì„± ê²€ì •
+    print("\n6. ì”ì°¨ì˜ ì •ê·œì„± ê²€ì •")
     print("-"*50)
     
     residuals = ols_results.resid
     
-    # Shapiro-Wilk °ËÁ¤
+    # Shapiro-Wilk ê²€ì •
     sw_stat, sw_pval = stats.shapiro(residuals)
     print(f"Shapiro-Wilk Test:")
     print(f"  Statistic: {sw_stat:.4f}")
     print(f"  p-value: {sw_pval:.4f}")
     print(f"  Result: {'Reject Normality' if sw_pval < alpha else 'Accept Normality'}")
     
-    # Jarque-Bera °ËÁ¤
+    # Jarque-Bera ê²€ì •
     jb_stat, jb_pval = stats.jarque_bera(residuals)
     print(f"\nJarque-Bera Test:")
     print(f"  Statistic: {jb_stat:.4f}")
     print(f"  p-value: {jb_pval:.4f}")
     print(f"  Result: {'Reject Normality' if jb_pval < alpha else 'Accept Normality'}")
     
-    # ÀÜÂ÷ È÷½ºÅä±×·¥
+    # ì”ì°¨ íˆìŠ¤í† ê·¸ë¨
     plt.figure(figsize=(10, 4))
     plt.subplot(1, 2, 1)
     plt.hist(residuals, bins=20, alpha=0.7, color='lightcoral', edgecolor='black')
@@ -177,8 +177,8 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
         'jarque_bera': {'statistic': jb_stat, 'pvalue': jb_pval}
     }
     
-    # 7. ¸ğÇü¼³Á¤ ¿À·ù °ËÁ¤ (RESET Test)
-    print("\n7. ¸ğÇü¼³Á¤ ¿À·ù °ËÁ¤ (RESET Test)")
+    # 7. ëª¨í˜•ì„¤ì • ì˜¤ë¥˜ ê²€ì • (RESET Test)
+    print("\n7. ëª¨í˜•ì„¤ì • ì˜¤ë¥˜ ê²€ì • (RESET Test)")
     print("-"*50)
     
     try:
@@ -199,23 +199,23 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
         print("Cannot perform RESET test.")
         results_dict['reset_test'] = None
     
-    # 8. ´ÙÁß°ø¼±¼º °ËÁ¤ (VIF)
-    print("\n8. ´ÙÁß°ø¼±¼º °ËÁ¤ (VIF)")
+    # 8. ë‹¤ì¤‘ê³µì„ ì„± ê²€ì • (VIF)
+    print("\n8. ë‹¤ì¤‘ê³µì„ ì„± ê²€ì • (VIF)")
     print("-"*50)
     
     if len(independent_vars) > 1:
-        # VIF °è»êÀ» À§ÇÑ Çà·Ä »ı¼º
+        # VIF ê³„ì‚°ì„ ìœ„í•œ í–‰ë ¬ ìƒì„±
         y, X = pt.dmatrices(formula, data=analysis_data, return_type='dataframe')
         
-        # VIF °è»ê
+        # VIF ê³„ì‚°
         vif_data = pd.DataFrame()
-        vif_data["Variable"] = X.columns[1:]  # »ó¼öÇ× Á¦¿Ü
+        vif_data["Variable"] = X.columns[1:]  # ìƒìˆ˜í•­ ì œì™¸
         vif_data["VIF"] = [smo.variance_inflation_factor(X.values, i) 
                           for i in range(1, X.shape[1])]
         
         display(vif_data)
         
-        # VIF ÇØ¼®
+        # VIF í•´ì„
         high_vif = vif_data[vif_data['VIF'] > 10]
         if len(high_vif) > 0:
             print("Warning: High multicollinearity detected (VIF > 10):")
@@ -228,12 +228,12 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
         print("Single independent variable - multicollinearity test skipped.")
         results_dict['vif'] = None
     
-    # 9. È¾´Ü¸é ÀÚ·áÀÇ °æ¿ì: ÀÌºĞ»ê °ËÁ¤ ¹× ´ë¾È ÃßÁ¤¹ı
+    # 9. íš¡ë‹¨ë©´ ìë£Œì˜ ê²½ìš°: ì´ë¶„ì‚° ê²€ì • ë° ëŒ€ì•ˆ ì¶”ì •ë²•
     if data_type == 'cross_section':
-        print("\n9. ÀÌºĞ»ê¼º °ËÁ¤ ¹× ´ë¾È ÃßÁ¤¹ı")
+        print("\n9. ì´ë¶„ì‚°ì„± ê²€ì • ë° ëŒ€ì•ˆ ì¶”ì •ë²•")
         print("-"*50)
         
-        # Breusch-Pagan °ËÁ¤
+        # Breusch-Pagan ê²€ì •
         y, X = pt.dmatrices(formula, data=analysis_data, return_type='dataframe')
         bp_result = dg.het_breuschpagan(ols_results.resid, X)
         bp_stat, bp_pval = bp_result[0], bp_result[1]
@@ -243,7 +243,7 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
         print(f"  p-value: {bp_pval:.4f}")
         print(f"  Result: {'Heteroskedasticity Present' if bp_pval < alpha else 'Homoskedasticity Accepted'}")
         
-        # White °ËÁ¤
+        # White ê²€ì •
         X_white = pd.DataFrame({
             'const': 1, 
             'fitted': ols_results.fittedvalues,
@@ -257,66 +257,66 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
         print(f"  p-value: {white_pval:.4f}")
         print(f"  Result: {'Heteroskedasticity Present' if white_pval < alpha else 'Homoskedasticity Accepted'}")
         
-        # ÀÌºĞ»ê¼º Å½Áö ¿©ºÎ È®ÀÎ
+        # ì´ë¶„ì‚°ì„± íƒì§€ ì—¬ë¶€ í™•ì¸
         heteroskedastic = bp_pval < alpha or white_pval < alpha
-        print(f"\nÀÌºĞ»ê¼º Å½Áö ¿©ºÎ: {heteroskedastic}")
+        print(f"\nì´ë¶„ì‚°ì„± íƒì§€ ì—¬ë¶€: {heteroskedastic}")
         print(f"BP p-value < {alpha}: {bp_pval < alpha}")
         print(f"White p-value < {alpha}: {white_pval < alpha}")
         
-        # °ËÁ¤ °á°ú¸¦ ¸ÕÀú ÀúÀå
+        # ê²€ì • ê²°ê³¼ë¥¼ ë¨¼ì € ì €ì¥
         results_dict['heteroskedasticity_tests'] = {
             'bp_test': {'statistic': bp_stat, 'pvalue': bp_pval},
             'white_test': {'statistic': white_stat, 'pvalue': white_pval}
         }
         
-        # ´ë¾È ÃßÁ¤¹ı ½ÇÇà (ÀÌºĞ»ê¼º Å½Áö ¿©ºÎ¿Í °ü°è¾øÀÌ ½ÇÇàÇØ¼­ ºñ±³)
-        print(f"\n´ë¾È ÃßÁ¤¹ıÀ» ½ÇÇàÇÕ´Ï´Ù...")
+        # ëŒ€ì•ˆ ì¶”ì •ë²• ì‹¤í–‰ (ì´ë¶„ì‚°ì„± íƒì§€ ì—¬ë¶€ì™€ ê´€ê³„ì—†ì´ ì‹¤í–‰í•´ì„œ ë¹„êµ)
+        print(f"\nëŒ€ì•ˆ ì¶”ì •ë²•ì„ ì‹¤í–‰í•©ë‹ˆë‹¤...")
         
-        # WhiteÀÇ °­°Ç Ç¥ÁØ¿ÀÂ÷ (Ç×»ó ½ÇÇà)
+        # Whiteì˜ ê°•ê±´ í‘œì¤€ì˜¤ì°¨ (í•­ìƒ ì‹¤í–‰)
         try:
-            print("  - White °­°Ç Ç¥ÁØ¿ÀÂ÷ ÃßÁ¤ Áß...")
+            print("  - White ê°•ê±´ í‘œì¤€ì˜¤ì°¨ ì¶”ì • ì¤‘...")
             ols_robust = ols_model.fit(cov_type='HC3')
             results_dict['ols_robust'] = ols_robust
-            print("  ? White °­°Ç Ç¥ÁØ¿ÀÂ÷ ¿Ï·á")
+            print("  ? White ê°•ê±´ í‘œì¤€ì˜¤ì°¨ ì™„ë£Œ")
         except Exception as e:
-            print(f"  ? White °­°Ç Ç¥ÁØ¿ÀÂ÷ ½ÇÆĞ: {e}")
+            print(f"  ? White ê°•ê±´ í‘œì¤€ì˜¤ì°¨ ì‹¤íŒ¨: {e}")
             results_dict['ols_robust'] = None
         
-        # WLS (°¡ÁßÃÖ¼ÒÀÚ½Â¹ı) - Ç×»ó ½ÇÇà
+        # WLS (ê°€ì¤‘ìµœì†ŒììŠ¹ë²•) - í•­ìƒ ì‹¤í–‰
         try:
-            print("  - WLS ÃßÁ¤ Áß...")
-            # ÀÜÂ÷ÀÇ Àı´ñ°ªÀ¸·Î °¡ÁßÄ¡ »ı¼º
+            print("  - WLS ì¶”ì • ì¤‘...")
+            # ì”ì°¨ì˜ ì ˆëŒ“ê°’ìœ¼ë¡œ ê°€ì¤‘ì¹˜ ìƒì„±
             abs_resid = np.abs(ols_results.resid)
-            # 0À¸·Î ³ª´©±â ¹æÁö
+            # 0ìœ¼ë¡œ ë‚˜ëˆ„ê¸° ë°©ì§€
             abs_resid = np.where(abs_resid < 1e-6, 1e-6, abs_resid)
             weights = 1 / abs_resid
-            weights = weights / np.mean(weights)  # Ç¥ÁØÈ­
+            weights = weights / np.mean(weights)  # í‘œì¤€í™”
             
             wls_model = smf.wls(formula=formula, data=analysis_data, weights=weights)
             wls_results = wls_model.fit()
             results_dict['wls_results'] = wls_results
-            print("  ? WLS ÃßÁ¤ ¿Ï·á")
+            print("  ? WLS ì¶”ì • ì™„ë£Œ")
         except Exception as e:
-            print(f"  ? WLS ÃßÁ¤ ½ÇÆĞ: {e}")
+            print(f"  ? WLS ì¶”ì • ì‹¤íŒ¨: {e}")
             results_dict['wls_results'] = None
         
         if heteroskedastic:
-            print(f"\n? ÀÌºĞ»ê¼ºÀÌ Å½ÁöµÇ¾î ´ë¾È ÃßÁ¤¹ıÀ» ±ÇÀåÇÕ´Ï´Ù.")
+            print(f"\n? ì´ë¶„ì‚°ì„±ì´ íƒì§€ë˜ì–´ ëŒ€ì•ˆ ì¶”ì •ë²•ì„ ê¶Œì¥í•©ë‹ˆë‹¤.")
         else:
-            print("??  ÀÌºĞ»ê¼ºÀÌ Å½ÁöµÇÁö ¾Ê¾ÒÁö¸¸, ºñ±³¸¦ À§ÇØ ´ë¾È ÃßÁ¤¹ıµµ ½ÇÇàÇß½À´Ï´Ù.")
+            print("??  ì´ë¶„ì‚°ì„±ì´ íƒì§€ë˜ì§€ ì•Šì•˜ì§€ë§Œ, ë¹„êµë¥¼ ìœ„í•´ ëŒ€ì•ˆ ì¶”ì •ë²•ë„ ì‹¤í–‰í–ˆìŠµë‹ˆë‹¤.")
         
-        # °á°ú È®ÀÎ
-        print(f"\nÃßÁ¤ °á°ú ¿ä¾à:")
-        print(f"  - OLS: ¿Ï·á")
-        print(f"  - OLS (Robust SE): {'¿Ï·á' if results_dict.get('ols_robust') is not None else '½ÇÆĞ'}")
-        print(f"  - WLS: {'¿Ï·á' if results_dict.get('wls_results') is not None else '½ÇÆĞ'}")
+        # ê²°ê³¼ í™•ì¸
+        print(f"\nì¶”ì • ê²°ê³¼ ìš”ì•½:")
+        print(f"  - OLS: ì™„ë£Œ")
+        print(f"  - OLS (Robust SE): {'ì™„ë£Œ' if results_dict.get('ols_robust') is not None else 'ì‹¤íŒ¨'}")
+        print(f"  - WLS: {'ì™„ë£Œ' if results_dict.get('wls_results') is not None else 'ì‹¤íŒ¨'}")
     
-    # 10. ½Ã°è¿­ ÀÚ·áÀÇ °æ¿ì: ÀÚ±â»ó°ü °ËÁ¤ ¹× ´ë¾È ÃßÁ¤¹ı  
+    # 10. ì‹œê³„ì—´ ìë£Œì˜ ê²½ìš°: ìê¸°ìƒê´€ ê²€ì • ë° ëŒ€ì•ˆ ì¶”ì •ë²•  
     elif data_type == 'time_series':
-        print("\n9. ÀÚ±â»ó°ü °ËÁ¤ ¹× ´ë¾È ÃßÁ¤¹ı")
+        print("\n9. ìê¸°ìƒê´€ ê²€ì • ë° ëŒ€ì•ˆ ì¶”ì •ë²•")
         print("-"*50)
         
-        # Durbin-Watson °ËÁ¤
+        # Durbin-Watson ê²€ì •
         dw_stat = sm.stats.stattools.durbin_watson(ols_results.resid)
         print(f"Durbin-Watson Test:")
         print(f"  DW statistic: {dw_stat:.4f}")
@@ -329,7 +329,7 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
             dw_interpretation = "No autocorrelation"
         print(f"  Result: {dw_interpretation}")
         
-        # Breusch-Godfrey °ËÁ¤
+        # Breusch-Godfrey ê²€ì •
         bg_result = dg.acorr_breusch_godfrey(ols_results, nlags=3)
         bg_stat, bg_pval = bg_result[2], bg_result[3]
         
@@ -338,7 +338,7 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
         print(f"  p-value: {bg_pval:.4f}")
         print(f"  Result: {'Autocorrelation Present' if bg_pval < alpha else 'No Autocorrelation'}")
         
-        # ARCH È¿°ú °ËÁ¤ (ÀÌºĞ»ê¼º + ÀÚ±â»ó°ü)
+        # ARCH íš¨ê³¼ ê²€ì • (ì´ë¶„ì‚°ì„± + ìê¸°ìƒê´€)
         try:
             arch_result = dg.het_arch(ols_results.resid, nlags=3)
             arch_stat, arch_pval = arch_result[2], arch_result[3]
@@ -348,17 +348,17 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
             print(f"  Result: {'ARCH Effects Present' if arch_pval < alpha else 'No ARCH Effects'}")
         except Exception as e:
             print(f"\nARCH Test failed: {e}")
-            arch_pval = 1.0  # °ËÁ¤ ½ÇÆĞ½Ã È¿°ú ¾øÀ½À¸·Î °£ÁÖ
+            arch_pval = 1.0  # ê²€ì • ì‹¤íŒ¨ì‹œ íš¨ê³¼ ì—†ìŒìœ¼ë¡œ ê°„ì£¼
         
-        # ´ÜÀ§±Ù °ËÁ¤ (±âº»ÀûÀÎ ½Ã°è¿­ ºĞ¼®)
+        # ë‹¨ìœ„ê·¼ ê²€ì • (ê¸°ë³¸ì ì¸ ì‹œê³„ì—´ ë¶„ì„)
         try:
             from statsmodels.tsa.stattools import adfuller
             
-            # Á¾¼Óº¯¼ö¿¡ ´ëÇÑ ADF °ËÁ¤
+            # ì¢…ì†ë³€ìˆ˜ì— ëŒ€í•œ ADF ê²€ì •
             adf_result = adfuller(analysis_data[dependent_var].dropna(), autolag='AIC')
             adf_stat, adf_pval = adf_result[0], adf_result[1]
             
-            print(f"\nAugmented Dickey-Fuller Test (Á¾¼Óº¯¼ö):")
+            print(f"\nAugmented Dickey-Fuller Test (ì¢…ì†ë³€ìˆ˜):")
             print(f"  ADF statistic: {adf_stat:.4f}")
             print(f"  p-value: {adf_pval:.4f}")
             print(f"  Result: {'Stationary' if adf_pval < alpha else 'Non-stationary (Unit Root)'}")
@@ -367,17 +367,17 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
             print(f"\nADF Test failed: {e}")
             adf_pval = 1.0
         
-        # ¹®Á¦ Å½Áö ¿©ºÎ È®ÀÎ
+        # ë¬¸ì œ íƒì§€ ì—¬ë¶€ í™•ì¸
         autocorrelated = dw_stat < 1.5 or dw_stat > 2.5 or bg_pval < alpha
         arch_effects = arch_pval < alpha
         non_stationary = adf_pval >= alpha
         
-        print(f"\n½Ã°è¿­ ¹®Á¦ Å½Áö °á°ú:")
-        print(f"  ÀÚ±â»ó°ü: {autocorrelated}")
-        print(f"  ARCH È¿°ú: {arch_effects}")
-        print(f"  ºñÁ¤»ó¼º: {non_stationary}")
+        print(f"\nì‹œê³„ì—´ ë¬¸ì œ íƒì§€ ê²°ê³¼:")
+        print(f"  ìê¸°ìƒê´€: {autocorrelated}")
+        print(f"  ARCH íš¨ê³¼: {arch_effects}")
+        print(f"  ë¹„ì •ìƒì„±: {non_stationary}")
         
-        # °ËÁ¤ °á°ú¸¦ ¸ÕÀú ÀúÀå
+        # ê²€ì • ê²°ê³¼ë¥¼ ë¨¼ì € ì €ì¥
         results_dict['time_series_tests'] = {
             'dw_test': {'statistic': dw_stat, 'interpretation': dw_interpretation},
             'bg_test': {'statistic': bg_stat, 'pvalue': bg_pval},
@@ -387,191 +387,191 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
                         'pvalue': adf_pval}
         }
         
-        # ´ë¾È ÃßÁ¤¹ı ½ÇÇà (¹®Á¦ Å½Áö ¿©ºÎ¿Í °ü°è¾øÀÌ ½ÇÇàÇØ¼­ ºñ±³)
-        print(f"\n´ë¾È ÃßÁ¤¹ıÀ» ½ÇÇàÇÕ´Ï´Ù...")
+        # ëŒ€ì•ˆ ì¶”ì •ë²• ì‹¤í–‰ (ë¬¸ì œ íƒì§€ ì—¬ë¶€ì™€ ê´€ê³„ì—†ì´ ì‹¤í–‰í•´ì„œ ë¹„êµ)
+        print(f"\nëŒ€ì•ˆ ì¶”ì •ë²•ì„ ì‹¤í–‰í•©ë‹ˆë‹¤...")
         
-        # 1. HAC Ç¥ÁØ¿ÀÂ÷ (Newey-West) - Ç×»ó ½ÇÇà
+        # 1. HAC í‘œì¤€ì˜¤ì°¨ (Newey-West) - í•­ìƒ ì‹¤í–‰
         try:
-            print("  - HAC Ç¥ÁØ¿ÀÂ÷ (Newey-West) ÃßÁ¤ Áß...")
+            print("  - HAC í‘œì¤€ì˜¤ì°¨ (Newey-West) ì¶”ì • ì¤‘...")
             ols_hac = ols_model.fit(cov_type='HAC', cov_kwds={'maxlags': 2})
             results_dict['ols_hac'] = ols_hac
-            print("  ? HAC Ç¥ÁØ¿ÀÂ÷ ¿Ï·á")
+            print("  ? HAC í‘œì¤€ì˜¤ì°¨ ì™„ë£Œ")
         except Exception as e:
-            print(f"  ? HAC Ç¥ÁØ¿ÀÂ÷ ½ÇÆĞ: {e}")
+            print(f"  ? HAC í‘œì¤€ì˜¤ì°¨ ì‹¤íŒ¨: {e}")
             results_dict['ols_hac'] = None
         
-        # 2. Cochrane-Orcutt ÃßÁ¤¹ı - Ç×»ó ½ÇÇà
+        # 2. Cochrane-Orcutt ì¶”ì •ë²• - í•­ìƒ ì‹¤í–‰
         try:
-            print("  - Cochrane-Orcutt ÃßÁ¤ Áß...")
+            print("  - Cochrane-Orcutt ì¶”ì • ì¤‘...")
             y, X = pt.dmatrices(formula, data=analysis_data, return_type='dataframe')
             corc_model = sm.GLSAR(y, X)
             corc_results = corc_model.iterative_fit(maxiter=100)
             results_dict['corc_results'] = corc_results
-            print("  ? Cochrane-Orcutt ÃßÁ¤ ¿Ï·á")
+            print("  ? Cochrane-Orcutt ì¶”ì • ì™„ë£Œ")
         except Exception as e:
-            print(f"  ? Cochrane-Orcutt ÃßÁ¤ ½ÇÆĞ: {e}")
+            print(f"  ? Cochrane-Orcutt ì¶”ì • ì‹¤íŒ¨: {e}")
             results_dict['corc_results'] = None
         
-        # 3. Prais-Winsten ÃßÁ¤¹ı - »õ·Î Ãß°¡
+        # 3. Prais-Winsten ì¶”ì •ë²• - ìƒˆë¡œ ì¶”ê°€
         try:
-            print("  - Prais-Winsten ÃßÁ¤ Áß...")
+            print("  - Prais-Winsten ì¶”ì • ì¤‘...")
             from statsmodels.tsa.arima_model import ARIMA
             from statsmodels.regression.linear_model import yule_walker
             
-            # AR(1) °è¼ö ÃßÁ¤
+            # AR(1) ê³„ìˆ˜ ì¶”ì •
             rho_yw = yule_walker(ols_results.resid, order=1)[0][0]
             
-            # Prais-Winsten º¯È¯
+            # Prais-Winsten ë³€í™˜
             y_pw = analysis_data[dependent_var].copy()
             X_pw = analysis_data[independent_vars].copy()
             
-            # Ã¹ ¹øÂ° °üÃøÄ¡ º¯È¯: sqrt(1-rho^2)
+            # ì²« ë²ˆì§¸ ê´€ì¸¡ì¹˜ ë³€í™˜: sqrt(1-rho^2)
             factor = np.sqrt(1 - rho_yw**2)
             y_pw.iloc[0] = y_pw.iloc[0] * factor
             X_pw.iloc[0] = X_pw.iloc[0] * factor
             
-            # ³ª¸ÓÁö °üÃøÄ¡ º¯È¯: Y_t - rho*Y_(t-1)
+            # ë‚˜ë¨¸ì§€ ê´€ì¸¡ì¹˜ ë³€í™˜: Y_t - rho*Y_(t-1)
             for i in range(1, len(y_pw)):
                 y_pw.iloc[i] = y_pw.iloc[i] - rho_yw * y_pw.iloc[i-1]
                 X_pw.iloc[i] = X_pw.iloc[i] - rho_yw * X_pw.iloc[i-1]
             
-            # º¯È¯µÈ µ¥ÀÌÅÍ·Î OLS ÃßÁ¤
+            # ë³€í™˜ëœ ë°ì´í„°ë¡œ OLS ì¶”ì •
             pw_data = pd.concat([y_pw, X_pw], axis=1)
             pw_formula = f"{dependent_var} ~ " + " + ".join(independent_vars)
             pw_model = smf.ols(formula=pw_formula, data=pw_data)
             pw_results = pw_model.fit()
             
             results_dict['prais_winsten_results'] = pw_results
-            print("  ? Prais-Winsten ÃßÁ¤ ¿Ï·á")
+            print("  ? Prais-Winsten ì¶”ì • ì™„ë£Œ")
         except Exception as e:
-            print(f"  ? Prais-Winsten ÃßÁ¤ ½ÇÆĞ: {e}")
+            print(f"  ? Prais-Winsten ì¶”ì • ì‹¤íŒ¨: {e}")
             results_dict['prais_winsten_results'] = None
         
-        # 4. GARCH(1,1) ÃßÁ¤ (ARCH È¿°ú°¡ ÀÖ´Â °æ¿ì ±ÇÀå)
+        # 4. GARCH(1,1) ì¶”ì • (ARCH íš¨ê³¼ê°€ ìˆëŠ” ê²½ìš° ê¶Œì¥)
         if arch_effects:
             try:
-                print("  - GARCH(1,1) ÃßÁ¤ Áß... (ARCH È¿°ú Å½ÁöµÊ)")
+                print("  - GARCH(1,1) ì¶”ì • ì¤‘... (ARCH íš¨ê³¼ íƒì§€ë¨)")
                 from arch import arch_model
                 
-                # GARCH ¸ğµ¨ ¼³Á¤
+                # GARCH ëª¨ë¸ ì„¤ì •
                 garch_model = arch_model(analysis_data[dependent_var], 
                                        x=analysis_data[independent_vars],
                                        vol='GARCH', p=1, q=1)
                 garch_results = garch_model.fit(disp='off')
                 results_dict['garch_results'] = garch_results
-                print("  ? GARCH(1,1) ÃßÁ¤ ¿Ï·á")
+                print("  ? GARCH(1,1) ì¶”ì • ì™„ë£Œ")
             except Exception as e:
-                print(f"  ? GARCH(1,1) ÃßÁ¤ ½ÇÆĞ: {e}")
+                print(f"  ? GARCH(1,1) ì¶”ì • ì‹¤íŒ¨: {e}")
                 results_dict['garch_results'] = None
         else:
             results_dict['garch_results'] = None
         
-        # °á°ú ¿ä¾à
+        # ê²°ê³¼ ìš”ì•½
         any_problems = autocorrelated or arch_effects or non_stationary
         if any_problems:
-            print(f"\n? ½Ã°è¿­ ¹®Á¦°¡ Å½ÁöµÇ¾î ´ë¾È ÃßÁ¤¹ıÀ» ±ÇÀåÇÕ´Ï´Ù.")
+            print(f"\n? ì‹œê³„ì—´ ë¬¸ì œê°€ íƒì§€ë˜ì–´ ëŒ€ì•ˆ ì¶”ì •ë²•ì„ ê¶Œì¥í•©ë‹ˆë‹¤.")
             if autocorrelated:
-                print("   ¡æ ÀÚ±â»ó°ü: HAC Ç¥ÁØ¿ÀÂ÷, Cochrane-Orcutt, Prais-Winsten ±ÇÀå")
+                print("   â†’ ìê¸°ìƒê´€: HAC í‘œì¤€ì˜¤ì°¨, Cochrane-Orcutt, Prais-Winsten ê¶Œì¥")
             if arch_effects:
-                print("   ¡æ ARCH È¿°ú: GARCH ¸ğµ¨ ±ÇÀå")
+                print("   â†’ ARCH íš¨ê³¼: GARCH ëª¨ë¸ ê¶Œì¥")
             if non_stationary:
-                print("   ¡æ ºñÁ¤»ó¼º: Â÷ºĞ(differencing) ¶Ç´Â °øÀûºĞ ºĞ¼® °í·Á")
+                print("   â†’ ë¹„ì •ìƒì„±: ì°¨ë¶„(differencing) ë˜ëŠ” ê³µì ë¶„ ë¶„ì„ ê³ ë ¤")
         else:
-            print("??  ½Ã°è¿­ ¹®Á¦°¡ Å½ÁöµÇÁö ¾Ê¾ÒÁö¸¸, ºñ±³¸¦ À§ÇØ ´ë¾È ÃßÁ¤¹ıµµ ½ÇÇàÇß½À´Ï´Ù.")
+            print("??  ì‹œê³„ì—´ ë¬¸ì œê°€ íƒì§€ë˜ì§€ ì•Šì•˜ì§€ë§Œ, ë¹„êµë¥¼ ìœ„í•´ ëŒ€ì•ˆ ì¶”ì •ë²•ë„ ì‹¤í–‰í–ˆìŠµë‹ˆë‹¤.")
         
-        # °á°ú È®ÀÎ
-        print(f"\nÃßÁ¤ °á°ú ¿ä¾à:")
-        print(f"  - OLS: ¿Ï·á")
-        print(f"  - OLS (HAC SE): {'¿Ï·á' if results_dict.get('ols_hac') is not None else '½ÇÆĞ'}")
-        print(f"  - Cochrane-Orcutt: {'¿Ï·á' if results_dict.get('corc_results') is not None else '½ÇÆĞ'}")
-        print(f"  - Prais-Winsten: {'¿Ï·á' if results_dict.get('prais_winsten_results') is not None else '½ÇÆĞ'}")
-        print(f"  - GARCH(1,1): {'¿Ï·á' if results_dict.get('garch_results') is not None else '¹Ì½ÇÇà/½ÇÆĞ'}")
+        # ê²°ê³¼ í™•ì¸
+        print(f"\nì¶”ì • ê²°ê³¼ ìš”ì•½:")
+        print(f"  - OLS: ì™„ë£Œ")
+        print(f"  - OLS (HAC SE): {'ì™„ë£Œ' if results_dict.get('ols_hac') is not None else 'ì‹¤íŒ¨'}")
+        print(f"  - Cochrane-Orcutt: {'ì™„ë£Œ' if results_dict.get('corc_results') is not None else 'ì‹¤íŒ¨'}")
+        print(f"  - Prais-Winsten: {'ì™„ë£Œ' if results_dict.get('prais_winsten_results') is not None else 'ì‹¤íŒ¨'}")
+        print(f"  - GARCH(1,1): {'ì™„ë£Œ' if results_dict.get('garch_results') is not None else 'ë¯¸ì‹¤í–‰/ì‹¤íŒ¨'}")
     
-    # 11. °á°ú ¿ä¾àÇ¥ »ı¼º
-    print("\n10. ÃßÁ¤ °á°ú ¿ä¾àÇ¥")
+    # 11. ê²°ê³¼ ìš”ì•½í‘œ ìƒì„±
+    print("\n10. ì¶”ì • ê²°ê³¼ ìš”ì•½í‘œ")
     print("-"*50)
     
-    # °á°ú ¸ğµ¨µéÀ» ¸®½ºÆ®·Î Á¤¸®
+    # ê²°ê³¼ ëª¨ë¸ë“¤ì„ ë¦¬ìŠ¤íŠ¸ë¡œ ì •ë¦¬
     models_to_display = [ols_results]
     model_names = ['OLS']
     
-    print(f"±âº» OLS ¸ğµ¨ Ãß°¡ ¿Ï·á")
+    print(f"ê¸°ë³¸ OLS ëª¨ë¸ ì¶”ê°€ ì™„ë£Œ")
     
-    # µ¥ÀÌÅÍ À¯Çüº° Ãß°¡ ¸ğµ¨µé
+    # ë°ì´í„° ìœ í˜•ë³„ ì¶”ê°€ ëª¨ë¸ë“¤
     if data_type == 'cross_section':
-        print("È¾´Ü¸é ÀÚ·á - ÀÌºĞ»ê °ü·Ã ¸ğµ¨µé È®ÀÎ Áß...")
+        print("íš¡ë‹¨ë©´ ìë£Œ - ì´ë¶„ì‚° ê´€ë ¨ ëª¨ë¸ë“¤ í™•ì¸ ì¤‘...")
         
         if 'ols_robust' in results_dict and results_dict['ols_robust'] is not None:
             models_to_display.append(results_dict['ols_robust'])
             model_names.append('OLS (Robust SE)')
-            print("  ? OLS (Robust SE) Ãß°¡")
+            print("  ? OLS (Robust SE) ì¶”ê°€")
         else:
-            print("  ? OLS (Robust SE) ¾øÀ½")
+            print("  ? OLS (Robust SE) ì—†ìŒ")
             
         if 'wls_results' in results_dict and results_dict['wls_results'] is not None:
             models_to_display.append(results_dict['wls_results'])
             model_names.append('WLS')
-            print("  ? WLS Ãß°¡")
+            print("  ? WLS ì¶”ê°€")
         else:
-            print("  ? WLS ¾øÀ½")
+            print("  ? WLS ì—†ìŒ")
     
     elif data_type == 'time_series':
-        print("½Ã°è¿­ ÀÚ·á - ÀÚ±â»ó°ü °ü·Ã ¸ğµ¨µé È®ÀÎ Áß...")
+        print("ì‹œê³„ì—´ ìë£Œ - ìê¸°ìƒê´€ ê´€ë ¨ ëª¨ë¸ë“¤ í™•ì¸ ì¤‘...")
         
         if 'ols_hac' in results_dict and results_dict['ols_hac'] is not None:
             models_to_display.append(results_dict['ols_hac'])
             model_names.append('OLS (HAC SE)')
-            print("  ? OLS (HAC SE) Ãß°¡")
+            print("  ? OLS (HAC SE) ì¶”ê°€")
         else:
-            print("  ? OLS (HAC SE) ¾øÀ½")
+            print("  ? OLS (HAC SE) ì—†ìŒ")
             
         if 'corc_results' in results_dict and results_dict['corc_results'] is not None:
             models_to_display.append(results_dict['corc_results'])
             model_names.append('Cochrane-Orcutt')
-            print("  ? Cochrane-Orcutt Ãß°¡")
+            print("  ? Cochrane-Orcutt ì¶”ê°€")
         else:
-            print("  ? Cochrane-Orcutt ¾øÀ½")
+            print("  ? Cochrane-Orcutt ì—†ìŒ")
             
         if 'prais_winsten_results' in results_dict and results_dict['prais_winsten_results'] is not None:
             models_to_display.append(results_dict['prais_winsten_results'])
             model_names.append('Prais-Winsten')
-            print("  ? Prais-Winsten Ãß°¡")
+            print("  ? Prais-Winsten ì¶”ê°€")
         else:
-            print("  ? Prais-Winsten ¾øÀ½")
+            print("  ? Prais-Winsten ì—†ìŒ")
         
-        # GARCH´Â ±¸Á¶°¡ ´Ù¸£¹Ç·Î ÀÏ¹İÀûÀÎ Ç¥¿¡ Æ÷ÇÔÇÏÁö ¾ÊÀ½
+        # GARCHëŠ” êµ¬ì¡°ê°€ ë‹¤ë¥´ë¯€ë¡œ ì¼ë°˜ì ì¸ í‘œì— í¬í•¨í•˜ì§€ ì•ŠìŒ
         if 'garch_results' in results_dict and results_dict['garch_results'] is not None:
-            print("  ??  GARCH ¸ğµ¨Àº º°µµ Ãâ·ÂµÊ")
+            print("  ??  GARCH ëª¨ë¸ì€ ë³„ë„ ì¶œë ¥ë¨")
         else:
-            print("  ? GARCH ¾øÀ½")
+            print("  ? GARCH ì—†ìŒ")
     
-    print(f"\nÃÖÁ¾ ¸ğµ¨ ¼ö: {len(models_to_display)}")
-    print(f"ÃÖÁ¾ ¸ğµ¨¸í: {model_names}")
+    print(f"\nìµœì¢… ëª¨ë¸ ìˆ˜: {len(models_to_display)}")
+    print(f"ìµœì¢… ëª¨ë¸ëª…: {model_names}")
     
-    # °­Á¦·Î ¼öµ¿ Ç¥ »ı¼º (´õ ¾ÈÁ¤Àû)
-    print("\n¼öµ¿ Ç¥ »ı¼ºÀ» ½ÃÀÛÇÕ´Ï´Ù...")
+    # ê°•ì œë¡œ ìˆ˜ë™ í‘œ ìƒì„± (ë” ì•ˆì •ì )
+    print("\nìˆ˜ë™ í‘œ ìƒì„±ì„ ì‹œì‘í•©ë‹ˆë‹¤...")
     try:
         print("="*100)
-        print("                              ÃßÁ¤ °á°ú ¿ä¾àÇ¥")
+        print("                              ì¶”ì • ê²°ê³¼ ìš”ì•½í‘œ")
         print("="*100)
         
-        # ¸ğµç ¸ğµ¨ÀÇ °á°ú¸¦ DataFrameÀ¸·Î Á¤¸®
+        # ëª¨ë“  ëª¨ë¸ì˜ ê²°ê³¼ë¥¼ DataFrameìœ¼ë¡œ ì •ë¦¬
         summary_data = []
         var_names = None
         
         for i, (model, name) in enumerate(zip(models_to_display, model_names)):
             try:
-                print(f"  ¸ğµ¨ {i+1}: {name} Ã³¸® Áß...")
+                print(f"  ëª¨ë¸ {i+1}: {name} ì²˜ë¦¬ ì¤‘...")
                 
-                # °è¼ö ÃßÃâ
+                # ê³„ìˆ˜ ì¶”ì¶œ
                 coeffs = model.params
                 std_errors = model.bse
                 t_values = model.tvalues
                 p_values = model.pvalues
                 
-                if i == 0:  # Ã¹ ¹øÂ° ¸ğµ¨¿¡¼­ º¯¼ö¸í ÃßÃâ
+                if i == 0:  # ì²« ë²ˆì§¸ ëª¨ë¸ì—ì„œ ë³€ìˆ˜ëª… ì¶”ì¶œ
                     var_names = list(coeffs.index)
-                    print(f"    º¯¼ö¸í: {var_names}")
+                    print(f"    ë³€ìˆ˜ëª…: {var_names}")
                 
                 summary_data.append({
                     'Model': name,
@@ -583,17 +583,17 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
                     'Adj_R_squared': getattr(model, 'rsquared_adj', 'N/A'),
                     'N_obs': int(model.nobs) if hasattr(model, 'nobs') else 'N/A'
                 })
-                print(f"    ? {name} Ã³¸® ¿Ï·á")
+                print(f"    ? {name} ì²˜ë¦¬ ì™„ë£Œ")
                 
             except Exception as e:
-                print(f"    ? ¸ğµ¨ {name} Ã³¸® Áß ¿À·ù: {e}")
+                print(f"    ? ëª¨ë¸ {name} ì²˜ë¦¬ ì¤‘ ì˜¤ë¥˜: {e}")
                 continue
         
-        print(f"\nÃ³¸®µÈ ¸ğµ¨ ¼ö: {len(summary_data)}")
+        print(f"\nì²˜ë¦¬ëœ ëª¨ë¸ ìˆ˜: {len(summary_data)}")
         
-        # Ç¥ Ãâ·Â
+        # í‘œ ì¶œë ¥
         if summary_data and var_names:
-            # Çì´õ Ãâ·Â
+            # í—¤ë” ì¶œë ¥
             col_width = 20
             header = "Variable".ljust(15)
             for name in model_names[:len(summary_data)]:
@@ -601,16 +601,16 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
             print(header)
             print("-" * len(header))
             
-            # °è¼ö Ãâ·Â
+            # ê³„ìˆ˜ ì¶œë ¥
             for var in var_names:
-                # °è¼ö Çà
+                # ê³„ìˆ˜ í–‰
                 row = var.ljust(15)
                 for data in summary_data:
                     try:
                         coeff = data['Coefficients'][var]
                         p_val = data['P_Values'][var]
                         
-                        # À¯ÀÇ¼º Ç¥½Ã
+                        # ìœ ì˜ì„± í‘œì‹œ
                         sig = ""
                         if p_val < 0.01:
                             sig = "***"
@@ -623,11 +623,11 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
                         row += f"{coeff_str}".center(col_width)
                         
                     except Exception as e:
-                        print(f"      º¯¼ö {var} Ã³¸® ¿À·ù: {e}")
+                        print(f"      ë³€ìˆ˜ {var} ì²˜ë¦¬ ì˜¤ë¥˜: {e}")
                         row += "N/A".center(col_width)
                 print(row)
                 
-                # Ç¥ÁØ¿ÀÂ÷ Çà
+                # í‘œì¤€ì˜¤ì°¨ í–‰
                 se_row = "".ljust(15)
                 for data in summary_data:
                     try:
@@ -640,7 +640,7 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
             
             print("-" * len(header))
             
-            # ¸ğµ¨ Åë°è·®
+            # ëª¨ë¸ í†µê³„ëŸ‰
             stats_row = "R-squared".ljust(15)
             for data in summary_data:
                 r2 = data['R_squared']
@@ -670,27 +670,27 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
             print("="*100)
             
             results_dict['manual_table'] = summary_data
-            print("? ¼öµ¿ Ç¥ »ı¼º ¿Ï·á!")
+            print("? ìˆ˜ë™ í‘œ ìƒì„± ì™„ë£Œ!")
             
         else:
-            print("? Ç¥ »ı¼ºÀ» À§ÇÑ µ¥ÀÌÅÍ°¡ ºÎÁ·ÇÕ´Ï´Ù.")
-            print("±âº» È¸±Í °á°ú¸¦ °³º°ÀûÀ¸·Î Ãâ·ÂÇÕ´Ï´Ù:")
+            print("? í‘œ ìƒì„±ì„ ìœ„í•œ ë°ì´í„°ê°€ ë¶€ì¡±í•©ë‹ˆë‹¤.")
+            print("ê¸°ë³¸ íšŒê·€ ê²°ê³¼ë¥¼ ê°œë³„ì ìœ¼ë¡œ ì¶œë ¥í•©ë‹ˆë‹¤:")
             for i, model in enumerate(models_to_display):
                 print(f"\n{model_names[i]} Results:")
                 print(model.summary().tables[1])
         
     except Exception as e:
-        print(f"? ¼öµ¿ Ç¥ »ı¼º Áß ¿À·ù: {e}")
-        print("±âº» È¸±Í °á°ú¸¦ °³º°ÀûÀ¸·Î Ãâ·ÂÇÕ´Ï´Ù:")
+        print(f"? ìˆ˜ë™ í‘œ ìƒì„± ì¤‘ ì˜¤ë¥˜: {e}")
+        print("ê¸°ë³¸ íšŒê·€ ê²°ê³¼ë¥¼ ê°œë³„ì ìœ¼ë¡œ ì¶œë ¥í•©ë‹ˆë‹¤:")
         for i, model in enumerate(models_to_display):
             print(f"\n{model_names[i]} Results:")
             try:
                 print(model.summary().tables[1])
             except:
-                print("¸ğµ¨ ¿ä¾à Ãâ·Â ½ÇÆĞ")
+                print("ëª¨ë¸ ìš”ì•½ ì¶œë ¥ ì‹¤íŒ¨")
     
-    # Stargazer ½Ãµµ (¿É¼Ç) - ´Ü¼øÇÏ°í ¾ÈÀüÇÑ ¹öÀü
-    print(f"\nStargazer Ç¥ »ı¼ºÀ» ½ÃµµÇÕ´Ï´Ù...")
+    # Stargazer ì‹œë„ (ì˜µì…˜) - ë‹¨ìˆœí•˜ê³  ì•ˆì „í•œ ë²„ì „
+    print(f"\nStargazer í‘œ ìƒì„±ì„ ì‹œë„í•©ë‹ˆë‹¤...")
     stargazer_success = False
     
     try:
@@ -701,10 +701,10 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
         stargazer.show_degrees_of_freedom(False)
         
         print("\n" + "="*100)
-        print("                         Stargazer °á°úÇ¥")
+        print("                         Stargazer ê²°ê³¼í‘œ")
         print("="*100)
         
-        # Ãâ·Â Çü½Äº° Ã³¸® (°£´ÜÇÏ°Ô)
+        # ì¶œë ¥ í˜•ì‹ë³„ ì²˜ë¦¬ (ê°„ë‹¨í•˜ê²Œ)
         if output_format.lower() == 'latex':
             latex_output = stargazer.render_latex()
             print(latex_output)
@@ -715,9 +715,9 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
             print(html_output)
             stargazer_success = True
             
-        else:  # text (±âº»°ª) - ´Ü¼øÇÑ ¹æ¹ı¸¸ »ç¿ë
-            print("±âº» ÅØ½ºÆ® Çü½ÄÀº Áö¿øÇÏÁö ¾Ê½À´Ï´Ù.")
-            print("LaTeX Çü½ÄÀ¸·Î Ãâ·ÂÇÕ´Ï´Ù:")
+        else:  # text (ê¸°ë³¸ê°’) - ë‹¨ìˆœí•œ ë°©ë²•ë§Œ ì‚¬ìš©
+            print("ê¸°ë³¸ í…ìŠ¤íŠ¸ í˜•ì‹ì€ ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.")
+            print("LaTeX í˜•ì‹ìœ¼ë¡œ ì¶œë ¥í•©ë‹ˆë‹¤:")
             print("-" * 80)
             latex_output = stargazer.render_latex()
             print(latex_output)
@@ -728,25 +728,25 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
         results_dict['output_format'] = output_format
         
         if stargazer_success:
-            print("? Stargazer Ç¥ »ı¼º ¿Ï·á!")
+            print("? Stargazer í‘œ ìƒì„± ì™„ë£Œ!")
         
     except ImportError:
-        print("? Stargazer ¶óÀÌºê·¯¸®°¡ ¼³Ä¡µÇÁö ¾ÊÀ½")
-        print("   ¼³Ä¡ ¹æ¹ı: pip install stargazer")
+        print("? Stargazer ë¼ì´ë¸ŒëŸ¬ë¦¬ê°€ ì„¤ì¹˜ë˜ì§€ ì•ŠìŒ")
+        print("   ì„¤ì¹˜ ë°©ë²•: pip install stargazer")
     except Exception as e:
-        print(f"? Stargazer ¿À·ù: {e}")
+        print(f"? Stargazer ì˜¤ë¥˜: {e}")
     
     if not stargazer_success:
-        print("?? À§ÀÇ ¼öµ¿ »ı¼º Ç¥¸¦ Âü°íÇÏ¼¼¿ä.")
+        print("?? ìœ„ì˜ ìˆ˜ë™ ìƒì„± í‘œë¥¼ ì°¸ê³ í•˜ì„¸ìš”.")
     
-    # Ãß°¡: °£¼ÒÈ­µÈ ¿ä¾àÇ¥ Á¦°ø
+    # ì¶”ê°€: ê°„ì†Œí™”ëœ ìš”ì•½í‘œ ì œê³µ
     print(f"\n" + "="*100)
-    print("                           °£¼ÒÈ­µÈ ÃÖÁ¾ ¿ä¾à")
+    print("                           ê°„ì†Œí™”ëœ ìµœì¢… ìš”ì•½")
     print("="*100)
     
     try:
-        # ÇÙ½É Åë°è·®¸¸ °£´ÜÈ÷ Á¤¸®
-        print(f"{'Model':<20} {'R©÷':<10} {'Adj R©÷':<10} {'N':<8} {'Key Variables'}")
+        # í•µì‹¬ í†µê³„ëŸ‰ë§Œ ê°„ë‹¨íˆ ì •ë¦¬
+        print(f"{'Model':<20} {'RÂ²':<10} {'Adj RÂ²':<10} {'N':<8} {'Key Variables'}")
         print("-" * 100)
         
         for i, (model, name) in enumerate(zip(models_to_display, model_names)):
@@ -758,7 +758,7 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
                 r2_str = f"{r2:.4f}" if isinstance(r2, (int, float)) else str(r2)
                 adj_r2_str = f"{adj_r2:.4f}" if isinstance(adj_r2, (int, float)) else str(adj_r2)
                 
-                # ÁÖ¿ä °è¼öµéÀÇ À¯ÀÇ¼º È®ÀÎ
+                # ì£¼ìš” ê³„ìˆ˜ë“¤ì˜ ìœ ì˜ì„± í™•ì¸
                 sig_vars = []
                 try:
                     for var, pval in model.pvalues.items():
@@ -781,25 +781,25 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
         print("*** p<0.01, ** p<0.05")
         print("="*100)
         
-        # GARCH ¸ğµ¨ º°µµ Ãâ·Â (½Ã°è¿­ÀÇ °æ¿ì)
+        # GARCH ëª¨ë¸ ë³„ë„ ì¶œë ¥ (ì‹œê³„ì—´ì˜ ê²½ìš°)
         if data_type == 'time_series' and 'garch_results' in results_dict and results_dict['garch_results'] is not None:
             print(f"\n" + "="*100)
-            print("                           GARCH(1,1) ¸ğµ¨ °á°ú")
+            print("                           GARCH(1,1) ëª¨ë¸ ê²°ê³¼")
             print("="*100)
             try:
                 garch_res = results_dict['garch_results']
-                print("Æò±Õ ¹æÁ¤½Ä (Mean Equation):")
+                print("í‰ê·  ë°©ì •ì‹ (Mean Equation):")
                 print(garch_res.summary().tables[1])
-                print("\nºĞ»ê ¹æÁ¤½Ä (Variance Equation):")
+                print("\në¶„ì‚° ë°©ì •ì‹ (Variance Equation):")
                 print(garch_res.summary().tables[2])
                 print("="*100)
             except Exception as e:
-                print(f"GARCH °á°ú Ãâ·Â ½ÇÆĞ: {e}")
+                print(f"GARCH ê²°ê³¼ ì¶œë ¥ ì‹¤íŒ¨: {e}")
         
-        # ½Ã°è¿­ °ËÁ¤ °á°ú ¿ä¾à
+        # ì‹œê³„ì—´ ê²€ì • ê²°ê³¼ ìš”ì•½
         if data_type == 'time_series' and 'time_series_tests' in results_dict:
             print(f"\n" + "="*100)
-            print("                           ½Ã°è¿­ °ËÁ¤ °á°ú ¿ä¾à")
+            print("                           ì‹œê³„ì—´ ê²€ì • ê²°ê³¼ ìš”ì•½")
             print("="*100)
             tests = results_dict['time_series_tests']
             
@@ -834,17 +834,17 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
             print("="*100)
         
     except Exception as e:
-        print(f"°£¼ÒÈ­µÈ ¿ä¾à »ı¼º ½ÇÆĞ: {e}")
+        print(f"ê°„ì†Œí™”ëœ ìš”ì•½ ìƒì„± ì‹¤íŒ¨: {e}")
         
-    print("\n? ¸ğµç ºĞ¼®ÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù!")
+    print("\n? ëª¨ë“  ë¶„ì„ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤!")
     
     if data_type == 'time_series':
-        print("?? ½Ã°è¿­ ºĞ¼® °á°ú:")
-        print("   - ÁÖ¿ä È¸±Í °á°ú´Â À§ÀÇ '¼öµ¿ Ç¥ »ı¼º' ¼½¼Ç Âü°í")
-        print("   - GARCH ¸ğµ¨ °á°ú´Â º°µµ Ç¥½ÃµÊ")
-        print("   - ½Ã°è¿­ °ËÁ¤ °á°ú ¿ä¾à È®ÀÎ")
+        print("?? ì‹œê³„ì—´ ë¶„ì„ ê²°ê³¼:")
+        print("   - ì£¼ìš” íšŒê·€ ê²°ê³¼ëŠ” ìœ„ì˜ 'ìˆ˜ë™ í‘œ ìƒì„±' ì„¹ì…˜ ì°¸ê³ ")
+        print("   - GARCH ëª¨ë¸ ê²°ê³¼ëŠ” ë³„ë„ í‘œì‹œë¨")
+        print("   - ì‹œê³„ì—´ ê²€ì • ê²°ê³¼ ìš”ì•½ í™•ì¸")
     else:
-        print("?? ÁÖ¿ä °á°ú´Â À§ÀÇ '¼öµ¿ Ç¥ »ı¼º' ¼½¼ÇÀ» Âü°íÇÏ¼¼¿ä.")
+        print("?? ì£¼ìš” ê²°ê³¼ëŠ” ìœ„ì˜ 'ìˆ˜ë™ í‘œ ìƒì„±' ì„¹ì…˜ì„ ì°¸ê³ í•˜ì„¸ìš”.")
     
     print("\n" + "="*80)
     print("                        Analysis Complete")
@@ -852,4 +852,4 @@ def Run_Comprehensive_OLS_analysis(data, dependent_var, independent_vars, data_t
     
     return results_dict
 
-print("ÀÌ ÇÔ¼ö´Â ÀüÅëÀû °è·®°æÁ¦ÇĞ Á¾ÇÕ ºĞ¼® ÇÔ¼öÀÔ´Ï´Ù. ")
+print("ì´ í•¨ìˆ˜ëŠ” ì „í†µì  ê³„ëŸ‰ê²½ì œí•™ ì¢…í•© ë¶„ì„ í•¨ìˆ˜ì…ë‹ˆë‹¤. ")

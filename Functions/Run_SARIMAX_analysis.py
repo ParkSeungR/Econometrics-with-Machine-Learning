@@ -21,40 +21,40 @@ def Run_SARIMAX_analysis(
     forecast_periods_exante: int = None
 ):
     """
-    ´Üº¯·® ½Ã°è¿­ µ¥ÀÌÅÍ¿¡ ´ëÇÑ SARIMAX ¸ğµ¨ ºĞ¼®À» ¼öÇàÇÏ´Â ÇÔ¼ö.
+    ë‹¨ë³€ëŸ‰ ì‹œê³„ì—´ ë°ì´í„°ì— ëŒ€í•œ SARIMAX ëª¨ë¸ ë¶„ì„ì„ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜.
 
     Args:
-        data_df (pd.DataFrame): ºĞ¼®ÇÒ ½Ã°è¿­ µ¥ÀÌÅÍ°¡ Æ÷ÇÔµÈ µ¥ÀÌÅÍÇÁ·¹ÀÓ (DatetimeIndex).
-        variable_name (str): µ¥ÀÌÅÍÇÁ·¹ÀÓ ³»¿¡¼­ ºĞ¼®ÇÒ ½Ã°è¿­ º¯¼ö(¿­)ÀÇ ÀÌ¸§.
-        freq (str): µ¥ÀÌÅÍÀÇ ÁÖ±â ('M' for monthly, 'Q' for quarterly).
-        seasonal (bool): °èÀı¼º ¿äÀÎÀ» ¸ğµ¨¿¡ Æ÷ÇÔ½ÃÅ³Áö ¿©ºÎ (pmdarima.auto_arimaÀÇ seasonal ¿É¼Ç).
-        forecast_periods_validation (int, optional): ¿¹Ãø·Â °ËÁõÀ» À§ÇÑ µ¥ÀÌÅÍ ¼ö.
-                                                     NoneÀÌ¸é freq¿¡ µû¶ó ±âº»°ª ¼³Á¤ (¿ùº°: 24, ºĞ±âº°: 8).
-        forecast_periods_exante (int, optional): »çÀü ¿¹ÃøÀ» À§ÇÑ ±â°£ ¼ö.
-                                                 NoneÀÌ¸é freq¿¡ µû¶ó ±âº»°ª ¼³Á¤ (¿ùº°: 12, ºĞ±âº°: 12).
+        data_df (pd.DataFrame): ë¶„ì„í•  ì‹œê³„ì—´ ë°ì´í„°ê°€ í¬í•¨ëœ ë°ì´í„°í”„ë ˆì„ (DatetimeIndex).
+        variable_name (str): ë°ì´í„°í”„ë ˆì„ ë‚´ì—ì„œ ë¶„ì„í•  ì‹œê³„ì—´ ë³€ìˆ˜(ì—´)ì˜ ì´ë¦„.
+        freq (str): ë°ì´í„°ì˜ ì£¼ê¸° ('M' for monthly, 'Q' for quarterly).
+        seasonal (bool): ê³„ì ˆì„± ìš”ì¸ì„ ëª¨ë¸ì— í¬í•¨ì‹œí‚¬ì§€ ì—¬ë¶€ (pmdarima.auto_arimaì˜ seasonal ì˜µì…˜).
+        forecast_periods_validation (int, optional): ì˜ˆì¸¡ë ¥ ê²€ì¦ì„ ìœ„í•œ ë°ì´í„° ìˆ˜.
+                                                     Noneì´ë©´ freqì— ë”°ë¼ ê¸°ë³¸ê°’ ì„¤ì • (ì›”ë³„: 24, ë¶„ê¸°ë³„: 8).
+        forecast_periods_exante (int, optional): ì‚¬ì „ ì˜ˆì¸¡ì„ ìœ„í•œ ê¸°ê°„ ìˆ˜.
+                                                 Noneì´ë©´ freqì— ë”°ë¼ ê¸°ë³¸ê°’ ì„¤ì • (ì›”ë³„: 12, ë¶„ê¸°ë³„: 12).
     """
     
-    # ¼±ÅÃµÈ º¯¼ö¸¸ ÃßÃâÇÏ¿© pd.Series·Î º¯È¯
+    # ì„ íƒëœ ë³€ìˆ˜ë§Œ ì¶”ì¶œí•˜ì—¬ pd.Seriesë¡œ ë³€í™˜
     if variable_name not in data_df.columns:
-        raise ValueError(f"'{variable_name}' º¯¼ö°¡ µ¥ÀÌÅÍÇÁ·¹ÀÓ¿¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.")
+        raise ValueError(f"'{variable_name}' ë³€ìˆ˜ê°€ ë°ì´í„°í”„ë ˆì„ì— ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.")
     data = data_df[variable_name]
     
-    # ÀÎµ¦½º°¡ DatetimeIndexÀÎÁö È®ÀÎ
+    # ì¸ë±ìŠ¤ê°€ DatetimeIndexì¸ì§€ í™•ì¸
     if not isinstance(data.index, pd.DatetimeIndex):
-        raise TypeError("µ¥ÀÌÅÍÇÁ·¹ÀÓÀÇ ÀÎµ¦½º´Â DatetimeIndex¿©¾ß ÇÕ´Ï´Ù.")
+        raise TypeError("ë°ì´í„°í”„ë ˆì„ì˜ ì¸ë±ìŠ¤ëŠ” DatetimeIndexì—¬ì•¼ í•©ë‹ˆë‹¤.")
 
-    print(f"--- ºĞ¼® º¯¼ö: '{variable_name}' ---")
-    print("\n--- 1. Seasonal Decomposition (°èÀı ºĞÇØ) ---")
-    # °èÀı ºĞÇØ (Multiplicative or Additive ÀÚµ¿ °ËÅä)
-    decomposition_model = 'multiplicative' if data.mean() < data.std() else 'additive' # °£´ÜÇÑ ÈŞ¸®½ºÆ½
+    print(f"--- ë¶„ì„ ë³€ìˆ˜: '{variable_name}' ---")
+    print("\n--- 1. Seasonal Decomposition (ê³„ì ˆ ë¶„í•´) ---")
+    # ê³„ì ˆ ë¶„í•´ (Multiplicative or Additive ìë™ ê²€í† )
+    decomposition_model = 'multiplicative' if data.mean() < data.std() else 'additive' # ê°„ë‹¨í•œ íœ´ë¦¬ìŠ¤í‹±
     decomposition = seasonal_decompose(data, model=decomposition_model, period=12 if freq == 'M' else 4)
-    print(f"ÀÚµ¿À¸·Î '{decomposition_model}' ¸ğµ¨ÀÌ ¼±ÅÃµÇ¾ú½À´Ï´Ù.")
+    print(f"ìë™ìœ¼ë¡œ '{decomposition_model}' ëª¨ë¸ì´ ì„ íƒë˜ì—ˆìŠµë‹ˆë‹¤.")
     decomposition.plot().set_size_inches(12, 8)
     plt.suptitle(f'Seasonal Decomposition ({decomposition_model} Model) for {variable_name}', y=1.02)
     plt.tight_layout(rect=[0, 0, 1, 0.98])
     plt.show()
 
-    print("\n--- 2. Stationarity Tests (Á¤»ó¼º Å×½ºÆ®) ---")
+    print("\n--- 2. Stationarity Tests (ì •ìƒì„± í…ŒìŠ¤íŠ¸) ---")
     # DF (Dickey-Fuller) Test (statsmodels.tsa.stattools.adfuller)
     df_test = adfuller(data)
     print(f"Dickey-Fuller Test (ADF):")
@@ -62,9 +62,9 @@ def Run_SARIMAX_analysis(
     print(f"  p-value: {df_test[1]:.4f}")
     print(f"  Critical Values: {df_test[4]}")
     if df_test[1] <= 0.05:
-        print("  => ±Í¹«°¡¼³ ±â°¢: ½Ã°è¿­Àº Á¤»ó¼ºÀ» °¡Áú ¼ö ÀÖ½À´Ï´Ù (Æ®·»µå³ª ´ÜÀ§±ÙÀÌ ¾øÀ» ¼ö ÀÖÀ½).")
+        print("  => ê·€ë¬´ê°€ì„¤ ê¸°ê°: ì‹œê³„ì—´ì€ ì •ìƒì„±ì„ ê°€ì§ˆ ìˆ˜ ìˆìŠµë‹ˆë‹¤ (íŠ¸ë Œë“œë‚˜ ë‹¨ìœ„ê·¼ì´ ì—†ì„ ìˆ˜ ìˆìŒ).")
     else:
-        print("  => ±Í¹«°¡¼³ Ã¤ÅÃ: ½Ã°è¿­Àº ºñÁ¤»óÀûÀÏ ¼ö ÀÖ½À´Ï´Ù (´ÜÀ§±Ù Á¸Àç °¡´É¼º).")
+        print("  => ê·€ë¬´ê°€ì„¤ ì±„íƒ: ì‹œê³„ì—´ì€ ë¹„ì •ìƒì ì¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤ (ë‹¨ìœ„ê·¼ ì¡´ì¬ ê°€ëŠ¥ì„±).")
 
     # KPSS Test (statsmodels.tsa.stattools.kpss)
     kpss_test = kpss(data, regression='c', nlags='auto') # level stationarity
@@ -73,9 +73,9 @@ def Run_SARIMAX_analysis(
     print(f"  p-value: {kpss_test[1]:.4f}")
     print(f"  Critical Values: {kpss_test[3]}")
     if kpss_test[1] <= 0.05:
-        print("  => ±Í¹«°¡¼³ ±â°¢: ½Ã°è¿­Àº Á¤»ó¼ºÀÌ ¾ø½À´Ï´Ù (Æ®·»µå Á¤»ó¼ºÀÏ ¼ö ÀÖÀ½).")
+        print("  => ê·€ë¬´ê°€ì„¤ ê¸°ê°: ì‹œê³„ì—´ì€ ì •ìƒì„±ì´ ì—†ìŠµë‹ˆë‹¤ (íŠ¸ë Œë“œ ì •ìƒì„±ì¼ ìˆ˜ ìˆìŒ).")
     else:
-        print("  => ±Í¹«°¡¼³ Ã¤ÅÃ: ½Ã°è¿­Àº Á¤»ó¼ºÀ» °¡Áú ¼ö ÀÖ½À´Ï´Ù (¼öÁØ Á¤»ó¼º).")
+        print("  => ê·€ë¬´ê°€ì„¤ ì±„íƒ: ì‹œê³„ì—´ì€ ì •ìƒì„±ì„ ê°€ì§ˆ ìˆ˜ ìˆìŠµë‹ˆë‹¤ (ìˆ˜ì¤€ ì •ìƒì„±).")
 
     # PP (Phillips-Perron) Test
     print("\n--- Phillips-Perron (PP) Test ---")
@@ -86,23 +86,23 @@ def Run_SARIMAX_analysis(
             print(pp.summary().as_text())
         except Exception as e:
             print(f"  PP Test with trend='{tt}' failed: {e}")
-            print("  ÀÌ ¿À·ù´Â ÁÖ·Î µ¥ÀÌÅÍÀÇ ±æÀÌ°¡ Âª°Å³ª, Æ¯Á¤ Æ®·»µå ¸ğµ¨¿¡ ºÎÀûÇÕÇÒ ¶§ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+            print("  ì´ ì˜¤ë¥˜ëŠ” ì£¼ë¡œ ë°ì´í„°ì˜ ê¸¸ì´ê°€ ì§§ê±°ë‚˜, íŠ¹ì • íŠ¸ë Œë“œ ëª¨ë¸ì— ë¶€ì í•©í•  ë•Œ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
 
-    print("\n--- 3. Structural Change Check (±¸Á¶ º¯È­ Ã¼Å©) ---")
-    print("CUSUM Å×½ºÆ®´Â ¸ğµ¨ ÀÜÂ÷¿¡ Àû¿ëÇÏ´Â °ÍÀÌ ´õ ÀûÀıÇÕ´Ï´Ù. SARIMAX ¸ğµ¨ ±¸Ãà ÈÄ ÀÜÂ÷¿¡ Àû¿ëÇÒ °ÍÀÔ´Ï´Ù.")
+    print("\n--- 3. Structural Change Check (êµ¬ì¡° ë³€í™” ì²´í¬) ---")
+    print("CUSUM í…ŒìŠ¤íŠ¸ëŠ” ëª¨ë¸ ì”ì°¨ì— ì ìš©í•˜ëŠ” ê²ƒì´ ë” ì ì ˆí•©ë‹ˆë‹¤. SARIMAX ëª¨ë¸ êµ¬ì¶• í›„ ì”ì°¨ì— ì ìš©í•  ê²ƒì…ë‹ˆë‹¤.")
 
-    print("\n--- 4. SARIMAX Model Building (SARIMAX ¸ğµ¨ ±¸Ãà) ---")
-    print(f"pmdarima.auto_arima¸¦ »ç¿ëÇÏ¿© ÃÖÀûÀÇ SARIMAX ¸ğµ¨À» Å½»öÇÕ´Ï´Ù. (seasonal={seasonal})")
+    print("\n--- 4. SARIMAX Model Building (SARIMAX ëª¨ë¸ êµ¬ì¶•) ---")
+    print(f"pmdarima.auto_arimaë¥¼ ì‚¬ìš©í•˜ì—¬ ìµœì ì˜ SARIMAX ëª¨ë¸ì„ íƒìƒ‰í•©ë‹ˆë‹¤. (seasonal={seasonal})")
 
-    # pmdarimaÀÇ auto_arima¸¦ »ç¿ëÇÏ¿© ÃÖÀûÀÇ (p,d,q)(P,D,Q)s ÆÄ¶ó¹ÌÅÍ Ã£±â
+    # pmdarimaì˜ auto_arimaë¥¼ ì‚¬ìš©í•˜ì—¬ ìµœì ì˜ (p,d,q)(P,D,Q)s íŒŒë¼ë¯¸í„° ì°¾ê¸°
     model_auto_arima = auto_arima(
         data,
         start_p=1, start_q=1,
         max_p=5, max_q=5,
         m=12 if freq == 'M' else 4,
         seasonal=seasonal,
-        d=None, D=None, # auto_arima°¡ ÀÚµ¿À¸·Î Â÷ºĞ(d, D)À» °áÁ¤ÇÏµµ·Ï NoneÀ¸·Î ¼³Á¤
+        d=None, D=None, # auto_arimaê°€ ìë™ìœ¼ë¡œ ì°¨ë¶„(d, D)ì„ ê²°ì •í•˜ë„ë¡ Noneìœ¼ë¡œ ì„¤ì •
         trace=True,
         error_action='ignore',
         suppress_warnings=True,
@@ -112,9 +112,9 @@ def Run_SARIMAX_analysis(
     print("\n--- Auto ARIMA Model Summary ---")
     print(model_auto_arima.summary())
 
-    # CUSUM Test (¸ğµ¨ ÀÜÂ÷¿¡ Àû¿ë)
-    print("\n--- 3. Structural Change Check (±¸Á¶ º¯È­ Ã¼Å©) - ¸ğµ¨ ÀÜÂ÷¿¡ Àû¿ë ---")
-    print("¸ğµ¨ÀÇ ÀÜÂ÷¸¦ ÀÌ¿ëÇÏ¿© CUSUM Å×½ºÆ®¸¦ ¼öÇàÇÕ´Ï´Ù.")
+    # CUSUM Test (ëª¨ë¸ ì”ì°¨ì— ì ìš©)
+    print("\n--- 3. Structural Change Check (êµ¬ì¡° ë³€í™” ì²´í¬) - ëª¨ë¸ ì”ì°¨ì— ì ìš© ---")
+    print("ëª¨ë¸ì˜ ì”ì°¨ë¥¼ ì´ìš©í•˜ì—¬ CUSUM í…ŒìŠ¤íŠ¸ë¥¼ ìˆ˜í–‰í•©ë‹ˆë‹¤.")
     try:
         fitted_model_for_cusum = SARIMAX(
             data,
@@ -126,15 +126,15 @@ def Run_SARIMAX_analysis(
 
         cusum_residuals = fitted_model_for_cusum.resid
         
-        # CUSUM OLS ÀÜÂ÷ Å×½ºÆ®
+        # CUSUM OLS ì”ì°¨ í…ŒìŠ¤íŠ¸
         cusum_test_results = breaks_cusumolsresid(cusum_residuals)
         print("CUSUM Test (on SARIMAX Residuals):")
         print(f"  Test Statistic: {cusum_test_results[0]:.4f}")
         print(f"  p-value: {cusum_test_results[1]:.4f}")
         if cusum_test_results[1] <= 0.05:
-            print("  => ±Í¹«°¡¼³ ±â°¢: ÀÜÂ÷¿¡ ±¸Á¶Àû º¯È­°¡ Á¸ÀçÇÒ °¡´É¼ºÀÌ ÀÖ½À´Ï´Ù.")
+            print("  => ê·€ë¬´ê°€ì„¤ ê¸°ê°: ì”ì°¨ì— êµ¬ì¡°ì  ë³€í™”ê°€ ì¡´ì¬í•  ê°€ëŠ¥ì„±ì´ ìˆìŠµë‹ˆë‹¤.")
         else:
-            print("  => ±Í¹«°¡¼³ Ã¤ÅÃ: ÀÜÂ÷¿¡ Åë°èÀûÀ¸·Î À¯ÀÇ¹ÌÇÑ ±¸Á¶Àû º¯È­°¡ °¨ÁöµÇÁö ¾Ê¾Ò½À´Ï´Ù.")
+            print("  => ê·€ë¬´ê°€ì„¤ ì±„íƒ: ì”ì°¨ì— í†µê³„ì ìœ¼ë¡œ ìœ ì˜ë¯¸í•œ êµ¬ì¡°ì  ë³€í™”ê°€ ê°ì§€ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.")
         
         plt.figure(figsize=(12, 6))
         plt.plot(np.cumsum(cusum_residuals - cusum_residuals.mean()))
@@ -145,21 +145,21 @@ def Run_SARIMAX_analysis(
         plt.show()
 
     except Exception as e:
-        print(f"CUSUM Å×½ºÆ® ½ÇÇà Áß ¿À·ù ¹ß»ı: {e}")
-        print("CUSUM Å×½ºÆ®´Â Æ¯Á¤ Á¶°Ç¿¡¼­¸¸ µ¿ÀÛÇÏ¸ç, ¶§·Î´Â ÀÜÂ÷ Æ¯¼º¿¡ µû¶ó ¿À·ù°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.")
+        print(f"CUSUM í…ŒìŠ¤íŠ¸ ì‹¤í–‰ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+        print("CUSUM í…ŒìŠ¤íŠ¸ëŠ” íŠ¹ì • ì¡°ê±´ì—ì„œë§Œ ë™ì‘í•˜ë©°, ë•Œë¡œëŠ” ì”ì°¨ íŠ¹ì„±ì— ë”°ë¼ ì˜¤ë¥˜ê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")
 
 
-    print("\n--- 5. Model Validation (¸ğÇü ¿¹Ãø·Â Æò°¡) ---")
+    print("\n--- 5. Model Validation (ëª¨í˜• ì˜ˆì¸¡ë ¥ í‰ê°€) ---")
     if forecast_periods_validation is None:
         forecast_periods_validation = 24 if freq == 'M' else 8
 
-    # ÇĞ½À ¹× °ËÁõ µ¥ÀÌÅÍ ºĞÇÒ
+    # í•™ìŠµ ë° ê²€ì¦ ë°ì´í„° ë¶„í• 
     train = data[:-forecast_periods_validation]
     test = data[-forecast_periods_validation:]
-    print(f"µ¥ÀÌÅÍ¸¦ {len(train)} (ÇĞ½À)°ú {len(test)} (°ËÁõ)À¸·Î ºĞÇÒÇß½À´Ï´Ù.")
+    print(f"ë°ì´í„°ë¥¼ {len(train)} (í•™ìŠµ)ê³¼ {len(test)} (ê²€ì¦)ìœ¼ë¡œ ë¶„í• í–ˆìŠµë‹ˆë‹¤.")
 
-    # ÇĞ½À µ¥ÀÌÅÍ·Î SARIMAX ¸ğµ¨ ÀçÀûÇÕ
-    print("ÇĞ½À µ¥ÀÌÅÍ·Î SARIMAX ¸ğµ¨À» ÀçÀûÇÕÇÕ´Ï´Ù.")
+    # í•™ìŠµ ë°ì´í„°ë¡œ SARIMAX ëª¨ë¸ ì¬ì í•©
+    print("í•™ìŠµ ë°ì´í„°ë¡œ SARIMAX ëª¨ë¸ì„ ì¬ì í•©í•©ë‹ˆë‹¤.")
     try:
         model_trained = SARIMAX(
             train,
@@ -169,25 +169,25 @@ def Run_SARIMAX_analysis(
             enforce_invertibility=False
         ).fit(disp=False)
     except Exception as e:
-        print(f"¸ğµ¨ ÀçÀûÇÕ Áß ¿À·ù ¹ß»ı: {e}")
-        print("¸ğµ¨ ÀçÀûÇÕÀÌ ½ÇÆĞÇß½À´Ï´Ù. µ¥ÀÌÅÍ³ª ÆÄ¶ó¹ÌÅÍ ¼³Á¤À» È®ÀÎÇØÁÖ¼¼¿ä.")
+        print(f"ëª¨ë¸ ì¬ì í•© ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+        print("ëª¨ë¸ ì¬ì í•©ì´ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤. ë°ì´í„°ë‚˜ íŒŒë¼ë¯¸í„° ì„¤ì •ì„ í™•ì¸í•´ì£¼ì„¸ìš”.")
         return
 
-    # ¿¹Ãø (out-of-sample prediction)
+    # ì˜ˆì¸¡ (out-of-sample prediction)
     start_index = len(train)
     end_index = len(data) - 1
     
-    print(f"°ËÁõ ±â°£ ({test.index[0]} ~ {test.index[-1]})¿¡ ´ëÇÑ ¿¹ÃøÀ» ¼öÇàÇÕ´Ï´Ù.")
+    print(f"ê²€ì¦ ê¸°ê°„ ({test.index[0]} ~ {test.index[-1]})ì— ëŒ€í•œ ì˜ˆì¸¡ì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.")
     try:
         predictions = model_trained.get_prediction(start=start_index, end=end_index, dynamic=False)
         pred_mean = predictions.predicted_mean
         pred_ci = predictions.conf_int()
     except Exception as e:
-        print(f"¿¹Ãø ¼öÇà Áß ¿À·ù ¹ß»ı: {e}")
-        print("¿¹ÃøÀÌ ½ÇÆĞÇß½À´Ï´Ù. ¸ğµ¨ÀÌ³ª µ¥ÀÌÅÍ ¼³Á¤À» È®ÀÎÇØÁÖ¼¼¿ä.")
+        print(f"ì˜ˆì¸¡ ìˆ˜í–‰ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+        print("ì˜ˆì¸¡ì´ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤. ëª¨ë¸ì´ë‚˜ ë°ì´í„° ì„¤ì •ì„ í™•ì¸í•´ì£¼ì„¸ìš”.")
         return
 
-    # ¿¹Ãø °á°ú ½Ã°¢È­
+    # ì˜ˆì¸¡ ê²°ê³¼ ì‹œê°í™”
     plt.figure(figsize=(14, 7))
     plt.plot(train.index, train, label='Train Data')
     plt.plot(test.index, test, label='Actual Test Data')
@@ -202,21 +202,21 @@ def Run_SARIMAX_analysis(
     plt.grid(True)
     plt.show()
 
-    # ¿¹Ãø·Â Æò°¡ ÁöÇ¥ (MSE, RMSE)
+    # ì˜ˆì¸¡ë ¥ í‰ê°€ ì§€í‘œ (MSE, RMSE)
     mse = mean_squared_error(test, pred_mean)
     rmse = np.sqrt(mse)
     print(f"\n--- Model Performance on Validation Set for {variable_name} ---")
     print(f"Mean Squared Error (MSE): {mse:.4f}")
     print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
 
-    print("\n--- 6. Ex-ante Forecasting (»çÀü ¿¹Ãø) ---")
+    print("\n--- 6. Ex-ante Forecasting (ì‚¬ì „ ì˜ˆì¸¡) ---")
     if forecast_periods_exante is None:
         forecast_periods_exante = 12 if freq == 'M' else 12
 
-    # ¹Ì·¡ ¿¹Ãø (ex-ante)
-    print(f"¹Ì·¡ {forecast_periods_exante} ±â°£¿¡ ´ëÇÑ »çÀü ¿¹ÃøÀ» ¼öÇàÇÕ´Ï´Ù.")
+    # ë¯¸ë˜ ì˜ˆì¸¡ (ex-ante)
+    print(f"ë¯¸ë˜ {forecast_periods_exante} ê¸°ê°„ì— ëŒ€í•œ ì‚¬ì „ ì˜ˆì¸¡ì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.")
     try:
-        # ÀüÃ¼ µ¥ÀÌÅÍ·Î ¸ğµ¨ ÀçÀûÇÕ (°¡Àå ÃÖ½Å Á¤º¸¸¦ ¹İ¿µÇÏ±â À§ÇØ)
+        # ì „ì²´ ë°ì´í„°ë¡œ ëª¨ë¸ ì¬ì í•© (ê°€ì¥ ìµœì‹  ì •ë³´ë¥¼ ë°˜ì˜í•˜ê¸° ìœ„í•´)
         final_model = SARIMAX(
             data,
             order=model_auto_arima.order,
@@ -228,7 +228,7 @@ def Run_SARIMAX_analysis(
         forecast_start_index = len(data)
         forecast_end_index = len(data) + forecast_periods_exante - 1
         
-        # ¹Ì·¡ ³¯Â¥ ÀÎµ¦½º »ı¼º
+        # ë¯¸ë˜ ë‚ ì§œ ì¸ë±ìŠ¤ ìƒì„±
         if freq == 'M':
             last_date = data.index[-1]
             future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), periods=forecast_periods_exante, freq='M')
@@ -242,13 +242,13 @@ def Run_SARIMAX_analysis(
         forecast_mean = forecast_results.predicted_mean
         forecast_ci = forecast_results.conf_int()
 
-        # forecast_mean¿¡ ¹Ì·¡ ³¯Â¥ ÀÎµ¦½º ÇÒ´ç
+        # forecast_meanì— ë¯¸ë˜ ë‚ ì§œ ì¸ë±ìŠ¤ í• ë‹¹
         forecast_mean.index = future_dates
         forecast_ci.index = future_dates
 
     except Exception as e:
-        print(f"»çÀü ¿¹Ãø ¼öÇà Áß ¿À·ù ¹ß»ı: {e}")
-        print("»çÀü ¿¹ÃøÀÌ ½ÇÆĞÇß½À´Ï´Ù. ¸ğµ¨ÀÌ³ª µ¥ÀÌÅÍ ¼³Á¤À» È®ÀÎÇØÁÖ¼¼¿ä.")
+        print(f"ì‚¬ì „ ì˜ˆì¸¡ ìˆ˜í–‰ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
+        print("ì‚¬ì „ ì˜ˆì¸¡ì´ ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤. ëª¨ë¸ì´ë‚˜ ë°ì´í„° ì„¤ì •ì„ í™•ì¸í•´ì£¼ì„¸ìš”.")
         return
 
     print("\n--- Ex-ante Forecast Values ---")
@@ -256,7 +256,7 @@ def Run_SARIMAX_analysis(
                         'Lower CI': forecast_ci.iloc[:, 0],
                         'Upper CI': forecast_ci.iloc[:, 1]}))
 
-    # »çÀü ¿¹Ãø ½Ã°¢È­
+    # ì‚¬ì „ ì˜ˆì¸¡ ì‹œê°í™”
     plt.figure(figsize=(14, 7))
     plt.plot(data.index, data, label='Historical Data')
     plt.plot(forecast_mean.index, forecast_mean, label='Ex-ante Forecast', color='green')

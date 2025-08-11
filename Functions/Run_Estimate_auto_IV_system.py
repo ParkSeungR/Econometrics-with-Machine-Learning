@@ -38,7 +38,7 @@ def parse_auto_equation_system(equations: dict):
 
 
 def Run_Estimate_auto_IV_system(data: pd.DataFrame, equations: dict):
-    print("--- 1. µ¥ÀÌÅÍ ÁØºñ ---")
+    print("--- 1. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Øºï¿½ ---")
     parsed_equations, all_system_exog_variables = parse_auto_equation_system(equations)
     used_vars = set()
     for dep, vdict in parsed_equations.items():
@@ -48,18 +48,18 @@ def Run_Estimate_auto_IV_system(data: pd.DataFrame, equations: dict):
         used_vars.update(vdict['instr'])
     data = data[list(used_vars)].dropna()
 
-    print(f"»ç¿ëµÈ º¯¼ö: {sorted(used_vars)}")
-    print(f"ÀüÃ¼ ½Ã½ºÅÛÀÇ ¿Ü»ýº¯¼ö (°³³äÀû IV Ç®): {all_system_exog_variables}") 
-    print("\n±â¼úÅë°è·®:")
+    print(f"ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: {sorted(used_vars)}")
+    print(f"ï¿½ï¿½Ã¼ ï¿½Ã½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ü»ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ IV Ç®): {all_system_exog_variables}") 
+    print("\nï¿½ï¿½ï¿½ï¿½ï¿½è·®:")
     display(data.describe())
 
-    print("\n»ó°ü°è¼ö Çà·Ä:")
+    print("\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½:")
     plt.figure(figsize=(10, 6))
     sns.heatmap(data.corr(), annot=True, fmt=".2f", cmap='coolwarm')
     plt.title("Correlation Matrix")
     plt.show()
 
-    print("\nÈ÷½ºÅä±×·¥ ¹× KDE:")
+    print("\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×·ï¿½ ï¿½ï¿½ KDE:")
     n_cols = 3
     n_rows = int(np.ceil(len(data.columns) / n_cols))
     plt.figure(figsize=(n_cols * 5, n_rows * 4))
@@ -71,38 +71,38 @@ def Run_Estimate_auto_IV_system(data: pd.DataFrame, equations: dict):
     plt.show()
 
     print("\n" + "="*80)
-    print("--- 2. SUR (OLS) ÃßÁ¤ ---")
+    print("--- 2. SUR (OLS) ï¿½ï¿½ï¿½ï¿½ ---")
     try:
         sur_eqs = {dep: f"{dep} ~ {' + '.join(info['exog'] + info['endog'])}" for dep, info in parsed_equations.items()}
         mod_sur = SUR.from_formula(sur_eqs, data)
         res_sur = mod_sur.fit(cov_type="unadjusted")
         print(res_sur)
     except Exception as e:
-        print(f"SUR ¿À·ù: {e}")
+        print(f"SUR ï¿½ï¿½ï¿½ï¿½: {e}")
 
-    print("\n--- 3. 2SLS ÃßÁ¤ (°³º° ¹æÁ¤½Ä - from_formula) ---")
+    print("\n--- 3. 2SLS ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ - from_formula) ---")
     
     for dep, info in parsed_equations.items():
         if not info['endog'] or not info['instr']:
-            print(f"{dep}: ³»»ýº¯¼ö ¶Ç´Â µµ±¸º¯¼ö°¡ ¾ø¾î 2SLS (from_formula) »ý·«")
+            print(f"{dep}: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 2SLS (from_formula) ï¿½ï¿½ï¿½ï¿½")
             continue
         try:
             rhs_parts = info['exog'][:]
             if info['endog'] and info['instr']:
                 rhs_parts.append(f"[{' + '.join(info['endog'])} ~ {' + '.join(info['instr'])}]")
             
-            # »ó¼öÇ× 1 + Á¦°Å, from_formula ±âº» µ¿ÀÛ¿¡ ¸Ã±è
+            # ï¿½ï¿½ï¿½ï¿½ï¿½ 1 + ï¿½ï¿½ï¿½ï¿½, from_formula ï¿½âº» ï¿½ï¿½ï¿½Û¿ï¿½ ï¿½Ã±ï¿½
             formula_str = f"{dep} ~ {' + '.join(rhs_parts)}"
             
             mod = IV2SLS.from_formula(formula_str, data)
-            res = mod.fit(cov_type="unadjusted") # cov_type ÅëÀÏ
-            print(f"\n#### 2SLS °á°ú ({dep} - from_formula) ####")
+            res = mod.fit(cov_type="unadjusted") # cov_type ï¿½ï¿½ï¿½ï¿½
+            print(f"\n#### 2SLS ï¿½ï¿½ï¿½ ({dep} - from_formula) ####")
             print(res)
         except Exception as e:
-            print(f"{dep}: 2SLS (from_formula) ¿À·ù: {e}")
+            print(f"{dep}: 2SLS (from_formula) ï¿½ï¿½ï¿½ï¿½: {e}")
 
 
-    print("\n--- 4. 3SLS ÃßÁ¤ ---")
+    print("\n--- 4. 3SLS ï¿½ï¿½ï¿½ï¿½ ---")
     try:
         eqs_3sls = {}
         for dep, info in parsed_equations.items():
@@ -110,27 +110,27 @@ def Run_Estimate_auto_IV_system(data: pd.DataFrame, equations: dict):
             if info['endog'] and info['instr']:
                 rhs_parts.append(f"[{' + '.join(info['endog'])} ~ {' + '.join(info['instr'])}]")
             
-            # »ó¼öÇ× 1 + Á¦°Å, from_formula ±âº» µ¿ÀÛ¿¡ ¸Ã±è
+            # ï¿½ï¿½ï¿½ï¿½ï¿½ 1 + ï¿½ï¿½ï¿½ï¿½, from_formula ï¿½âº» ï¿½ï¿½ï¿½Û¿ï¿½ ï¿½Ã±ï¿½
             eqs_3sls[dep] = f"{dep} ~ {' + '.join(rhs_parts)}"
 
-        print("\n3SLS ¹× GMM¿¡ »ç¿ëµÉ °ø½Ä:")
+        print("\n3SLS ï¿½ï¿½ GMMï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½:")
         for k, v in eqs_3sls.items():
             print(f"{k}: {v}")
 
         mod_3sls = IV3SLS.from_formula(eqs_3sls, data)
-        res_3sls = mod_3sls.fit(cov_type="unadjusted") # cov_type ÅëÀÏ
+        res_3sls = mod_3sls.fit(cov_type="unadjusted") # cov_type ï¿½ï¿½ï¿½ï¿½
         print(res_3sls)
     except Exception as e:
-        print(f"3SLS ¿À·ù: {e}")
+        print(f"3SLS ï¿½ï¿½ï¿½ï¿½: {e}")
 
-    print("\n--- 5. GMM ÃßÁ¤ ---")
+    print("\n--- 5. GMM ï¿½ï¿½ï¿½ï¿½ ---")
     try:
-        mod_gmm = IVSystemGMM.from_formula(eqs_3sls, data, weight_type="unadjusted") # weight_typeµµ ÅëÀÏ
-        res_gmm = mod_gmm.fit(cov_type="unadjusted", iter_limit=100) # cov_type ÅëÀÏ
+        mod_gmm = IVSystemGMM.from_formula(eqs_3sls, data, weight_type="unadjusted") # weight_typeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        res_gmm = mod_gmm.fit(cov_type="unadjusted", iter_limit=100) # cov_type ï¿½ï¿½ï¿½ï¿½
         print(f"GMM iterations: {res_gmm.iterations}")
         print(res_gmm)
     except Exception as e:
-        print(f"GMM ¿À·ù: {e}")
+        print(f"GMM ï¿½ï¿½ï¿½ï¿½: {e}")
 
     print("\n" + "="*80)
-    print("--- ÀÚµ¿ µµ±¸º¯¼ö ±â¹Ý ¿¬¸³¹æÁ¤½Ä ÃßÁ¤ ¿Ï·á ---")
+    print("--- ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½ ---")

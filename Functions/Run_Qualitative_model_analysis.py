@@ -10,19 +10,19 @@ import matplotlib.font_manager as fm
 
 def Run_Qualitative_model_analysis(data, formula):
     """
-    Á¤¼ºÀû Á¾¼Óº¯¼ö ¸ğÇü¿¡ ´ëÇÑ Á¾ÇÕÀûÀÎ ºĞ¼®À» ¼öÇàÇÏ´Â ÇÔ¼ö.
+    ì •ì„±ì  ì¢…ì†ë³€ìˆ˜ ëª¨í˜•ì— ëŒ€í•œ ì¢…í•©ì ì¸ ë¶„ì„ì„ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜.
 
     Args:
-        data (pd.DataFrame): ºĞ¼®¿¡ »ç¿ëÇÒ µ¥ÀÌÅÍÇÁ·¹ÀÓ.
-        formula (str): Á¾¼Óº¯¼ö ~ µ¶¸³º¯¼ö1 + µ¶¸³º¯¼ö2 + ... ÇüÅÂÀÇ È¸±Í½Ä.
-                       ¿¹: 'inlf ~ nwifeinc + educ + exper + I(exper**2) + age + kidslt6 + kidsge6'
+        data (pd.DataFrame): ë¶„ì„ì— ì‚¬ìš©í•  ë°ì´í„°í”„ë ˆì„.
+        formula (str): ì¢…ì†ë³€ìˆ˜ ~ ë…ë¦½ë³€ìˆ˜1 + ë…ë¦½ë³€ìˆ˜2 + ... í˜•íƒœì˜ íšŒê·€ì‹.
+                       ì˜ˆ: 'inlf ~ nwifeinc + educ + exper + I(exper**2) + age + kidslt6 + kidsge6'
     """
-    # --- ÇÑ±Û ÆùÆ® ¼³Á¤ ---
+    # --- í•œê¸€ í°íŠ¸ ì„¤ì • ---
     font_name = fm.FontProperties(fname=r'C:/Windows/Fonts/malgun.ttf').get_name()
     plt.rcParams['font.family'] = font_name
-    plt.rcParams['axes.unicode_minus'] = False # ¸¶ÀÌ³Ê½º ºÎÈ£ ±úÁü ¹æÁö
+    plt.rcParams['axes.unicode_minus'] = False # ë§ˆì´ë„ˆìŠ¤ ë¶€í˜¸ ê¹¨ì§ ë°©ì§€
 
-    # È¸±Í½Ä¿¡¼­ Á¾¼Óº¯¼ö¿Í µ¶¸³º¯¼ö ÀÌ¸§ ÃßÃâ
+    # íšŒê·€ì‹ì—ì„œ ì¢…ì†ë³€ìˆ˜ì™€ ë…ë¦½ë³€ìˆ˜ ì´ë¦„ ì¶”ì¶œ
     dependent_var = formula.split('~')[0].strip()
     independent_vars_formula_str = formula.split('~')[1].strip()
     
@@ -43,20 +43,20 @@ def Run_Qualitative_model_analysis(data, formula):
     existing_vars = [var for var in all_vars_for_analysis if var in data.columns]
     data_for_stats = data[existing_vars]
 
-    print("--- 1. ±âÃÊ Åë°è ºĞ¼® ---")
-    print("\n[±âÃÊ Åë°è·® (ÇÔ¼ö ÃßÁ¤¿¡ »ç¿ëµÈ º¯¼ö¸¸)]")
+    print("--- 1. ê¸°ì´ˆ í†µê³„ ë¶„ì„ ---")
+    print("\n[ê¸°ì´ˆ í†µê³„ëŸ‰ (í•¨ìˆ˜ ì¶”ì •ì— ì‚¬ìš©ëœ ë³€ìˆ˜ë§Œ)]")
     if not data_for_stats.empty:
         print(data_for_stats.describe().round(4))
     else:
-        print("°æ°í: È¸±Í½Ä¿¡ ÇØ´çÇÏ´Â º¯¼ö Áß µ¥ÀÌÅÍ¿¡¼­ Ã£À» ¼ö ÀÖ´Â º¯¼ö°¡ ¾ø½À´Ï´Ù. ±âÃÊ Åë°è ºĞ¼®À» °Ç³ÊŸ´Ï´Ù.")
+        print("ê²½ê³ : íšŒê·€ì‹ì— í•´ë‹¹í•˜ëŠ” ë³€ìˆ˜ ì¤‘ ë°ì´í„°ì—ì„œ ì°¾ì„ ìˆ˜ ìˆëŠ” ë³€ìˆ˜ê°€ ì—†ìŠµë‹ˆë‹¤. ê¸°ì´ˆ í†µê³„ ë¶„ì„ì„ ê±´ë„ˆëœœë‹ˆë‹¤.")
 
-    print("\n[»ó°ü°è¼ö Çà·Ä (ÇÔ¼ö ÃßÁ¤¿¡ »ç¿ëµÈ º¯¼ö¸¸)]")
+    print("\n[ìƒê´€ê³„ìˆ˜ í–‰ë ¬ (í•¨ìˆ˜ ì¶”ì •ì— ì‚¬ìš©ëœ ë³€ìˆ˜ë§Œ)]")
     if not data_for_stats.empty:
         print(data_for_stats.corr().round(4))
     else:
-        print("°æ°í: È¸±Í½Ä¿¡ ÇØ´çÇÏ´Â º¯¼ö Áß µ¥ÀÌÅÍ¿¡¼­ Ã£À» ¼ö ÀÖ´Â º¯¼ö°¡ ¾ø½À´Ï´Ù. »ó°ü°è¼ö Çà·ÄÀ» °Ç³ÊŸ´Ï´Ù.")
+        print("ê²½ê³ : íšŒê·€ì‹ì— í•´ë‹¹í•˜ëŠ” ë³€ìˆ˜ ì¤‘ ë°ì´í„°ì—ì„œ ì°¾ì„ ìˆ˜ ìˆëŠ” ë³€ìˆ˜ê°€ ì—†ìŠµë‹ˆë‹¤. ìƒê´€ê³„ìˆ˜ í–‰ë ¬ì„ ê±´ë„ˆëœœë‹ˆë‹¤.")
 
-    # È÷½ºÅä±×·¥°ú KDE
+    # íˆìŠ¤í† ê·¸ë¨ê³¼ KDE
     if not data_for_stats.empty:
         plt.figure(figsize=(15, 10))
         num_cols_for_plot = len(data_for_stats.columns)
@@ -69,61 +69,61 @@ def Run_Qualitative_model_analysis(data, formula):
             plt.tight_layout()
             plt.show()
         else:
-            print("È÷½ºÅä±×·¥ ¹× KDE¸¦ ±×¸± º¯¼ö°¡ ¾ø½À´Ï´Ù.")
+            print("íˆìŠ¤í† ê·¸ë¨ ë° KDEë¥¼ ê·¸ë¦´ ë³€ìˆ˜ê°€ ì—†ìŠµë‹ˆë‹¤.")
     else:
-        print("È÷½ºÅä±×·¥ ¹× KDE¸¦ ±×¸± º¯¼ö°¡ ¾ø½À´Ï´Ù.")
+        print("íˆìŠ¤í† ê·¸ë¨ ë° KDEë¥¼ ê·¸ë¦´ ë³€ìˆ˜ê°€ ì—†ìŠµë‹ˆë‹¤.")
 
 
-    print("\n--- 2. ¸ğÇü ÃßÁ¤ ---")
+    print("\n--- 2. ëª¨í˜• ì¶”ì • ---")
     results_lin = None
     results_logit = None
     results_probit = None
 
-    print("\n[¼±Çü È®·ü¸ğÇü(LPM) ÃßÁ¤ °á°ú]")
+    print("\n[ì„ í˜• í™•ë¥ ëª¨í˜•(LPM) ì¶”ì • ê²°ê³¼]")
     try:
         reg_lin = smf.ols(formula=formula, data=data)
         results_lin = reg_lin.fit(cov_type='HC3')
         print(results_lin.summary())
     except Exception as e:
-        print(f"LPM ÃßÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
+        print(f"LPM ì¶”ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
 
-    print("\n[·ÎÁş ¸ğÇü(Logit Model) ÃßÁ¤ °á°ú]")
+    print("\n[ë¡œì§“ ëª¨í˜•(Logit Model) ì¶”ì • ê²°ê³¼]")
     try:
         reg_logit = smf.logit(formula=formula, data=data)
         results_logit = reg_logit.fit(disp=0)
         print(results_logit.summary())
     except Exception as e:
-        print(f"·ÎÁş ¸ğÇü ÃßÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
+        print(f"ë¡œì§“ ëª¨í˜• ì¶”ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
 
-    print("\n[ÇÁ·Îºø ¸ğÇü(Probit Model) ÃßÁ¤ °á°ú]")
+    print("\n[í”„ë¡œë¹— ëª¨í˜•(Probit Model) ì¶”ì • ê²°ê³¼]")
     try:
         reg_probit = smf.probit(formula=formula, data=data)
         results_probit = reg_probit.fit(disp=0)
         print(results_probit.summary())
     except Exception as e:
-        print(f"ÇÁ·Îºø ¸ğÇü ÃßÁ¤ Áß ¿À·ù ¹ß»ı: {e}")
+        print(f"í”„ë¡œë¹— ëª¨í˜• ì¶”ì • ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
 
-    print("\n--- 3. ÇÑ°èÈ¿°ú °è»ê ---")
+    print("\n--- 3. í•œê³„íš¨ê³¼ ê³„ì‚° ---")
     
     if results_lin and results_logit and results_probit:
-        print("\n[Æò±Õ ÇÑ°èÈ¿°ú (statsmodels ÇÔ¼ö ÀÌ¿ë)]")
+        print("\n[í‰ê·  í•œê³„íš¨ê³¼ (statsmodels í•¨ìˆ˜ ì´ìš©)]")
         try:
-            # .margeff ¼Ó¼ºÀ» Á÷Á¢ »ç¿ëÇÏ°í, Series·Î ¸í½ÃÀû º¯È¯ÇÏ¿© index ¼Ó¼º º¸Àå
+            # .margeff ì†ì„±ì„ ì§ì ‘ ì‚¬ìš©í•˜ê³ , Seriesë¡œ ëª…ì‹œì  ë³€í™˜í•˜ì—¬ index ì†ì„± ë³´ì¥
             ape_logit_autom_series = pd.Series(results_logit.get_margeff().margeff)
             ape_probit_autom_series = pd.Series(results_probit.get_margeff().margeff)
             
-            # SeriesÀÇ ÀÎµ¦½º°¡ ÀÌ¹Ì º¯¼ö¸íÀÌ¹Ç·Î, ÀÌ¸¦ Á÷Á¢ »ç¿ë
+            # Seriesì˜ ì¸ë±ìŠ¤ê°€ ì´ë¯¸ ë³€ìˆ˜ëª…ì´ë¯€ë¡œ, ì´ë¥¼ ì§ì ‘ ì‚¬ìš©
             table_auto = pd.DataFrame({
                 'APE_logit_autom': np.round(ape_logit_autom_series.values, 4),
                 'APE_probit_autom': np.round(ape_probit_autom_series.values, 4)
-            }, index=ape_logit_autom_series.index) # ÀÎµ¦½º¸¦ º¯¼ö¸íÀ¸·Î ¼³Á¤
+            }, index=ape_logit_autom_series.index) # ì¸ë±ìŠ¤ë¥¼ ë³€ìˆ˜ëª…ìœ¼ë¡œ ì„¤ì •
             
             print(table_auto)
         except Exception as e:
-            print(f"statsmodels get_margeff() »ç¿ë Áß ¿À·ù ¹ß»ı: {e}")
+            print(f"statsmodels get_margeff() ì‚¬ìš© ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {e}")
     else:
-        print("¸ğÇü ÃßÁ¤ ½ÇÆĞ·Î ÇÑ°èÈ¿°ú¸¦ °è»êÇÒ ¼ö ¾ø½À´Ï´Ù.")
+        print("ëª¨í˜• ì¶”ì • ì‹¤íŒ¨ë¡œ í•œê³„íš¨ê³¼ë¥¼ ê³„ì‚°í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.")
 
 
-    # ¸¶Áö¸· ±×·¡ÇÁ (°üÃøÄ¡¿Í ÀûÇÕµÈ °ª ±×·¡ÇÁ ¹× ÀÜÂ÷ ±×·¡ÇÁ)´Â Á¦°ÅÇÔ.
-    print("\n--- ºĞ¼® ¿Ï·á! ---")
+    # ë§ˆì§€ë§‰ ê·¸ë˜í”„ (ê´€ì¸¡ì¹˜ì™€ ì í•©ëœ ê°’ ê·¸ë˜í”„ ë° ì”ì°¨ ê·¸ë˜í”„)ëŠ” ì œê±°í•¨.
+    print("\n--- ë¶„ì„ ì™„ë£Œ! ---")

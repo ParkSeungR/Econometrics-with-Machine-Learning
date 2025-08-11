@@ -9,8 +9,8 @@ warnings.filterwarnings('ignore')
 
 class ComprehensiveDEA:
     """
-    ÅëÇÕ DEA ºĞ¼® Å¬·¡½º - ÀÏ¹İÈ­µÈ ¹öÀü
-    µ¥ÀÌÅÍÇÁ·¹ÀÓ°ú º¯¼ö¸íÀ» »ç¿ëÇÏ¿© ºĞ¼®
+    í†µí•© DEA ë¶„ì„ í´ë˜ìŠ¤ - ì¼ë°˜í™”ëœ ë²„ì „
+    ë°ì´í„°í”„ë ˆì„ê³¼ ë³€ìˆ˜ëª…ì„ ì‚¬ìš©í•˜ì—¬ ë¶„ì„
     """
     
     def __init__(self, data: pd.DataFrame, 
@@ -19,17 +19,17 @@ class ComprehensiveDEA:
                  dmu_var: str = None):
         """
         Parameters:
-        data: ÀüÃ¼ µ¥ÀÌÅÍÇÁ·¹ÀÓ
-        input_vars: ÀÔ·Â º¯¼ö ÄÃ·³¸í ¸®½ºÆ®
-        output_vars: Ãâ·Â º¯¼ö ÄÃ·³¸í ¸®½ºÆ®  
-        dmu_var: DMU ½Äº° ÄÃ·³¸í (¾øÀ¸¸é ÀÎµ¦½º »ç¿ë)
+        data: ì „ì²´ ë°ì´í„°í”„ë ˆì„
+        input_vars: ì…ë ¥ ë³€ìˆ˜ ì»¬ëŸ¼ëª… ë¦¬ìŠ¤íŠ¸
+        output_vars: ì¶œë ¥ ë³€ìˆ˜ ì»¬ëŸ¼ëª… ë¦¬ìŠ¤íŠ¸  
+        dmu_var: DMU ì‹ë³„ ì»¬ëŸ¼ëª… (ì—†ìœ¼ë©´ ì¸ë±ìŠ¤ ì‚¬ìš©)
         """
         self.data = data.copy()
         self.input_vars = input_vars
         self.output_vars = output_vars
         self.dmu_var = dmu_var
         
-        # ÀÔ·Â/Ãâ·Â µ¥ÀÌÅÍ ÃßÃâ
+        # ì…ë ¥/ì¶œë ¥ ë°ì´í„° ì¶”ì¶œ
         self.inputs = self.data[input_vars].values.astype(float)
         self.outputs = self.data[output_vars].values.astype(float)
         
@@ -37,7 +37,7 @@ class ComprehensiveDEA:
         self.n_inputs = self.inputs.shape[1] 
         self.n_outputs = self.outputs.shape[1]
         
-        # DMU ÀÌ¸§ ¼³Á¤
+        # DMU ì´ë¦„ ì„¤ì •
         if dmu_var and dmu_var in data.columns:
             self.dmu_names = data[dmu_var].astype(str).tolist()
         else:
@@ -45,15 +45,15 @@ class ComprehensiveDEA:
     
     def solve_dea(self, model_type: str = 'BCC', orientation: str = 'input') -> Tuple[np.ndarray, np.ndarray]:
         """
-        DEA ¸ğµ¨ ÇØ°á
+        DEA ëª¨ë¸ í•´ê²°
         
         Parameters:
-        model_type: 'CCR' ¶Ç´Â 'BCC'
-        orientation: 'input' ¶Ç´Â 'output'
+        model_type: 'CCR' ë˜ëŠ” 'BCC'
+        orientation: 'input' ë˜ëŠ” 'output'
         
         Returns:
-        efficiency_scores: È¿À²¼º Á¡¼ö
-        lambdas: °¡ÁßÄ¡ Çà·Ä
+        efficiency_scores: íš¨ìœ¨ì„± ì ìˆ˜
+        lambdas: ê°€ì¤‘ì¹˜ í–‰ë ¬
         """
         efficiency_scores = np.zeros(self.n_dmu)
         lambdas = np.zeros((self.n_dmu, self.n_dmu))
@@ -71,43 +71,43 @@ class ComprehensiveDEA:
             lambda_vars = [pulp.LpVariable(f"lambda_{j}", lowBound=0) 
                           for j in range(self.n_dmu)]
             
-            # ¸ñÀûÇÔ¼ö
+            # ëª©ì í•¨ìˆ˜
             prob += objective
             
-            # Á¦¾àÁ¶°Ç
+            # ì œì•½ì¡°ê±´
             if orientation == 'input':
-                # ÀÔ·Â Á¦¾à
+                # ì…ë ¥ ì œì•½
                 for i in range(self.n_inputs):
                     prob += (pulp.lpSum([lambda_vars[j] * self.inputs[j, i] 
                                        for j in range(self.n_dmu)]) 
                             <= theta * self.inputs[j0, i])
                 
-                # Ãâ·Â Á¦¾à
+                # ì¶œë ¥ ì œì•½
                 for r in range(self.n_outputs):
                     prob += (pulp.lpSum([lambda_vars[j] * self.outputs[j, r] 
                                        for j in range(self.n_dmu)]) 
                             >= self.outputs[j0, r])
             else:  # output orientation
-                # ÀÔ·Â Á¦¾à
+                # ì…ë ¥ ì œì•½
                 for i in range(self.n_inputs):
                     prob += (pulp.lpSum([lambda_vars[j] * self.inputs[j, i] 
                                        for j in range(self.n_dmu)]) 
                             <= self.inputs[j0, i])
                 
-                # Ãâ·Â Á¦¾à
+                # ì¶œë ¥ ì œì•½
                 for r in range(self.n_outputs):
                     prob += (pulp.lpSum([lambda_vars[j] * self.outputs[j, r] 
                                        for j in range(self.n_dmu)]) 
                             >= phi * self.outputs[j0, r])
             
-            # BCC ¸ğµ¨ÀÇ º¼·Ï¼º Á¦¾à
+            # BCC ëª¨ë¸ì˜ ë³¼ë¡ì„± ì œì•½
             if model_type == 'BCC':
                 prob += pulp.lpSum(lambda_vars) == 1
             
-            # ¹®Á¦ ÇØ°á
+            # ë¬¸ì œ í•´ê²°
             prob.solve(pulp.PULP_CBC_CMD(msg=0))
             
-            # °á°ú ÀúÀå
+            # ê²°ê³¼ ì €ì¥
             if orientation == 'input':
                 efficiency_scores[j0] = pulp.value(theta)
             else:
@@ -120,12 +120,12 @@ class ComprehensiveDEA:
     
     def calculate_slacks(self, efficiency_scores: np.ndarray, lambdas: np.ndarray, 
                         orientation: str = 'input') -> Tuple[np.ndarray, np.ndarray]:
-        """½½·¢ °è»ê"""
+        """ìŠ¬ë™ ê³„ì‚°"""
         input_slacks = np.zeros((self.n_dmu, self.n_inputs))
         output_slacks = np.zeros((self.n_dmu, self.n_outputs))
         
         for j0 in range(self.n_dmu):
-            # Åõ¿µÁ¡ °è»ê
+            # íˆ¬ì˜ì  ê³„ì‚°
             projected_inputs = np.sum(lambdas[j0, :].reshape(-1, 1) * self.inputs, axis=0)
             projected_outputs = np.sum(lambdas[j0, :].reshape(-1, 1) * self.outputs, axis=0)
             
@@ -139,7 +139,7 @@ class ComprehensiveDEA:
         return np.maximum(input_slacks, 0), np.maximum(output_slacks, 0)
     
     def get_reference_set(self, lambdas: np.ndarray, threshold: float = 1e-6) -> Dict[str, List[str]]:
-        """ÂüÁ¶ÁıÇÕ °è»ê"""
+        """ì°¸ì¡°ì§‘í•© ê³„ì‚°"""
         reference_sets = {}
         for i in range(self.n_dmu):
             references = []
@@ -153,7 +153,7 @@ class ComprehensiveDEA:
                            orientation: str = 'input', 
                            change_range: Tuple[float, float] = (-0.2, 0.2), 
                            n_points: int = 21) -> Dict[str, np.ndarray]:
-        """¹Î°¨µµ ºĞ¼®"""
+        """ë¯¼ê°ë„ ë¶„ì„"""
         changes = np.linspace(change_range[0], change_range[1], n_points)
         original_inputs = self.inputs.copy()
         original_outputs = self.outputs.copy()
@@ -161,16 +161,16 @@ class ComprehensiveDEA:
         input_sensitivity = np.zeros((self.n_inputs, n_points))
         output_sensitivity = np.zeros((self.n_outputs, n_points))
         
-        print(f"   ?? ¹Î°¨µµ ºĞ¼® ÁøÇà Áß...")
+        print(f"   ?? ë¯¼ê°ë„ ë¶„ì„ ì§„í–‰ ì¤‘...")
         
-        # ÀÔ·Â º¯¼ö ¹Î°¨µµ
+        # ì…ë ¥ ë³€ìˆ˜ ë¯¼ê°ë„
         for i in range(self.n_inputs):
             for j, change in enumerate(changes):
-                # ÀÓ½Ã·Î ÀÔ·Â°ª º¯°æ
+                # ì„ì‹œë¡œ ì…ë ¥ê°’ ë³€ê²½
                 temp_inputs = self.inputs.copy()
                 temp_inputs[dmu_index, i] = original_inputs[dmu_index, i] * (1 + change)
                 
-                # ÀÓ½Ã DEA °´Ã¼ »ı¼ºÇÏ¿© ºĞ¼®
+                # ì„ì‹œ DEA ê°ì²´ ìƒì„±í•˜ì—¬ ë¶„ì„
                 temp_dea = ComprehensiveDEA(pd.DataFrame(), [], [])
                 temp_dea.inputs = temp_inputs
                 temp_dea.outputs = self.outputs
@@ -182,14 +182,14 @@ class ComprehensiveDEA:
                 scores, _ = temp_dea.solve_dea(model_type, orientation)
                 input_sensitivity[i, j] = scores[dmu_index]
         
-        # Ãâ·Â º¯¼ö ¹Î°¨µµ
+        # ì¶œë ¥ ë³€ìˆ˜ ë¯¼ê°ë„
         for i in range(self.n_outputs):
             for j, change in enumerate(changes):
-                # ÀÓ½Ã·Î Ãâ·Â°ª º¯°æ
+                # ì„ì‹œë¡œ ì¶œë ¥ê°’ ë³€ê²½
                 temp_outputs = self.outputs.copy()
                 temp_outputs[dmu_index, i] = original_outputs[dmu_index, i] * (1 + change)
                 
-                # ÀÓ½Ã DEA °´Ã¼ »ı¼ºÇÏ¿© ºĞ¼®
+                # ì„ì‹œ DEA ê°ì²´ ìƒì„±í•˜ì—¬ ë¶„ì„
                 temp_dea = ComprehensiveDEA(pd.DataFrame(), [], [])
                 temp_dea.inputs = self.inputs
                 temp_dea.outputs = temp_outputs
@@ -201,7 +201,7 @@ class ComprehensiveDEA:
                 scores, _ = temp_dea.solve_dea(model_type, orientation)
                 output_sensitivity[i, j] = scores[dmu_index]
         
-        print(f"   ? ¹Î°¨µµ ºĞ¼® ¿Ï·á")
+        print(f"   ? ë¯¼ê°ë„ ë¶„ì„ ì™„ë£Œ")
         
         return {
             'changes': changes,
@@ -213,37 +213,37 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
                               input_vars: Union[List[str], List[int]] = None,
                               output_vars: Union[List[str], List[int]] = None,
                               dmu_var: str = None,
-                              input_data: np.ndarray = None,  # ¿ªÈ£È¯¼º
-                              output_data: np.ndarray = None,  # ¿ªÈ£È¯¼º
-                              dmu_names: List[str] = None,   # ¿ªÈ£È¯¼º
+                              input_data: np.ndarray = None,  # ì—­í˜¸í™˜ì„±
+                              output_data: np.ndarray = None,  # ì—­í˜¸í™˜ì„±
+                              dmu_names: List[str] = None,   # ì—­í˜¸í™˜ì„±
                               orientation: str = 'input',
                               sensitivity_dmu: Union[int, str] = None,
                               plot_results: bool = True,
                               models: List[str] = ['CCR', 'BCC'],
                               change_range: Tuple[float, float] = (-0.2, 0.2)) -> Dict:
     """
-    ÅëÇÕ DEA ºĞ¼® ÇÔ¼ö - ÀÏ¹İÈ­µÈ ¹öÀü
+    í†µí•© DEA ë¶„ì„ í•¨ìˆ˜ - ì¼ë°˜í™”ëœ ë²„ì „
     
     Parameters:
-    data: µ¥ÀÌÅÍÇÁ·¹ÀÓ ¶Ç´Â numpy ¹è¿­
-    input_vars: ÀÔ·Â º¯¼ö ÄÃ·³¸í ¸®½ºÆ® (DataFrame »ç¿ë½Ã) ¶Ç´Â ÀÎµ¦½º (¹è¿­ »ç¿ë½Ã)
-    output_vars: Ãâ·Â º¯¼ö ÄÃ·³¸í ¸®½ºÆ® (DataFrame »ç¿ë½Ã) ¶Ç´Â ÀÎµ¦½º (¹è¿­ »ç¿ë½Ã)
-    dmu_var: DMU ½Äº° ÄÃ·³¸í (DataFrame »ç¿ë½Ã)
-    input_data: ÀÔ·Â µ¥ÀÌÅÍ ¹è¿­ (¿ªÈ£È¯¼ºÀ» À§ÇØ À¯Áö)
-    output_data: Ãâ·Â µ¥ÀÌÅÍ ¹è¿­ (¿ªÈ£È¯¼ºÀ» À§ÇØ À¯Áö)
-    dmu_names: DMU ÀÌ¸§ ¸®½ºÆ® (¿ªÈ£È¯¼ºÀ» À§ÇØ À¯Áö)
-    orientation: 'input' ¶Ç´Â 'output'
-    sensitivity_dmu: ¹Î°¨µµ ºĞ¼®ÇÒ DMU (ÀÎµ¦½º ¶Ç´Â ÀÌ¸§)
-    plot_results: °á°ú ½Ã°¢È­ ¿©ºÎ
-    models: ºĞ¼®ÇÒ ¸ğµ¨ ¸®½ºÆ® ['CCR', 'BCC']
-    change_range: ¹Î°¨µµ ºĞ¼® º¯È­ ¹üÀ§
+    data: ë°ì´í„°í”„ë ˆì„ ë˜ëŠ” numpy ë°°ì—´
+    input_vars: ì…ë ¥ ë³€ìˆ˜ ì»¬ëŸ¼ëª… ë¦¬ìŠ¤íŠ¸ (DataFrame ì‚¬ìš©ì‹œ) ë˜ëŠ” ì¸ë±ìŠ¤ (ë°°ì—´ ì‚¬ìš©ì‹œ)
+    output_vars: ì¶œë ¥ ë³€ìˆ˜ ì»¬ëŸ¼ëª… ë¦¬ìŠ¤íŠ¸ (DataFrame ì‚¬ìš©ì‹œ) ë˜ëŠ” ì¸ë±ìŠ¤ (ë°°ì—´ ì‚¬ìš©ì‹œ)
+    dmu_var: DMU ì‹ë³„ ì»¬ëŸ¼ëª… (DataFrame ì‚¬ìš©ì‹œ)
+    input_data: ì…ë ¥ ë°ì´í„° ë°°ì—´ (ì—­í˜¸í™˜ì„±ì„ ìœ„í•´ ìœ ì§€)
+    output_data: ì¶œë ¥ ë°ì´í„° ë°°ì—´ (ì—­í˜¸í™˜ì„±ì„ ìœ„í•´ ìœ ì§€)
+    dmu_names: DMU ì´ë¦„ ë¦¬ìŠ¤íŠ¸ (ì—­í˜¸í™˜ì„±ì„ ìœ„í•´ ìœ ì§€)
+    orientation: 'input' ë˜ëŠ” 'output'
+    sensitivity_dmu: ë¯¼ê°ë„ ë¶„ì„í•  DMU (ì¸ë±ìŠ¤ ë˜ëŠ” ì´ë¦„)
+    plot_results: ê²°ê³¼ ì‹œê°í™” ì—¬ë¶€
+    models: ë¶„ì„í•  ëª¨ë¸ ë¦¬ìŠ¤íŠ¸ ['CCR', 'BCC']
+    change_range: ë¯¼ê°ë„ ë¶„ì„ ë³€í™” ë²”ìœ„
     
     Returns:
-    ºĞ¼® °á°ú µñ¼Å³Ê¸®
+    ë¶„ì„ ê²°ê³¼ ë”•ì…”ë„ˆë¦¬
     
     Usage Examples:
     
-    # ¹æ¹ı 1: µ¥ÀÌÅÍÇÁ·¹ÀÓ »ç¿ë (±ÇÀå)
+    # ë°©ë²• 1: ë°ì´í„°í”„ë ˆì„ ì‚¬ìš© (ê¶Œì¥)
     results = comprehensive_dea_analysis(
         data=df,
         input_vars=['employees', 'operating_cost'],
@@ -252,7 +252,7 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
         orientation='input'
     )
     
-    # ¹æ¹ı 2: ¹è¿­ »ç¿ë (¿ªÈ£È¯¼º)
+    # ë°©ë²• 2: ë°°ì—´ ì‚¬ìš© (ì—­í˜¸í™˜ì„±)
     results = comprehensive_dea_analysis(
         input_data=input_array,
         output_data=output_array,
@@ -262,20 +262,20 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
     """
     
     print("="*80)
-    print("                     ÅëÇÕ DEA ºĞ¼® ½Ã½ºÅÛ (ÀÏ¹İÈ­ ¹öÀü)")
+    print("                     í†µí•© DEA ë¶„ì„ ì‹œìŠ¤í…œ (ì¼ë°˜í™” ë²„ì „)")
     print("="*80)
     
-    # ÀÔ·Â µ¥ÀÌÅÍ Ã³¸® ¹× °ËÁõ
+    # ì…ë ¥ ë°ì´í„° ì²˜ë¦¬ ë° ê²€ì¦
     if input_data is not None and output_data is not None:
-        # ¿ªÈ£È¯¼º: ±âÁ¸ ¹æ½Ä
-        print("?? µ¥ÀÌÅÍ ÀÔ·Â ¹æ½Ä: ¹è¿­ (¿ªÈ£È¯ ¸ğµå)")
+        # ì—­í˜¸í™˜ì„±: ê¸°ì¡´ ë°©ì‹
+        print("?? ë°ì´í„° ì…ë ¥ ë°©ì‹: ë°°ì—´ (ì—­í˜¸í™˜ ëª¨ë“œ)")
         inputs = np.array(input_data, dtype=float)
         outputs = np.array(output_data, dtype=float)
         
         if dmu_names is None:
             dmu_names = [f"DMU_{i+1}" for i in range(inputs.shape[0])]
         
-        # ÀÓ½Ã µ¥ÀÌÅÍÇÁ·¹ÀÓ »ı¼º
+        # ì„ì‹œ ë°ì´í„°í”„ë ˆì„ ìƒì„±
         df = pd.DataFrame(inputs, columns=[f"input_{i+1}" for i in range(inputs.shape[1])])
         df = pd.concat([df, pd.DataFrame(outputs, columns=[f"output_{i+1}" for i in range(outputs.shape[1])])], axis=1)
         df['dmu_name'] = dmu_names
@@ -287,12 +287,12 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
         dea = ComprehensiveDEA(df, input_vars, output_vars, dmu_var)
         
     elif isinstance(data, pd.DataFrame):
-        # ½Å±Ô ¹æ½Ä: µ¥ÀÌÅÍÇÁ·¹ÀÓ »ç¿ë
-        print("?? µ¥ÀÌÅÍ ÀÔ·Â ¹æ½Ä: µ¥ÀÌÅÍÇÁ·¹ÀÓ")
+        # ì‹ ê·œ ë°©ì‹: ë°ì´í„°í”„ë ˆì„ ì‚¬ìš©
+        print("?? ë°ì´í„° ì…ë ¥ ë°©ì‹: ë°ì´í„°í”„ë ˆì„")
         
-        # º¯¼ö °ËÁõ
+        # ë³€ìˆ˜ ê²€ì¦
         if input_vars is None or output_vars is None:
-            raise ValueError("µ¥ÀÌÅÍÇÁ·¹ÀÓ »ç¿ë½Ã input_vars, output_vars´Â ÇÊ¼öÀÔ´Ï´Ù.")
+            raise ValueError("ë°ì´í„°í”„ë ˆì„ ì‚¬ìš©ì‹œ input_vars, output_varsëŠ” í•„ìˆ˜ì…ë‹ˆë‹¤.")
         
         missing_cols = []
         for var in input_vars + output_vars:
@@ -300,26 +300,26 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
                 missing_cols.append(var)
         
         if missing_cols:
-            raise ValueError(f"´ÙÀ½ ÄÃ·³µéÀÌ µ¥ÀÌÅÍ¿¡ ¾ø½À´Ï´Ù: {missing_cols}")
+            raise ValueError(f"ë‹¤ìŒ ì»¬ëŸ¼ë“¤ì´ ë°ì´í„°ì— ì—†ìŠµë‹ˆë‹¤: {missing_cols}")
         
-        # DEA °´Ã¼ »ı¼º
+        # DEA ê°ì²´ ìƒì„±
         dea = ComprehensiveDEA(data, input_vars, output_vars, dmu_var)
         
     elif isinstance(data, np.ndarray):
-        # ¹è¿­ ÀÔ·Â ¹æ½Ä
-        print("?? µ¥ÀÌÅÍ ÀÔ·Â ¹æ½Ä: ¹è¿­")
+        # ë°°ì—´ ì…ë ¥ ë°©ì‹
+        print("?? ë°ì´í„° ì…ë ¥ ë°©ì‹: ë°°ì—´")
         
         if input_vars is None or output_vars is None:
-            raise ValueError("¹è¿­ »ç¿ë½Ã input_vars, output_vars ÀÎµ¦½º°¡ ÇÊ¿äÇÕ´Ï´Ù.")
+            raise ValueError("ë°°ì—´ ì‚¬ìš©ì‹œ input_vars, output_vars ì¸ë±ìŠ¤ê°€ í•„ìš”í•©ë‹ˆë‹¤.")
         
-        # ¹è¿­¿¡¼­ ÀÔ·Â/Ãâ·Â ºĞ¸®
+        # ë°°ì—´ì—ì„œ ì…ë ¥/ì¶œë ¥ ë¶„ë¦¬
         inputs = data[:, input_vars] if isinstance(input_vars[0], int) else data
         outputs = data[:, output_vars] if isinstance(output_vars[0], int) else data
         
         if dmu_names is None:
             dmu_names = [f"DMU_{i+1}" for i in range(data.shape[0])]
         
-        # ÀÓ½Ã µ¥ÀÌÅÍÇÁ·¹ÀÓ »ı¼º
+        # ì„ì‹œ ë°ì´í„°í”„ë ˆì„ ìƒì„±
         df = pd.DataFrame(inputs, columns=[f"input_{i+1}" for i in range(inputs.shape[1])])
         df = pd.concat([df, pd.DataFrame(outputs, columns=[f"output_{i+1}" for i in range(outputs.shape[1])])], axis=1)
         df['dmu_name'] = dmu_names
@@ -330,56 +330,56 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
         
         dea = ComprehensiveDEA(df, input_vars, output_vars, dmu_var)
     else:
-        raise ValueError("Áö¿øµÇÁö ¾Ê´Â µ¥ÀÌÅÍ Çü½ÄÀÔ´Ï´Ù.")
+        raise ValueError("ì§€ì›ë˜ì§€ ì•ŠëŠ” ë°ì´í„° í˜•ì‹ì…ë‹ˆë‹¤.")
     
-    print(f"\n?? ºĞ¼® °³¿ä")
-    print(f"   ? DMU ¼ö: {dea.n_dmu}")
-    print(f"   ? ÀÔ·Â º¯¼ö ¼ö: {dea.n_inputs}")
-    print(f"   ? Ãâ·Â º¯¼ö ¼ö: {dea.n_outputs}")
-    print(f"   ? ºĞ¼® ¹æÇâ: {orientation.upper()} ÁöÇâ")
-    print(f"   ? ÀÔ·Â º¯¼ö: {', '.join(input_vars)}")
-    print(f"   ? Ãâ·Â º¯¼ö: {', '.join(output_vars)}")
-    print(f"   ? ºĞ¼® ¸ğµ¨: {', '.join(models)}")
+    print(f"\n?? ë¶„ì„ ê°œìš”")
+    print(f"   ? DMU ìˆ˜: {dea.n_dmu}")
+    print(f"   ? ì…ë ¥ ë³€ìˆ˜ ìˆ˜: {dea.n_inputs}")
+    print(f"   ? ì¶œë ¥ ë³€ìˆ˜ ìˆ˜: {dea.n_outputs}")
+    print(f"   ? ë¶„ì„ ë°©í–¥: {orientation.upper()} ì§€í–¥")
+    print(f"   ? ì…ë ¥ ë³€ìˆ˜: {', '.join(input_vars)}")
+    print(f"   ? ì¶œë ¥ ë³€ìˆ˜: {', '.join(output_vars)}")
+    print(f"   ? ë¶„ì„ ëª¨ë¸: {', '.join(models)}")
     
-    # ±âº» Åë°è Ãâ·Â
-    print(f"\n?? µ¥ÀÌÅÍ ±âº» Åë°è:")
-    print(f"   ÀÔ·Â º¯¼ö Åë°è:")
+    # ê¸°ë³¸ í†µê³„ ì¶œë ¥
+    print(f"\n?? ë°ì´í„° ê¸°ë³¸ í†µê³„:")
+    print(f"   ì…ë ¥ ë³€ìˆ˜ í†µê³„:")
     for i, var in enumerate(input_vars):
         values = dea.inputs[:, i]
-        print(f"     ? {var}: Æò±Õ {np.mean(values):.2f}, Ç¥ÁØÆíÂ÷ {np.std(values):.2f}, ¹üÀ§ [{np.min(values):.2f}, {np.max(values):.2f}]")
+        print(f"     ? {var}: í‰ê·  {np.mean(values):.2f}, í‘œì¤€í¸ì°¨ {np.std(values):.2f}, ë²”ìœ„ [{np.min(values):.2f}, {np.max(values):.2f}]")
     
-    print(f"   Ãâ·Â º¯¼ö Åë°è:")
+    print(f"   ì¶œë ¥ ë³€ìˆ˜ í†µê³„:")
     for i, var in enumerate(output_vars):
         values = dea.outputs[:, i]
-        print(f"     ? {var}: Æò±Õ {np.mean(values):.2f}, Ç¥ÁØÆíÂ÷ {np.std(values):.2f}, ¹üÀ§ [{np.min(values):.2f}, {np.max(values):.2f}]")
+        print(f"     ? {var}: í‰ê·  {np.mean(values):.2f}, í‘œì¤€í¸ì°¨ {np.std(values):.2f}, ë²”ìœ„ [{np.min(values):.2f}, {np.max(values):.2f}]")
     
-    # 1. DEA ¸ğµ¨ ºĞ¼®
+    # 1. DEA ëª¨ë¸ ë¶„ì„
     print(f"\n" + "="*80)
-    print("1. DEA ¸ğµ¨ È¿À²¼º ºĞ¼®")
+    print("1. DEA ëª¨ë¸ íš¨ìœ¨ì„± ë¶„ì„")
     print("="*80)
     
     model_results = {}
     
     for model in models:
-        print(f"\n?? {model} ¸ğµ¨ ºĞ¼® Áß...")
+        print(f"\n?? {model} ëª¨ë¸ ë¶„ì„ ì¤‘...")
         scores, lambdas = dea.solve_dea(model, orientation)
         model_results[model] = {
             'scores': scores,
             'lambdas': lambdas
         }
         
-        print(f"   ? Æò±Õ È¿À²¼º: {np.mean(scores):.4f}")
-        print(f"   ? Ç¥ÁØÆíÂ÷: {np.std(scores):.4f}")
-        print(f"   ? È¿À²Àû DMU ¼ö: {np.sum(scores >= 0.99)}")
-        print(f"   ? ÃÖ°í È¿À²¼º: {np.max(scores):.4f}")
-        print(f"   ? ÃÖÀú È¿À²¼º: {np.min(scores):.4f}")
+        print(f"   ? í‰ê·  íš¨ìœ¨ì„±: {np.mean(scores):.4f}")
+        print(f"   ? í‘œì¤€í¸ì°¨: {np.std(scores):.4f}")
+        print(f"   ? íš¨ìœ¨ì  DMU ìˆ˜: {np.sum(scores >= 0.99)}")
+        print(f"   ? ìµœê³  íš¨ìœ¨ì„±: {np.max(scores):.4f}")
+        print(f"   ? ìµœì € íš¨ìœ¨ì„±: {np.min(scores):.4f}")
     
-    # ÁÖ¿ä ¸ğµ¨ ¼±ÅÃ (BCC ¿ì¼±, ¾øÀ¸¸é Ã¹ ¹øÂ°)
+    # ì£¼ìš” ëª¨ë¸ ì„ íƒ (BCC ìš°ì„ , ì—†ìœ¼ë©´ ì²« ë²ˆì§¸)
     primary_model = 'BCC' if 'BCC' in models else models[0]
     primary_scores = model_results[primary_model]['scores']
     primary_lambdas = model_results[primary_model]['lambdas']
     
-    # ±Ô¸ğÈ¿À²¼º °è»ê (CCR°ú BCC ¸ğµÎ ÀÖÀ» ¶§)
+    # ê·œëª¨íš¨ìœ¨ì„± ê³„ì‚° (CCRê³¼ BCC ëª¨ë‘ ìˆì„ ë•Œ)
     scale_efficiency = None
     returns_to_scale = None
     if 'CCR' in models and 'BCC' in models:
@@ -396,51 +396,51 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
             else:
                 returns_to_scale.append("DRS")
     
-    # 2. °á°úÇ¥ »ı¼º
+    # 2. ê²°ê³¼í‘œ ìƒì„±
     print(f"\n" + "="*80)
-    print("2. Á¾ÇÕ È¿À²¼º ºĞ¼® °á°úÇ¥")
+    print("2. ì¢…í•© íš¨ìœ¨ì„± ë¶„ì„ ê²°ê³¼í‘œ")
     print("="*80)
     
     results_df = pd.DataFrame({
         'DMU': dea.dmu_names
     })
     
-    # ¸ğµ¨º° È¿À²¼º Á¡¼ö Ãß°¡
+    # ëª¨ë¸ë³„ íš¨ìœ¨ì„± ì ìˆ˜ ì¶”ê°€
     for model in models:
-        results_df[f'{model}_È¿À²¼º'] = model_results[model]['scores']
-        results_df[f'{model}_¼øÀ§'] = pd.Series(model_results[model]['scores']).rank(ascending=False, method='min').astype(int)
+        results_df[f'{model}_íš¨ìœ¨ì„±'] = model_results[model]['scores']
+        results_df[f'{model}_ìˆœìœ„'] = pd.Series(model_results[model]['scores']).rank(ascending=False, method='min').astype(int)
     
-    # ±Ô¸ğÈ¿À²¼º Ãß°¡ (°¡´ÉÇÑ °æ¿ì)
+    # ê·œëª¨íš¨ìœ¨ì„± ì¶”ê°€ (ê°€ëŠ¥í•œ ê²½ìš°)
     if scale_efficiency is not None:
-        results_df['±Ô¸ğÈ¿À²¼º'] = scale_efficiency
-        results_df['±Ô¸ğ¼öÀÍ'] = returns_to_scale
+        results_df['ê·œëª¨íš¨ìœ¨ì„±'] = scale_efficiency
+        results_df['ê·œëª¨ìˆ˜ìµ'] = returns_to_scale
     
     results_df = results_df.round(4)
     print(results_df.to_string(index=False))
     
-    # È¿À²Àû/ºñÈ¿À²Àû DMU ºĞ·ù
-    efficient_dmus = results_df[results_df[f'{primary_model}_È¿À²¼º'] >= 0.99]['DMU'].tolist()
-    inefficient_dmus = results_df[results_df[f'{primary_model}_È¿À²¼º'] < 0.99]['DMU'].tolist()
+    # íš¨ìœ¨ì /ë¹„íš¨ìœ¨ì  DMU ë¶„ë¥˜
+    efficient_dmus = results_df[results_df[f'{primary_model}_íš¨ìœ¨ì„±'] >= 0.99]['DMU'].tolist()
+    inefficient_dmus = results_df[results_df[f'{primary_model}_íš¨ìœ¨ì„±'] < 0.99]['DMU'].tolist()
     
-    print(f"\n?? È¿À²¼º ºĞ·ù ({primary_model} ±âÁØ):")
-    print(f"   È¿À²Àû DMU: {', '.join(efficient_dmus) if efficient_dmus else '¾øÀ½'}")
-    print(f"   ºñÈ¿À²Àû DMU: {', '.join(inefficient_dmus) if inefficient_dmus else '¾øÀ½'}")
+    print(f"\n?? íš¨ìœ¨ì„± ë¶„ë¥˜ ({primary_model} ê¸°ì¤€):")
+    print(f"   íš¨ìœ¨ì  DMU: {', '.join(efficient_dmus) if efficient_dmus else 'ì—†ìŒ'}")
+    print(f"   ë¹„íš¨ìœ¨ì  DMU: {', '.join(inefficient_dmus) if inefficient_dmus else 'ì—†ìŒ'}")
     
-    # 3. ÂüÁ¶ÁıÇÕ ºĞ¼®
+    # 3. ì°¸ì¡°ì§‘í•© ë¶„ì„
     print(f"\n" + "="*80)
-    print("3. ÂüÁ¶ÁıÇÕ(º¥Ä¡¸¶Å©) ºĞ¼®")
+    print("3. ì°¸ì¡°ì§‘í•©(ë²¤ì¹˜ë§ˆí¬) ë¶„ì„")
     print("="*80)
     
     reference_sets = dea.get_reference_set(primary_lambdas)
     
-    print(f"\n?? DMUº° º¥Ä¡¸¶Å© ({primary_model} ±âÁØ):")
+    print(f"\n?? DMUë³„ ë²¤ì¹˜ë§ˆí¬ ({primary_model} ê¸°ì¤€):")
     for dmu, refs in reference_sets.items():
         if len(refs) > 1 or (len(refs) == 1 and refs[0] != dmu):
             print(f"   {dmu}: {', '.join(refs)}")
         elif len(refs) == 1 and refs[0] == dmu:
-            print(f"   {dmu}: ÀÚ±â ÀÚ½Å (È¿À²Àû)")
+            print(f"   {dmu}: ìê¸° ìì‹  (íš¨ìœ¨ì )")
     
-    # º¥Ä¡¸¶Å© ºóµµ ºĞ¼®
+    # ë²¤ì¹˜ë§ˆí¬ ë¹ˆë„ ë¶„ì„
     benchmark_count = {}
     for refs in reference_sets.values():
         for ref in refs:
@@ -448,116 +448,116 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
     
     if benchmark_count:
         top_benchmarks = sorted(benchmark_count.items(), key=lambda x: x[1], reverse=True)[:5]
-        print(f"\n?? ÁÖ¿ä º¥Ä¡¸¶Å© DMU:")
+        print(f"\n?? ì£¼ìš” ë²¤ì¹˜ë§ˆí¬ DMU:")
         for dmu, count in top_benchmarks:
-            print(f"   {dmu}: {count}È¸ ÂüÁ¶µÊ")
+            print(f"   {dmu}: {count}íšŒ ì°¸ì¡°ë¨")
     
-    # 4. ½½·¢ ºĞ¼®
+    # 4. ìŠ¬ë™ ë¶„ì„
     print(f"\n" + "="*80)
-    print("4. ½½·¢(¿©À¯ºĞ) ºĞ¼®")
+    print("4. ìŠ¬ë™(ì—¬ìœ ë¶„) ë¶„ì„")
     print("="*80)
     
     input_slacks, output_slacks = dea.calculate_slacks(primary_scores, primary_lambdas, orientation)
     
-    print(f"\n?? ½½·¢ Åë°è ({primary_model} ¸ğµ¨ ±âÁØ):")
-    print(f"   ÀÔ·Â ½½·¢ Æò±Õ:")
+    print(f"\n?? ìŠ¬ë™ í†µê³„ ({primary_model} ëª¨ë¸ ê¸°ì¤€):")
+    print(f"   ì…ë ¥ ìŠ¬ë™ í‰ê· :")
     for i, var in enumerate(input_vars):
         avg_slack = np.mean(input_slacks[:, i])
         print(f"     ? {var}: {avg_slack:.4f}")
     
-    print(f"   Ãâ·Â ½½·¢ Æò±Õ:")
+    print(f"   ì¶œë ¥ ìŠ¬ë™ í‰ê· :")
     for i, var in enumerate(output_vars):
         avg_slack = np.mean(output_slacks[:, i])
         print(f"     ? {var}: {avg_slack:.4f}")
     
-    # ½½·¢ÀÌ Å« DMUµé ½Äº°
+    # ìŠ¬ë™ì´ í° DMUë“¤ ì‹ë³„
     total_input_slack = np.sum(input_slacks, axis=1)
     total_output_slack = np.sum(output_slacks, axis=1)
     
-    print(f"\n?? ÁÖ¿ä ½½·¢ º¸À¯ DMU:")
+    print(f"\n?? ì£¼ìš” ìŠ¬ë™ ë³´ìœ  DMU:")
     for i, dmu in enumerate(dea.dmu_names):
         if total_input_slack[i] > 0 or total_output_slack[i] > 0:
             print(f"   {dmu}:")
             for j, var in enumerate(input_vars):
                 if input_slacks[i, j] > 1e-6:
-                    print(f"     - {var} Ãß°¡ Àı°¨ °¡´É: {input_slacks[i, j]:.4f}")
+                    print(f"     - {var} ì¶”ê°€ ì ˆê° ê°€ëŠ¥: {input_slacks[i, j]:.4f}")
             for j, var in enumerate(output_vars):
                 if output_slacks[i, j] > 1e-6:
-                    print(f"     - {var} Ãß°¡ Áõ´ë °¡´É: {output_slacks[i, j]:.4f}")
+                    print(f"     - {var} ì¶”ê°€ ì¦ëŒ€ ê°€ëŠ¥: {output_slacks[i, j]:.4f}")
     
-    # 5. °³¼±¹æ¾È Á¦½Ã
+    # 5. ê°œì„ ë°©ì•ˆ ì œì‹œ
     print(f"\n" + "="*80)
-    print("5. ±¸Ã¼Àû °³¼±¹æ¾È")
+    print("5. êµ¬ì²´ì  ê°œì„ ë°©ì•ˆ")
     print("="*80)
     
-    print(f"\n?? ºñÈ¿À²Àû DMU °³¼±¹æ¾È ({orientation.upper()} ÁöÇâ, {primary_model} ±âÁØ):")
+    print(f"\n?? ë¹„íš¨ìœ¨ì  DMU ê°œì„ ë°©ì•ˆ ({orientation.upper()} ì§€í–¥, {primary_model} ê¸°ì¤€):")
     
     inefficient_indices = np.where(primary_scores < 0.99)[0]
     for idx in inefficient_indices:
         dmu_name = dea.dmu_names[idx]
         efficiency = primary_scores[idx]
         
-        print(f"\n   ?? {dmu_name} (È¿À²¼º: {efficiency:.4f})")
+        print(f"\n   ?? {dmu_name} (íš¨ìœ¨ì„±: {efficiency:.4f})")
         
         if orientation == 'input':
-            # ÀÔ·Â °¨¼Ò ¸ñÇ¥
+            # ì…ë ¥ ê°ì†Œ ëª©í‘œ
             target_inputs = dea.inputs[idx] * efficiency
             input_reductions = dea.inputs[idx] - target_inputs
             
-            print(f"      ÀÔ·Â °¨¼Ò ¸ñÇ¥:")
+            print(f"      ì…ë ¥ ê°ì†Œ ëª©í‘œ:")
             for i, var in enumerate(input_vars):
                 if input_reductions[i] > 1e-6:
                     current_val = dea.inputs[idx, i]
                     reduction_pct = (input_reductions[i] / current_val) * 100
-                    print(f"        ? {var}: {current_val:.4f} ¡æ {target_inputs[i]:.4f} ({reduction_pct:.1f}% °¨¼Ò)")
+                    print(f"        ? {var}: {current_val:.4f} â†’ {target_inputs[i]:.4f} ({reduction_pct:.1f}% ê°ì†Œ)")
         else:
-            # Ãâ·Â Áõ°¡ ¸ñÇ¥  
+            # ì¶œë ¥ ì¦ê°€ ëª©í‘œ  
             target_outputs = dea.outputs[idx] / efficiency
             output_increases = target_outputs - dea.outputs[idx]
             
-            print(f"      Ãâ·Â Áõ°¡ ¸ñÇ¥:")
+            print(f"      ì¶œë ¥ ì¦ê°€ ëª©í‘œ:")
             for i, var in enumerate(output_vars):
                 if output_increases[i] > 1e-6:
                     current_val = dea.outputs[idx, i]
                     increase_pct = (output_increases[i] / current_val) * 100
-                    print(f"        ? {var}: {current_val:.4f} ¡æ {target_outputs[i]:.4f} ({increase_pct:.1f}% Áõ°¡)")
+                    print(f"        ? {var}: {current_val:.4f} â†’ {target_outputs[i]:.4f} ({increase_pct:.1f}% ì¦ê°€)")
         
-        # º¥Ä¡¸¶Å© Á¤º¸
+        # ë²¤ì¹˜ë§ˆí¬ ì •ë³´
         refs = reference_sets[dmu_name]
         if refs and refs != [dmu_name]:
-            print(f"      º¥Ä¡¸¶Å©: {', '.join(refs)}")
+            print(f"      ë²¤ì¹˜ë§ˆí¬: {', '.join(refs)}")
     
-    # 6. ¹Î°¨µµ ºĞ¼®
+    # 6. ë¯¼ê°ë„ ë¶„ì„
     print(f"\n" + "="*80)
-    print("6. ¹Î°¨µµ ºĞ¼®")
+    print("6. ë¯¼ê°ë„ ë¶„ì„")
     print("="*80)
     
-    # ¹Î°¨µµ ºĞ¼® ´ë»ó DMU °áÁ¤
+    # ë¯¼ê°ë„ ë¶„ì„ ëŒ€ìƒ DMU ê²°ì •
     if sensitivity_dmu is None:
         if len(inefficient_indices) > 0:
             sensitivity_dmu = inefficient_indices[np.argmin(primary_scores[inefficient_indices])]
         else:
             sensitivity_dmu = np.argmin(primary_scores)
     elif isinstance(sensitivity_dmu, str):
-        # ÀÌ¸§À¸·Î ÀÎµ¦½º Ã£±â
+        # ì´ë¦„ìœ¼ë¡œ ì¸ë±ìŠ¤ ì°¾ê¸°
         try:
             sensitivity_dmu = dea.dmu_names.index(sensitivity_dmu)
         except ValueError:
-            print(f"   ? '{sensitivity_dmu}' DMU¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù. °¡Àå ºñÈ¿À²ÀûÀÎ DMU·Î ´ëÃ¼ÇÕ´Ï´Ù.")
+            print(f"   ? '{sensitivity_dmu}' DMUë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. ê°€ì¥ ë¹„íš¨ìœ¨ì ì¸ DMUë¡œ ëŒ€ì²´í•©ë‹ˆë‹¤.")
             sensitivity_dmu = np.argmin(primary_scores)
     
     target_dmu = dea.dmu_names[sensitivity_dmu]
-    print(f"?? ¹Î°¨µµ ºĞ¼® ´ë»ó DMU: {target_dmu}")
-    print(f"   ÇöÀç È¿À²¼º: {primary_scores[sensitivity_dmu]:.4f}")
+    print(f"?? ë¯¼ê°ë„ ë¶„ì„ ëŒ€ìƒ DMU: {target_dmu}")
+    print(f"   í˜„ì¬ íš¨ìœ¨ì„±: {primary_scores[sensitivity_dmu]:.4f}")
     
     try:
         sensitivity_results = dea.sensitivity_analysis(sensitivity_dmu, primary_model, orientation, change_range)
         
-        print(f"\n?? {target_dmu}ÀÇ º¯¼öº° ¹Î°¨µµ ºĞ¼® ({change_range[0]*100:+.0f}% ~ {change_range[1]*100:+.0f}% º¯È­):")
+        print(f"\n?? {target_dmu}ì˜ ë³€ìˆ˜ë³„ ë¯¼ê°ë„ ë¶„ì„ ({change_range[0]*100:+.0f}% ~ {change_range[1]*100:+.0f}% ë³€í™”):")
         
         changes = sensitivity_results['changes']
         
-        print(f"\n   ?? ÀÔ·Â º¯¼ö ¹Î°¨µµ:")
+        print(f"\n   ?? ì…ë ¥ ë³€ìˆ˜ ë¯¼ê°ë„:")
         for i, var in enumerate(input_vars):
             sensitivity = sensitivity_results['input_sensitivity'][i]
             min_eff = np.min(sensitivity)
@@ -569,10 +569,10 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
             best_eff = sensitivity[best_change_idx]
             
             print(f"     ?? {var}:")
-            print(f"       ? È¿À²¼º º¯È­Æø: {range_eff:.4f} (ÃÖ¼Ò: {min_eff:.4f}, ÃÖ´ë: {max_eff:.4f})")
-            print(f"       ? ÃÖÀû º¯È­À²: {best_change_pct:+.1f}% ¡æ È¿À²¼º {best_eff:.4f}")
+            print(f"       ? íš¨ìœ¨ì„± ë³€í™”í­: {range_eff:.4f} (ìµœì†Œ: {min_eff:.4f}, ìµœëŒ€: {max_eff:.4f})")
+            print(f"       ? ìµœì  ë³€í™”ìœ¨: {best_change_pct:+.1f}% â†’ íš¨ìœ¨ì„± {best_eff:.4f}")
         
-        print(f"\n   ?? Ãâ·Â º¯¼ö ¹Î°¨µµ:")
+        print(f"\n   ?? ì¶œë ¥ ë³€ìˆ˜ ë¯¼ê°ë„:")
         for i, var in enumerate(output_vars):
             sensitivity = sensitivity_results['output_sensitivity'][i]
             min_eff = np.min(sensitivity)
@@ -584,10 +584,10 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
             best_eff = sensitivity[best_change_idx]
             
             print(f"     ?? {var}:")
-            print(f"       ? È¿À²¼º º¯È­Æø: {range_eff:.4f} (ÃÖ¼Ò: {min_eff:.4f}, ÃÖ´ë: {max_eff:.4f})")
-            print(f"       ? ÃÖÀû º¯È­À²: {best_change_pct:+.1f}% ¡æ È¿À²¼º {best_eff:.4f}")
+            print(f"       ? íš¨ìœ¨ì„± ë³€í™”í­: {range_eff:.4f} (ìµœì†Œ: {min_eff:.4f}, ìµœëŒ€: {max_eff:.4f})")
+            print(f"       ? ìµœì  ë³€í™”ìœ¨: {best_change_pct:+.1f}% â†’ íš¨ìœ¨ì„± {best_eff:.4f}")
         
-        # °¡Àå ¿µÇâ·Â ÀÖ´Â º¯¼ö ½Äº°
+        # ê°€ì¥ ì˜í–¥ë ¥ ìˆëŠ” ë³€ìˆ˜ ì‹ë³„
         input_impacts = [np.max(sensitivity_results['input_sensitivity'][i]) - np.min(sensitivity_results['input_sensitivity'][i]) 
                          for i in range(dea.n_inputs)]
         output_impacts = [np.max(sensitivity_results['output_sensitivity'][i]) - np.min(sensitivity_results['output_sensitivity'][i]) 
@@ -595,14 +595,14 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
         
         if dea.n_inputs > 0:
             most_sensitive_input_idx = np.argmax(input_impacts)
-            print(f"\n   ?? °¡Àå ¹Î°¨ÇÑ ÀÔ·Â º¯¼ö: {input_vars[most_sensitive_input_idx]} (º¯È­Æø: {input_impacts[most_sensitive_input_idx]:.4f})")
+            print(f"\n   ?? ê°€ì¥ ë¯¼ê°í•œ ì…ë ¥ ë³€ìˆ˜: {input_vars[most_sensitive_input_idx]} (ë³€í™”í­: {input_impacts[most_sensitive_input_idx]:.4f})")
         
         if dea.n_outputs > 0:
             most_sensitive_output_idx = np.argmax(output_impacts)
-            print(f"   ?? °¡Àå ¹Î°¨ÇÑ Ãâ·Â º¯¼ö: {output_vars[most_sensitive_output_idx]} (º¯È­Æø: {output_impacts[most_sensitive_output_idx]:.4f})")
+            print(f"   ?? ê°€ì¥ ë¯¼ê°í•œ ì¶œë ¥ ë³€ìˆ˜: {output_vars[most_sensitive_output_idx]} (ë³€í™”í­: {output_impacts[most_sensitive_output_idx]:.4f})")
             
-        # ½Ç¿ëÀûÀÎ °³¼± Á¦¾È
-        print(f"\n   ?? ¹Î°¨µµ ±â¹İ °³¼± Á¦¾È:")
+        # ì‹¤ìš©ì ì¸ ê°œì„  ì œì•ˆ
+        print(f"\n   ?? ë¯¼ê°ë„ ê¸°ë°˜ ê°œì„  ì œì•ˆ:")
         if orientation == 'input':
             if dea.n_inputs > 0:
                 input_reduction_effects = []
@@ -612,7 +612,7 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
                     input_reduction_effects.append(max_improvement)
                 
                 best_input_to_reduce = np.argmax(input_reduction_effects)
-                print(f"       ? {input_vars[best_input_to_reduce]} °¨¼Ò¿¡ ÁıÁß (¿¹»ó È¿À²¼º °³¼±: {input_reduction_effects[best_input_to_reduce]:.4f})")
+                print(f"       ? {input_vars[best_input_to_reduce]} ê°ì†Œì— ì§‘ì¤‘ (ì˜ˆìƒ íš¨ìœ¨ì„± ê°œì„ : {input_reduction_effects[best_input_to_reduce]:.4f})")
         else:
             if dea.n_outputs > 0:
                 output_increase_effects = []
@@ -622,24 +622,24 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
                     output_increase_effects.append(max_improvement)
                 
                 best_output_to_increase = np.argmax(output_increase_effects)
-                print(f"       ? {output_vars[best_output_to_increase]} Áõ´ë¿¡ ÁıÁß (¿¹»ó È¿À²¼º °³¼±: {output_increase_effects[best_output_to_increase]:.4f})")
+                print(f"       ? {output_vars[best_output_to_increase]} ì¦ëŒ€ì— ì§‘ì¤‘ (ì˜ˆìƒ íš¨ìœ¨ì„± ê°œì„ : {output_increase_effects[best_output_to_increase]:.4f})")
         
     except Exception as e:
-        print(f"   ? ¹Î°¨µµ ºĞ¼® Áß ¿À·ù ¹ß»ı: {str(e)}")
+        print(f"   ? ë¯¼ê°ë„ ë¶„ì„ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: {str(e)}")
         sensitivity_results = None
     
-    # 7. ½Ã°¢È­
+    # 7. ì‹œê°í™”
     if plot_results:
         print(f"\n" + "="*80)
-        print("7. °á°ú ½Ã°¢È­")
+        print("7. ê²°ê³¼ ì‹œê°í™”")
         print("="*80)
         
-        # ÇÃ·Ô Å©±â Á¶Á¤ (¸ğµ¨ ¼ö¿¡ µû¶ó)
+        # í”Œë¡¯ í¬ê¸° ì¡°ì • (ëª¨ë¸ ìˆ˜ì— ë”°ë¼)
         n_models = len(models)
         fig_width = max(18, 6 * n_models)
         fig, axes = plt.subplots(2, 3, figsize=(fig_width, 12))
         
-        # 1) È¿À²¼º Á¡¼ö ºñ±³
+        # 1) íš¨ìœ¨ì„± ì ìˆ˜ ë¹„êµ
         x = np.arange(len(dea.dmu_names))
         width = 0.8 / n_models
         colors = ['skyblue', 'orange', 'green', 'red', 'purple']
@@ -649,71 +649,71 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
             axes[0, 0].bar(x + (i - n_models/2 + 0.5) * width, scores, width, 
                           label=model, alpha=0.8, color=colors[i % len(colors)])
         
-        axes[0, 0].set_ylabel('È¿À²¼º Á¡¼ö')
-        axes[0, 0].set_title('¸ğµ¨º° È¿À²¼º Á¡¼ö ºñ±³')
+        axes[0, 0].set_ylabel('íš¨ìœ¨ì„± ì ìˆ˜')
+        axes[0, 0].set_title('ëª¨ë¸ë³„ íš¨ìœ¨ì„± ì ìˆ˜ ë¹„êµ')
         axes[0, 0].set_xticks(x)
         axes[0, 0].set_xticklabels(dea.dmu_names, rotation=45, ha='right')
         axes[0, 0].legend()
         axes[0, 0].grid(True, alpha=0.3)
         axes[0, 0].axhline(y=1, color='red', linestyle='--', alpha=0.7)
         
-        # 2) È¿À²¼º ºĞÆ÷
+        # 2) íš¨ìœ¨ì„± ë¶„í¬
         all_scores = [model_results[model]['scores'] for model in models]
         axes[0, 1].hist(all_scores, bins=10, alpha=0.7, label=models, 
                        color=colors[:len(models)])
-        axes[0, 1].set_xlabel('È¿À²¼º Á¡¼ö')
-        axes[0, 1].set_ylabel('ºóµµ')
-        axes[0, 1].set_title('È¿À²¼º Á¡¼ö ºĞÆ÷')
+        axes[0, 1].set_xlabel('íš¨ìœ¨ì„± ì ìˆ˜')
+        axes[0, 1].set_ylabel('ë¹ˆë„')
+        axes[0, 1].set_title('íš¨ìœ¨ì„± ì ìˆ˜ ë¶„í¬')
         axes[0, 1].legend()
         axes[0, 1].grid(True, alpha=0.3)
         
-        # 3) ±Ô¸ğÈ¿À²¼º (°¡´ÉÇÑ °æ¿ì)
+        # 3) ê·œëª¨íš¨ìœ¨ì„± (ê°€ëŠ¥í•œ ê²½ìš°)
         if scale_efficiency is not None:
             colors_rts = ['green' if x >= 0.99 else 'red' if x < 0.95 else 'orange' for x in scale_efficiency]
             axes[0, 2].bar(range(len(dea.dmu_names)), scale_efficiency, alpha=0.8, color=colors_rts)
-            axes[0, 2].set_ylabel('±Ô¸ğÈ¿À²¼º')
-            axes[0, 2].set_title('±Ô¸ğÈ¿À²¼º Á¡¼ö')
+            axes[0, 2].set_ylabel('ê·œëª¨íš¨ìœ¨ì„±')
+            axes[0, 2].set_title('ê·œëª¨íš¨ìœ¨ì„± ì ìˆ˜')
             axes[0, 2].set_xticks(range(len(dea.dmu_names)))
             axes[0, 2].set_xticklabels(dea.dmu_names, rotation=45, ha='right')
             axes[0, 2].grid(True, alpha=0.3)
             axes[0, 2].axhline(y=1, color='red', linestyle='--', alpha=0.7)
         else:
-            axes[0, 2].text(0.5, 0.5, f'±Ô¸ğÈ¿À²¼º\n°è»ê ºÒ°¡\n(CCR+BCC ÇÊ¿ä)', 
+            axes[0, 2].text(0.5, 0.5, f'ê·œëª¨íš¨ìœ¨ì„±\nê³„ì‚° ë¶ˆê°€\n(CCR+BCC í•„ìš”)', 
                            ha='center', va='center', transform=axes[0, 2].transAxes)
-            axes[0, 2].set_title('±Ô¸ğÈ¿À²¼º')
+            axes[0, 2].set_title('ê·œëª¨íš¨ìœ¨ì„±')
         
-        # 4) ÀÔ·Â-Ãâ·Â °ü°è (2Â÷¿øÀÎ °æ¿ì)
+        # 4) ì…ë ¥-ì¶œë ¥ ê´€ê³„ (2ì°¨ì›ì¸ ê²½ìš°)
         if dea.n_inputs == 1 and dea.n_outputs == 1:
             colors_scatter = ['red' if score < 0.99 else 'blue' for score in primary_scores]
             axes[1, 0].scatter(dea.inputs[:, 0], dea.outputs[:, 0], c=colors_scatter, alpha=0.7, s=100)
             axes[1, 0].set_xlabel(input_vars[0])
             axes[1, 0].set_ylabel(output_vars[0])
-            axes[1, 0].set_title('ÀÔ·Â-Ãâ·Â °ü°è (»¡°­: ºñÈ¿À²)')
+            axes[1, 0].set_title('ì…ë ¥-ì¶œë ¥ ê´€ê³„ (ë¹¨ê°•: ë¹„íš¨ìœ¨)')
             
-            # È¿À²Àû °æ°è¼±
+            # íš¨ìœ¨ì  ê²½ê³„ì„ 
             efficient_dmu_indices = np.where(primary_scores >= 0.99)[0]
             if len(efficient_dmu_indices) > 1:
                 eff_inputs = dea.inputs[efficient_dmu_indices, 0]
                 eff_outputs = dea.outputs[efficient_dmu_indices, 0]
                 sorted_idx = np.argsort(eff_inputs)
                 axes[1, 0].plot(eff_inputs[sorted_idx], eff_outputs[sorted_idx], 
-                               'k--', alpha=0.5, label='È¿À²Àû °æ°è')
+                               'k--', alpha=0.5, label='íš¨ìœ¨ì  ê²½ê³„')
                 axes[1, 0].legend()
         else:
-            axes[1, 0].text(0.5, 0.5, f'´ÙÂ÷¿ø ÀÔ·Â-Ãâ·Â\n½Ã°¢È­ ºÒ°¡\n({dea.n_inputs}ÀÔ·Â, {dea.n_outputs}Ãâ·Â)', 
+            axes[1, 0].text(0.5, 0.5, f'ë‹¤ì°¨ì› ì…ë ¥-ì¶œë ¥\nì‹œê°í™” ë¶ˆê°€\n({dea.n_inputs}ì…ë ¥, {dea.n_outputs}ì¶œë ¥)', 
                            ha='center', va='center', transform=axes[1, 0].transAxes)
-            axes[1, 0].set_title('ÀÔ·Â-Ãâ·Â °ü°è')
+            axes[1, 0].set_title('ì…ë ¥-ì¶œë ¥ ê´€ê³„')
         
-        # 5) ½½·¢ ºĞ¼®
+        # 5) ìŠ¬ë™ ë¶„ì„
         total_slacks = np.sum(input_slacks, axis=1) + np.sum(output_slacks, axis=1)
         axes[1, 1].bar(range(len(dea.dmu_names)), total_slacks, alpha=0.8, color='purple')
-        axes[1, 1].set_ylabel('ÃÑ ½½·¢')
-        axes[1, 1].set_title('DMUº° ÃÑ ½½·¢')
+        axes[1, 1].set_ylabel('ì´ ìŠ¬ë™')
+        axes[1, 1].set_title('DMUë³„ ì´ ìŠ¬ë™')
         axes[1, 1].set_xticks(range(len(dea.dmu_names)))
         axes[1, 1].set_xticklabels(dea.dmu_names, rotation=45, ha='right')
         axes[1, 1].grid(True, alpha=0.3)
         
-        # 6) ¹Î°¨µµ ºĞ¼®
+        # 6) ë¯¼ê°ë„ ë¶„ì„
         if sensitivity_results is not None:
             changes_pct = sensitivity_results['changes'] * 100
             
@@ -727,81 +727,81 @@ def Run_Comprehensive_DEA_analysis(data: Union[pd.DataFrame, np.ndarray],
             if dea.n_inputs > 0:
                 most_sensitive_input = np.argmax(input_ranges)
                 axes[1, 2].plot(changes_pct, sensitivity_results['input_sensitivity'][most_sensitive_input], 
-                               'b-', linewidth=2, label=f'{input_vars[most_sensitive_input]} (ÀÔ·Â)')
+                               'b-', linewidth=2, label=f'{input_vars[most_sensitive_input]} (ì…ë ¥)')
             
             if dea.n_outputs > 0:
                 most_sensitive_output = np.argmax(output_ranges)
                 axes[1, 2].plot(changes_pct, sensitivity_results['output_sensitivity'][most_sensitive_output], 
-                               'r-', linewidth=2, label=f'{output_vars[most_sensitive_output]} (Ãâ·Â)')
+                               'r-', linewidth=2, label=f'{output_vars[most_sensitive_output]} (ì¶œë ¥)')
             
-            axes[1, 2].set_xlabel('º¯È­À² (%)')
-            axes[1, 2].set_ylabel('È¿À²¼º Á¡¼ö')
-            axes[1, 2].set_title(f'{target_dmu} ¹Î°¨µµ ºĞ¼®')
+            axes[1, 2].set_xlabel('ë³€í™”ìœ¨ (%)')
+            axes[1, 2].set_ylabel('íš¨ìœ¨ì„± ì ìˆ˜')
+            axes[1, 2].set_title(f'{target_dmu} ë¯¼ê°ë„ ë¶„ì„')
             axes[1, 2].legend()
             axes[1, 2].grid(True, alpha=0.3)
             axes[1, 2].axvline(x=0, color='black', linestyle='--', alpha=0.5)
             axes[1, 2].axhline(y=primary_scores[sensitivity_dmu], color='green', linestyle='--', alpha=0.5)
         else:
-            axes[1, 2].text(0.5, 0.5, '¹Î°¨µµ ºĞ¼®\n¿À·ù ¹ß»ı', 
+            axes[1, 2].text(0.5, 0.5, 'ë¯¼ê°ë„ ë¶„ì„\nì˜¤ë¥˜ ë°œìƒ', 
                            ha='center', va='center', transform=axes[1, 2].transAxes,
                            fontsize=12, color='red')
-            axes[1, 2].set_title('¹Î°¨µµ ºĞ¼®')
+            axes[1, 2].set_title('ë¯¼ê°ë„ ë¶„ì„')
         
         plt.tight_layout()
         plt.show()
         
-        print("   ? ½Ã°¢È­ ¿Ï·á")
+        print("   ? ì‹œê°í™” ì™„ë£Œ")
     
-    # 8. ¿ä¾à ¹× ±Ç°í»çÇ×
+    # 8. ìš”ì•½ ë° ê¶Œê³ ì‚¬í•­
     print(f"\n" + "="*80)
-    print("8. ºĞ¼® ¿ä¾à ¹× ±Ç°í»çÇ×")
+    print("8. ë¶„ì„ ìš”ì•½ ë° ê¶Œê³ ì‚¬í•­")
     print("="*80)
     
-    print(f"\n?? ºĞ¼® ¿ä¾à:")
-    print(f"   ? ÀüÃ¼ DMU Áß {len(efficient_dmus)}°³°¡ È¿À²Àû ({primary_model} ±âÁØ)")
-    print(f"   ? Æò±Õ È¿À²¼º: {np.mean(primary_scores):.4f}")
+    print(f"\n?? ë¶„ì„ ìš”ì•½:")
+    print(f"   ? ì „ì²´ DMU ì¤‘ {len(efficient_dmus)}ê°œê°€ íš¨ìœ¨ì  ({primary_model} ê¸°ì¤€)")
+    print(f"   ? í‰ê·  íš¨ìœ¨ì„±: {np.mean(primary_scores):.4f}")
     
     if scale_efficiency is not None:
-        print(f"   ? Æò±Õ ±Ô¸ğÈ¿À²¼º: {np.mean(scale_efficiency):.4f}")
+        print(f"   ? í‰ê·  ê·œëª¨íš¨ìœ¨ì„±: {np.mean(scale_efficiency):.4f}")
         rts_counts = pd.Series(returns_to_scale).value_counts()
-        print(f"   ? ±Ô¸ğ¼öÀÍ ºĞÆ÷:")
+        print(f"   ? ê·œëª¨ìˆ˜ìµ ë¶„í¬:")
         for rts, count in rts_counts.items():
-            rts_full = {'CRS': '±Ô¸ğ¼öÀÍºÒº¯', 'IRS': '±Ô¸ğ¼öÀÍÁõ°¡', 'DRS': '±Ô¸ğ¼öÀÍ°¨¼Ò'}
-            print(f"     - {rts_full.get(rts, rts)}: {count}°³")
+            rts_full = {'CRS': 'ê·œëª¨ìˆ˜ìµë¶ˆë³€', 'IRS': 'ê·œëª¨ìˆ˜ìµì¦ê°€', 'DRS': 'ê·œëª¨ìˆ˜ìµê°ì†Œ'}
+            print(f"     - {rts_full.get(rts, rts)}: {count}ê°œ")
     
-    print(f"   ? °³¼±ÀÌ ÇÊ¿äÇÑ DMU: {len(inefficient_dmus)}°³")
+    print(f"   ? ê°œì„ ì´ í•„ìš”í•œ DMU: {len(inefficient_dmus)}ê°œ")
     
-    print(f"\n?? ÁÖ¿ä ±Ç°í»çÇ×:")
+    print(f"\n?? ì£¼ìš” ê¶Œê³ ì‚¬í•­:")
     if len(inefficient_dmus) > 0:
         worst_dmu_idx = np.argmin(primary_scores)
         worst_dmu = dea.dmu_names[worst_dmu_idx]
-        print(f"   1. ¿ì¼± °³¼± ´ë»ó: {worst_dmu} (È¿À²¼º: {primary_scores[worst_dmu_idx]:.4f})")
+        print(f"   1. ìš°ì„  ê°œì„  ëŒ€ìƒ: {worst_dmu} (íš¨ìœ¨ì„±: {primary_scores[worst_dmu_idx]:.4f})")
         
         if benchmark_count:
             best_benchmark = max(benchmark_count.items(), key=lambda x: x[1])[0]
-            print(f"   2. ÁÖ¿ä º¥Ä¡¸¶Å© ¸ğµ¨: {best_benchmark}")
+            print(f"   2. ì£¼ìš” ë²¤ì¹˜ë§ˆí¬ ëª¨ë¸: {best_benchmark}")
         
-        print(f"   3. {orientation.upper()} ÁöÇâ °³¼±¿¡ ÁıÁß")
+        print(f"   3. {orientation.upper()} ì§€í–¥ ê°œì„ ì— ì§‘ì¤‘")
         
-        # °¡Àå °³¼± È¿°ú°¡ Å« º¯¼ö ½Äº°
+        # ê°€ì¥ ê°œì„  íš¨ê³¼ê°€ í° ë³€ìˆ˜ ì‹ë³„
         if orientation == 'input':
             avg_input_slack = np.mean(input_slacks[inefficient_indices], axis=0)
             if np.any(avg_input_slack > 0):
                 max_slack_input = np.argmax(avg_input_slack)
-                print(f"   4. ¿ì¼± °³¼± º¯¼ö: {input_vars[max_slack_input]} (Æò±Õ ½½·¢: {avg_input_slack[max_slack_input]:.4f})")
+                print(f"   4. ìš°ì„  ê°œì„  ë³€ìˆ˜: {input_vars[max_slack_input]} (í‰ê·  ìŠ¬ë™: {avg_input_slack[max_slack_input]:.4f})")
         else:
             avg_output_slack = np.mean(output_slacks[inefficient_indices], axis=0)
             if np.any(avg_output_slack > 0):
                 max_slack_output = np.argmax(avg_output_slack)
-                print(f"   4. ¿ì¼± °³¼± º¯¼ö: {output_vars[max_slack_output]} (Æò±Õ ½½·¢: {avg_output_slack[max_slack_output]:.4f})")
+                print(f"   4. ìš°ì„  ê°œì„  ë³€ìˆ˜: {output_vars[max_slack_output]} (í‰ê·  ìŠ¬ë™: {avg_output_slack[max_slack_output]:.4f})")
     else:
-        print(f"   ? ¸ğµç DMU°¡ È¿À²ÀûÀ¸·Î ¿î¿µµÇ°í ÀÖ½À´Ï´Ù!")
+        print(f"   ? ëª¨ë“  DMUê°€ íš¨ìœ¨ì ìœ¼ë¡œ ìš´ì˜ë˜ê³  ìˆìŠµë‹ˆë‹¤!")
     
     print(f"\n" + "="*80)
-    print("                     ºĞ¼® ¿Ï·á")
+    print("                     ë¶„ì„ ì™„ë£Œ")
     print("="*80)
     
-    # °á°ú ¹İÈ¯
+    # ê²°ê³¼ ë°˜í™˜
     result_dict = {
         'results_df': results_df,
         'model_results': model_results,
