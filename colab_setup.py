@@ -1,48 +1,50 @@
-def setup_project(repo_owner="ParkSeungR", repo_name="Econometrics-with-Machine-Learning",
-                  branch="main", data_dir="Data", func_dir="Functions",
-                  install_requirements=True, req_file="requirements.txt"):
-    import os, sys, subprocess, pandas as pd
+# -*- coding: utf-8 -*-
+import os
+import subprocess
+from pathlib import Path
 
-    repo_url = f"https://github.com/{repo_owner}/{repo_name}.git"
-    local_root = f"/content/{repo_name}"
+def setup_project():
+    repo_url = "https://github.com/ParkSeungR/Econometrics-with-Machine-Learning.git"
+    repo_name = "Econometrics-with-Machine-Learning"
+    data_dir = "Data"
+    func_dir = "Functions"
 
-    def run(cmd, quiet=True):
-        if isinstance(cmd, str):
-            cmd = cmd.split()
-        subprocess.run(cmd, check=True,
-                       stdout=(subprocess.DEVNULL if quiet else None),
-                       stderr=(subprocess.DEVNULL if quiet else None))
-
-    # 1) 저장소 클론/업데이트
-    if not os.path.exists(local_root):
-        print(f"[clone] {repo_url} ({branch})")
-        run(["git", "clone", "--depth", "1", "--branch", branch, repo_url, local_root], quiet=False)
+    print("[STEP] Checking repository...")
+    if not Path(repo_name).exists():
+        print("[INFO] Cloning repository...")
+        subprocess.run(["git", "clone", repo_url])
     else:
-        print(f"[update] pulling latest from {branch}")
-        run(["git", "-C", local_root, "fetch", "origin", branch, "--depth", "1"])
-        run(["git", "-C", local_root, "reset", "--hard", f"origin/{branch}"])
+        print("[INFO] Pulling latest changes...")
+        subprocess.run(["git", "-C", repo_name, "pull"])
 
-    # 2) requirements 설치(옵션)
-    if install_requirements:
-        req_path = os.path.join(local_root, req_file)
-        if os.path.exists(req_path):
-            print(f"[install] requirements from {req_file}")
-            run(["pip", "install", "-q", "-r", req_path], quiet=False)
-        else:
-            print(f"[skip] {req_file} not found")
+    # Change working directory to repo
+    os.chdir(repo_name)
 
-    # 3) 경로 세팅
-    os.chdir(local_root)
-    func_path = os.path.join(local_root, func_dir)
-    if func_path not in sys.path:
-        sys.path.append(func_path)
+    # Install requirements.txt if exists
+    req_file = Path("requirements.txt")
+    if req_file.exists():
+        print("[STEP] Installing requirements...")
+        subprocess.run(["pip", "install", "-r", str(req_file)])
+    else:
+        print("[INFO] requirements.txt not found. Skipping.")
 
-    # 4) 편의 함수 등록
-    def p(*rel):
-        return os.path.join(local_root, *rel)
+    # Check Data directory
+    if Path(data_dir).exists():
+        print(f"[OK] {data_dir}/ ready")
+    else:
+        print(f"[WARN] {data_dir}/ directory not found")
 
-    def read_csv(rel_path, **kwargs):
-        return pd.read_csv(p(rel_path), **kwargs)
+    # Check Functions directory
+    if Path(func_dir).exists():
+        print(f"[OK] {func_dir}/ ready")
+        # Add Functions to sys.path
+        import sys
+        sys.path.append(str(Path(func_dir).resolve()))
+        print(f"[INFO] {func_dir}/ added to Python path")
+    else:
+        print(f"[WARN] {func_dir}/ directory not found")
 
-    globals().update({"p": p, "read_csv": read_csv})
-    print(f"[ready] {data_dir}/ 와 {func_dir}/ 사용 준비 완료")
+    print("[READY] Project environment is ready.")
+
+if __name__ == "__main__":
+    setup_project()
