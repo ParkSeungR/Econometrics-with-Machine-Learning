@@ -34,5 +34,4 @@ stargazer
 pmdarima
 lazypredict
 joblib
-pickle
 pycaret
