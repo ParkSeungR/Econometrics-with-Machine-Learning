@@ -31,7 +31,6 @@ beautifulsoup4>=4.11.0
 
 patsy
 stargazer
-random
 pmdarima
 lazypredict
 joblib
