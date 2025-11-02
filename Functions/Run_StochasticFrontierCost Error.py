@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,72 +11,72 @@ warnings.filterwarnings('ignore')
 
 class _StochasticFrontierCostAnalyzer:
     """
-    확률적변경비용함수 분석, 기술 효율성 및 TFP 구성요인 분해를 위한 내부 클래스
-    (사용자가 직접 인스턴스화하지 않음)
+    ?뺣쪧蹂寃쎈퉬?⑺븿??遺꾩꽍, 湲곗닠 ?⑥쑉?? TFP 援ъ꽦?붿씤 遺꾪빐瑜??꾪븳 ?대? ?대옒??
+    (?ъ슜?먭? 吏곸젒 ?몄텧?섏? ?딆쓬)
     """
     
     def __init__(self, data, cost_var, price_vars, input_vars, output_var, time_var='t', id_var='id', include_time=True):
         self.data = data.copy()
-        self.cost_var = cost_var  # 총비용
-        self.price_vars = price_vars  # 요소가격들 
-        self.input_vars = input_vars  # 투입물들
-        self.output_var = output_var  # 산출물
+        self.cost_var = cost_var  # 珥앸퉬??
+        self.price_vars = price_vars  # ?붿냼媛寃⑸뱾 
+        self.input_vars = input_vars  # ?ъ엯?됰뱾
+        self.output_var = output_var  # ?곗텧??
         self.time_var = time_var
         self.id_var = id_var
         self.include_time = include_time
         
-        # 결과 저장용 딕셔너리
+        # 寃곌낵 ??μ슜 ?뺤뀛?덈━
         self.results = {}
         self.normalized_data = None
         self.translog_vars = None
         
-        # 데이터 검증
+        # ?곗씠??寃利?
         self._validate_data()
         
     def _validate_data(self):
-        """데이터 유효성 검증"""
+        """?곗씠???좏슚??寃??""
         required_vars = [self.cost_var, self.output_var] + self.price_vars + self.input_vars + [self.id_var]
         if self.include_time:
             required_vars.append(self.time_var)
             
         missing_vars = [var for var in required_vars if var not in self.data.columns]
         if missing_vars:
-            raise ValueError(f"다음 변수들이 데이터에 없습니다: {missing_vars}")
+            raise ValueError(f"?ㅼ쓬 蹂?섎뱾???곗씠?곗뿉 ?놁뒿?덈떎: {missing_vars}")
         
-        # 가격변수와 투입물변수의 개수가 같은지 확인
+        # 媛寃⑸??섏? ?ъ엯??蹂?섏쓽 媛쒖닔媛 媛숈?吏 ?뺤씤
         if len(self.price_vars) != len(self.input_vars):
-            raise ValueError(f"가격변수 개수({len(self.price_vars)})와 투입물변수 개수({len(self.input_vars)})가 다릅니다.")
+            raise ValueError(f"媛寃⑸???媛쒖닔({len(self.price_vars)})? ?ъ엯?됰???媛쒖닔({len(self.input_vars)})媛 ?ㅻ쫭?덈떎.")
             
-        # 로그 변환을 위해 양수 체크
+        # 濡쒓렇 蹂?섏쓣 ?꾪빐 ?묒닔 泥댄겕
         for var in [self.cost_var, self.output_var] + self.price_vars + self.input_vars:
             if (self.data[var] <= 0).any():
-                raise ValueError(f"변수 {var}에 0 이하의 값이 있습니다. 로그 변환이 불가능합니다.")
+                raise ValueError(f"蹂??{var}??0 ?댄븯??媛믪씠 ?덉뒿?덈떎. 濡쒓렇 蹂?섏씠 遺덇??ν빀?덈떎.")
         
-        print(f"✓ 데이터 검증 완료:")
-        print(f"   가격변수: {self.price_vars}")
-        print(f"   투입물변수: {self.input_vars}")
-        print(f"   총비용변수: {self.cost_var}")
-        print(f"   산출물변수: {self.output_var}")
+        print(f"? ?곗씠??寃利??꾨즺:")
+        print(f"   媛寃⑸??? {self.price_vars}")
+        print(f"   ?ъ엯?됰??? {self.input_vars}")
+        print(f"   珥앸퉬?⑸??? {self.cost_var}")
+        print(f"   ?곗텧?됰??? {self.output_var}")
     
     def exploratory_data_analysis(self):
-        """탐색적 데이터 분석 실행"""
+        """?먯깋???곗씠??遺꾩꽍 ?섑뻾"""
         print("=" * 60)
-        print("탐색적 데이터 분석 (EDA) - 확률적변경비용함수)")
+        print("?먯깋???곗씠??遺꾩꽍 (EDA) - ?뺣쪧蹂寃쎈퉬?⑺븿??)
         print("=" * 60)
         
-        # 기본 변수들
+        # 湲곕낯 蹂?섎뱾
         analysis_vars = [self.cost_var, self.output_var] + self.price_vars
         if self.include_time:
             analysis_vars.append(self.time_var)
         
-        # 1. 기술통계량
-        print("\n1. 기술통계량)")
+        # 1. 湲곗큹?듦퀎??
+        print("\n1. 湲곗큹?듦퀎??)
         print("-" * 40)
         desc_stats = self.data[analysis_vars].describe()
         print(desc_stats.round(4))
         
-        # 2. 상관관계
-        print("\n2. 상관관계 조회")
+        # 2. ?곴?愿怨?
+        print("\n2. ?곴?愿怨?議고쉶")
         print("-" * 40)
         corr_matrix = self.data[analysis_vars].corr()
         print(corr_matrix.round(4))
@@ -86,53 +84,53 @@ class _StochasticFrontierCostAnalyzer:
         return desc_stats, corr_matrix
     
     def normalize_data(self):
-        """개체별 평균으로 데이터 정규화"""
-        print("\n데이터 정규화 실행 중..")
+        """媛쒖껜蹂??됯퇏?쇰줈 ?곗씠???쒖???""
+        print("\n?곗씠???쒖????섑뻾 以?..")
         
         self.normalized_data = self.data.copy()
         
-        # 개체별 평균 계산 (비용, 가격, 산출물)
+        # 媛쒖껜蹂??됯퇏 怨꾩궛 (鍮꾩슜, 媛寃? ?곗텧??
         vars_to_normalize = [self.cost_var, self.output_var] + self.price_vars
         
         for var in vars_to_normalize:
-            # 개체별 평균
+            # 媛쒖껜蹂??됯퇏
             mean_by_id = self.data.groupby(self.id_var)[var].transform('mean')
-            # 정규화
+            # ?쒖???
             self.normalized_data[f'nm_{var}'] = self.data[var] / mean_by_id
-            # 로그 변환
+            # 濡쒓렇 蹂??
             self.normalized_data[f'ln_{var}'] = np.log(self.normalized_data[f'nm_{var}'])
         
-        # 투입물도 복사 (비용몫 계산용)
+        # ?ъ엯?됰룄 蹂듭궗 (鍮꾩슜紐?怨꾩궛??
         for input_var in self.input_vars:
             self.normalized_data[input_var] = self.data[input_var]
         
         if self.include_time:
-            # 시간 변수는 로그 변환 없이 그대로 사용 (1, 2, 3, ...)
+            # ?쒓컙 蹂?섎뒗 濡쒓렇 蹂???놁씠 洹몃?濡??ъ슜 (1, 2, 3, ...)
             self.normalized_data[self.time_var] = self.data[self.time_var]
         
-        print("데이터 정규화 완료")
+        print("?곗씠???쒖????꾨즺")
     
     def create_translog_variables(self):
-        """초월로그 비용함수를 위한 교차항 변수 생성"""
-        print("초월로그 비용함수 변수 생성 중..")
+        """珥덉썡???鍮꾩슜?⑥닔瑜??꾪븳 援먯감??蹂???앹꽦"""
+        print("珥덉썡???鍮꾩슜?⑥닔 蹂???앹꽦 以?..")
         
         if self.normalized_data is None:
             self.normalize_data()
         
-        # 로그 변환된 가격변수들과 산출물
+        # 濡쒓렇 蹂?섎맂 媛寃?蹂?섎뱾怨??곗텧??
         ln_price_vars = [f'ln_{var}' for var in self.price_vars]
         ln_output_var = f'ln_{self.output_var}'
         
-        # 모든 핵심변수(가격 + 산출물 + 시간변수)
+        # 紐⑤뱺 ?듭떖蹂??(媛寃?+ ?곗텧??+ ?쒓컙蹂??
         all_vars = ln_price_vars + [ln_output_var]
         if self.include_time:
-            all_vars.append(self.time_var)  # 시간은 그냥 t
+            all_vars.append(self.time_var)  # ?쒓컙? 洹몃깷 t
         
-        # 2차항 생성
+        # 2李⑦빆 ?앹꽦
         for var in all_vars:
             self.normalized_data[f'{var}2'] = 0.5 * self.normalized_data[var] ** 2
         
-        # 가격변수들 간 교차항
+        # 媛寃⑸??섎뱾 媛?援먯감??
         n_prices = len(ln_price_vars)
         for i in range(n_prices):
             for j in range(i+1, n_prices):
@@ -141,28 +139,28 @@ class _StochasticFrontierCostAnalyzer:
                 var_name = f'{var1}_{var2.split("_")[1]}'
                 self.normalized_data[var_name] = self.normalized_data[var1] * self.normalized_data[var2]
         
-        # 가격과 산출량의 교차항
+        # 媛寃⑷낵 ?곗텧?됱쓽 援먯감??
         for var in ln_price_vars:
             var_name = f'{var}_{self.output_var}'
             self.normalized_data[var_name] = self.normalized_data[var] * self.normalized_data[ln_output_var]
         
-        # 시간과 다른 변수들의 교차항
+        # ?쒓컙怨??ㅻⅨ 蹂?섎뱾??援먯감??
         if self.include_time:
             for var in ln_price_vars + [ln_output_var]:
                 var_name = f'{var}_{self.time_var}'
                 self.normalized_data[var_name] = self.normalized_data[var] * self.normalized_data[self.time_var]
         
-        # 회귀분석용 변수 리스트 생성
+        # ?듭떖遺꾩꽍??蹂??由ъ뒪???앹꽦
         self.translog_vars = []
         
-        # 1차항
+        # 1李⑦빆
         self.translog_vars.extend(all_vars)
         
-        # 2차항
+        # 2李⑦빆
         for var in all_vars:
             self.translog_vars.append(f'{var}2')
         
-        # 가격변수들 간 교차항
+        # 媛寃⑸??섎뱾 媛?援먯감??
         for i in range(n_prices):
             for j in range(i+1, n_prices):
                 var1 = ln_price_vars[i]
@@ -170,126 +168,126 @@ class _StochasticFrontierCostAnalyzer:
                 var_name = f'{var1}_{var2.split("_")[1]}'
                 self.translog_vars.append(var_name)
         
-        # 가격-산출물 교차항
+        # 媛寃??곗텧??援먯감??
         for var in self.price_vars:
             self.translog_vars.append(f'ln_{var}_{self.output_var}')
         
-        # 시간 교차항
+        # ?쒓컙 援먯감??
         if self.include_time:
             for var in self.price_vars + [self.output_var]:
                 self.translog_vars.append(f'ln_{var}_{self.time_var}')
         
-        print(f"생성된 변수 수: {len(self.translog_vars)}")
-        print("초월로그 비용함수 변수 생성 완료")
+        print(f"?앹꽦??蹂???? {len(self.translog_vars)}")
+        print("珥덉썡???鍮꾩슜?⑥닔 蹂???앹꽦 ?꾨즺")
     
     def estimate_ols(self):
-        """OLS 추정 (초기값용)"""
-        print("\nOLS 추정 실행 중..")
+        """OLS 異붿젙 (珥덇린媛믪슜)"""
+        print("\nOLS 異붿젙 ?섑뻾 以?..")
         
         if self.translog_vars is None:
             self.create_translog_variables()
         
-        # 종속변수(총비용)
+        # 醫낆냽蹂??(珥앸퉬??
         y = self.normalized_data[f'ln_{self.cost_var}']
         
-        # 독립변수
+        # ?낅┰蹂??
         X = self.normalized_data[self.translog_vars]
         X = sm.add_constant(X)
         
-        # OLS 추정
+        # OLS 異붿젙
         ols_model = sm.OLS(y, X).fit()
         
         self.results['ols'] = ols_model
         
-        print("OLS 추정 완료")
+        print("OLS 異붿젙 ?꾨즺")
         print(f"R-squared: {ols_model.rsquared:.4f}")
         
         return ols_model
     
     def estimate_stochastic_frontier(self, distribution='half_normal'):
-        """확률적변경비용함수 추정 - 개선된 버전"""
-        print(f"\n확률적변경비용함수 추정 실행 중(분포: {distribution})...")
+        """?뺣쪧蹂寃쎈퉬?⑺븿??異붿젙 - 媛쒖꽑??踰꾩쟾"""
+        print(f"\n?뺣쪧蹂寃쎈퉬?⑺븿??異붿젙 ?섑뻾 以?(遺꾪룷: {distribution})...")
         
         if 'ols' not in self.results:
-            print("OLS 추정을 먼저 실행합니다..")
+            print("OLS 異붿젙??癒쇱? ?섑뻾?⑸땲??..")
             self.estimate_ols()
         
-        # OLS 결과 검증
+        # OLS 寃곌낵 寃利?
         if not hasattr(self.results['ols'], 'params'):
-            print("✗ OLS 추정 결과가 없습니다.")
+            print("? OLS 異붿젙 寃곌낵媛 ?놁뒿?덈떎.")
             return self._create_fallback_result()
         
-        # 초기값 설정
+        # 珥덇린媛??ㅼ젙
         ols_params = self.results['ols'].params.values
         
-        # OLS 결과 검증
+        # OLS 寃곌낵 寃利?
         if np.any(np.isnan(ols_params)) or np.any(np.isinf(ols_params)):
-            print("✗ OLS 파라미터에 NaN/Inf가 있습니다. 기본값을 사용합니다")
+            print("?? OLS ?뚮씪誘명꽣??NaN/Inf媛 ?덉뒿?덈떎. 湲곕낯媛믪쓣 ?ъ슜?⑸땲??")
             ols_params = np.zeros(len(ols_params))
             ols_params[0] = np.log(self.normalized_data[f'ln_{self.cost_var}'].mean())
         
-        # 종속변수와 독립변수
+        # 醫낆냽蹂?섏? ?낅┰蹂??
         y = self.normalized_data[f'ln_{self.cost_var}'].values
         X = self.normalized_data[self.translog_vars].values
-        X = np.column_stack([np.ones(len(X)), X])  # 상수항 추가
+        X = np.column_stack([np.ones(len(X)), X])  # ?곸닔??異붽?
         
-        # 데이터 검증
+        # ?곗씠??寃利?
         if np.any(np.isnan(y)) or np.any(np.isnan(X)):
-            print("✗ 데이터에 NaN이 있습니다.")
+            print("? ?곗씠?곗뿉 NaN???덉뒿?덈떎.")
             return self._create_fallback_result()
         
-        print(f"   데이터 크기: y={y.shape}, X={X.shape}")
-        print(f"   OLS R²: {self.results['ols'].rsquared:.4f}")
+        print(f"   ?곗씠???ш린: y={y.shape}, X={X.shape}")
+        print(f"   OLS R짼: {self.results['ols'].rsquared:.4f}")
         
-        # 최우추도추정
-        print("✓ 최우추도추정 시작...")
+        # 理쒕??곕룄異붿젙
+        print("?? 理쒕??곕룄異붿젙 ?쒖옉...")
         try:
             if distribution == 'half_normal':
                 result = self._ml_estimation_half_normal_cost(y, X, ols_params)
             else:
-                raise ValueError("현재는 half-normal 분포만 지원합니다.")
+                raise ValueError("?꾩옱??half-normal 遺꾪룷留?吏?먰빀?덈떎.")
         except Exception as e:
-            print(f"✗ 최우추도추정 중 오류: {str(e)}")
+            print(f"? 理쒕??곕룄異붿젙 以??ㅻ쪟: {str(e)}")
             return self._create_fallback_result()
         
-        # 결과 검증
+        # 寃곌낵 寃利?
         if result['success']:
-            # 파라미터 타당성 검증
+            # ?뚮씪誘명꽣 ?⑸━??寃利?
             if (result['sigma_u'] > 0 and result['sigma_v'] > 0 and 
                 result['sigma_u'] < 100 and result['sigma_v'] < 100 and
                 np.isfinite(result['log_likelihood'])):
                 
                 self.results['frontier'] = result
-                print("✓ 확률적변경비용함수 추정 완료")
+                print("? ?뺣쪧蹂寃쎈퉬?⑺븿??異붿젙 ?꾨즺")
                 
-                # 모델 적합도 정보
+                # 紐⑤뜽 ?곹빀???뺣낫
                 gamma = result['sigma_u']**2 / (result['sigma_u']**2 + result['sigma_v']**2)
-                print(f"   γ = σ²u/σ²: {gamma:.4f}")
+                print(f"   款 = ?짼u/?짼: {gamma:.4f}")
                 if gamma > 0.5:
-                    print("   → 비효율성의 차이가 주요 원인입니다")
+                    print("   ??鍮꾪슚?⑥꽦???ㅼ감??二쇱슂 ?먯씤?낅땲??")
                 else:
-                    print("   → 랜덤오차의 차이가 주요 원인입니다")
+                    print("   ???뺣쪧???ㅼ감媛 二쇱슂 ?먯씤?낅땲??")
                 
                 return result
             else:
-                print("✗ 추정된 파라미터가 비합리적입니다")
+                print("?? 異붿젙???뚮씪誘명꽣媛 鍮꾪빀由ъ쟻?낅땲??")
                 return self._create_fallback_result()
         else:
-            print(f"✗ 추정 실패: {result.get('message', 'Unknown error')}")
+            print(f"?? 異붿젙 ?ㅽ뙣: {result.get('message', 'Unknown error')}")
             return self._create_fallback_result()
     
     def _create_fallback_result(self):
-        """추정 실패시 대체 결과 생성"""
-        print("   대체 결과 생성 중..")
+        """異붿젙 ?ㅽ뙣???泥?寃곌낵 ?앹꽦"""
+        print("   ?泥?寃곌낵 ?앹꽦 以?..")
         
-        # 기본 파라미터 설정
-        n_params = len(self.translog_vars) + 1  # 상수항 포함
+        # 湲곕낯 ?뚮씪誘명꽣 ?ㅼ젙
+        n_params = len(self.translog_vars) + 1  # ?곸닔???ы븿
         fallback_beta = np.zeros(n_params)
         
-        # 상수항을 평균 비용으로 설정
+        # ?곸닔??? ?됯퇏 鍮꾩슜?쇰줈 ?ㅼ젙
         fallback_beta[0] = self.normalized_data[f'ln_{self.cost_var}'].mean()
         
-        # 기본 sigma 값
+        # 湲곕낯 sigma 媛?
         cost_std = self.normalized_data[f'ln_{self.cost_var}'].std()
         fallback_sigma_u = max(cost_std * 0.1, 0.01)
         fallback_sigma_v = max(cost_std * 0.1, 0.01)
@@ -307,13 +305,12 @@ class _StochasticFrontierCostAnalyzer:
         }
         
         self.results['frontier'] = fallback_result
-        print("   ✓ 대체 파라미터 사용 - 결과 해석에 주의하세요")
+        print("   ?? ?泥??뚮씪誘명꽣 ?ъ슜 - 寃곌낵 ?댁꽍??二쇱쓽?섏꽭??")
         
         return fallback_result
-
-
+    
     def _ml_estimation_half_normal_cost(self, y, X, initial_params):
-        """비용함수용 Half-normal 분포를 가정한 최우추도추정 - 개선된 버전"""
+        """鍮꾩슜?⑥닔??Half-normal 遺꾪룷瑜?媛?뺥븳 理쒕??곕룄異붿젙 - 媛쒖꽑??踰꾩쟾"""
         
         def log_likelihood(params):
             try:
@@ -322,51 +319,51 @@ class _StochasticFrontierCostAnalyzer:
                 log_sigma_u = params[n_beta]      
                 log_sigma_v = params[n_beta + 1]  
                 
-                # sigma 계산 (항상 양정의)
-                sigma_u = np.exp(np.clip(log_sigma_u, -10, 5))  # 극단값 제한
+                # sigma 怨꾩궛 (???덉젙??
+                sigma_u = np.exp(np.clip(log_sigma_u, -10, 5))  # 洹밴컪 ?쒗븳
                 sigma_v = np.exp(np.clip(log_sigma_v, -10, 5))
                 
-                # 최소값 보장
+                # 理쒖냼媛?蹂댁옣
                 sigma_u = np.maximum(sigma_u, 1e-4)
                 sigma_v = np.maximum(sigma_v, 1e-4)
                 
-                # 잔차 계산
+                # ?붿감 怨꾩궛
                 residuals = y - X @ beta
                 
-                # 잔차의 타당성 체크
+                # ?붿감???ㅼ???泥댄겕
                 if np.std(residuals) > 100 or np.std(residuals) < 1e-6:
                     return 1e8
                 
-                # 복합오차 파라미터
+                # 蹂듯빀?ㅼ감 ?뚮씪誘명꽣
                 sigma_sq = sigma_u**2 + sigma_v**2
                 sigma = np.sqrt(sigma_sq)
                 
                 if sigma < 1e-4 or sigma > 100:
                     return 1e8
                 
-                # 람다 (비율 제한)
+                # ?뚮떎 (鍮꾩쑉 ?쒗븳)
                 lambd = np.clip(sigma_u / sigma_v, 0.01, 100)
                 
-                # 표준화된 잔차
+                # ?쒖??붾맂 ?붿감
                 residuals_std = residuals / sigma
                 residuals_std = np.clip(residuals_std, -8, 8)
                 
-                # epsilon* 계산 (비용함수)
+                # epsilon* 怨꾩궛 (鍮꾩슜?⑥닔)
                 epsilon_star = residuals_std * lambd
                 epsilon_star = np.clip(epsilon_star, -8, 8)
                 
-                # 로그 확률밀도함수 계산
+                # 濡쒓렇 ?뺣쪧諛??怨꾩궛
                 log_phi = -0.5 * np.log(2 * np.pi) - 0.5 * residuals_std**2
                 
-                # 로그 누적분포 계산 (안정적 방법)
+                # 濡쒓렇 ?꾩쟻遺꾪룷 怨꾩궛 (?덉젙??諛⑸쾿)
                 log_Phi = np.where(epsilon_star > -5, 
                                   np.log(norm.cdf(epsilon_star) + 1e-15),
                                   epsilon_star - 0.5 * epsilon_star**2 - np.log(np.sqrt(2*np.pi)))
                 
-                # 로그우도 계산
+                # 濡쒓렇?곕룄 怨꾩궛
                 log_likelihood_val = (np.log(2) - np.log(sigma) + log_phi + log_Phi).sum()
                 
-                # 최종 검증
+                # 理쒖쥌 寃利?
                 if not np.isfinite(log_likelihood_val) or log_likelihood_val < -1e6:
                     return 1e8
                 
@@ -375,109 +372,109 @@ class _StochasticFrontierCostAnalyzer:
             except Exception as e:
                 return 1e8
         
-        # 개선된 초기값 설정
-        print("   초기값 설정 중..")
+        # 媛쒖꽑??珥덇린媛??ㅼ젙
+        print("   珥덇린媛??ㅼ젙 以?..")
         ols_residuals = y - X @ initial_params
         ols_sigma = np.std(ols_residuals)
         
-        # 보수적 초기값 사용 (안정적 수렴을 위해)
-        initial_sigma_u = np.clip(ols_sigma * 0.8, 0.05, 1.0)  # 보수적 값
-        initial_sigma_v = np.clip(ols_sigma * 0.6, 0.05, 1.0)  # 보수적 값
+        # ????珥덇린媛??ъ슜 (?덉젙???섎졃???꾪빐)
+        initial_sigma_u = np.clip(ols_sigma * 0.8, 0.05, 1.0)  # ????媛?
+        initial_sigma_v = np.clip(ols_sigma * 0.6, 0.05, 1.0)  # ????媛?
         
-        # log scale로 초기값 설정
+        # log scale濡?珥덇린媛??ㅼ젙
         initial_vals = np.concatenate([
             initial_params, 
             [np.log(initial_sigma_u), np.log(initial_sigma_v)]
         ])
         
-        print(f"   OLS σ: {ols_sigma:.4f}")
-        print(f"   초기 σ_u: {initial_sigma_u:.4f}, σ_v: {initial_sigma_v:.4f}")
+        print(f"   OLS ?: {ols_sigma:.4f}")
+        print(f"   珥덇린 ?_u: {initial_sigma_u:.4f}, ?_v: {initial_sigma_v:.4f}")
         
-        # 엄격한 bounds 설정
+        # ??愿???bounds ?ㅼ젙
         n_beta = len(initial_params)
         bounds = []
         
-        # beta 파라미터: 합리적 범위
+        # beta ?뚮씪誘명꽣: ???볦? 踰붿쐞
         for i in range(n_beta):
             bounds.append((-20, 20))  
         
-        # log_sigma: 합리적 범위
-        bounds.append((-8, 3))   # exp(-8) ≈ 0.0003, exp(3) ≈ 20
+        # log_sigma: ???볦? 踰붿쐞
+        bounds.append((-8, 3))   # exp(-8) ? 0.0003, exp(3) ? 20
         bounds.append((-8, 3))
         
-        # 최적화 시도 (다단계 설정)
-        print("   최적화 시작...")
+        # 理쒖쟻???쒕룄 (??愿????ㅼ젙)
+        print("   理쒖쟻???쒖옉...")
         result = None
         
-        # 방법 1: L-BFGS-B (엄격한 설정)
+        # 諛⑸쾿 1: L-BFGS-B (??愿????ㅼ젙)
         try:
-            print("   시도 1: L-BFGS-B")
+            print("   ?쒕룄 1: L-BFGS-B")
             result = minimize(log_likelihood, initial_vals, method='L-BFGS-B', 
                             bounds=bounds, 
                             options={'maxiter': 2000, 'ftol': 1e-6, 'gtol': 1e-4})
             
             if result.success and result.fun < 1e7:
-                print(f"   ✓ L-BFGS-B 성공: f={result.fun:.4f}")
+                print(f"   ? L-BFGS-B ?깃났: f={result.fun:.4f}")
             else:
-                print(f"   L-BFGS-B 실패: f={result.fun:.4f}")
+                print(f"   L-BFGS-B ?ㅽ뙣: f={result.fun:.4f}")
                 result = None
         except Exception as e:
-            print(f"   L-BFGS-B 오류: {str(e)}")
+            print(f"   L-BFGS-B ?ㅻ쪟: {str(e)}")
             result = None
         
-        # 방법 2: 다른 초기값으로 재시도
+        # 諛⑸쾿 2: ?ㅻⅨ 珥덇린媛믪쑝濡??ъ떆??
         if result is None:
             try:
-                print("   시도 2: 다른 초기값으로 L-BFGS-B")
-                # 초기값을 약간 변경
+                print("   ?쒕룄 2: ?ㅻⅨ 珥덇린媛믪쑝濡?L-BFGS-B")
+                # 珥덇린媛믪쓣 ?쎄컙 蹂寃?
                 alt_initial_vals = initial_vals.copy()
-                alt_initial_vals[-2:] += np.random.normal(0, 0.5, 2)  # sigma 초기값 변경
+                alt_initial_vals[-2:] += np.random.normal(0, 0.5, 2)  # sigma 珥덇린媛?蹂寃?
                 
                 result = minimize(log_likelihood, alt_initial_vals, method='L-BFGS-B', 
                                 bounds=bounds, 
                                 options={'maxiter': 2000, 'ftol': 1e-6})
                 
                 if result.success and result.fun < 1e7:
-                    print(f"   ✓ 대체 L-BFGS-B 성공: f={result.fun:.4f}")
+                    print(f"   ? ???L-BFGS-B ?깃났: f={result.fun:.4f}")
                 else:
                     result = None
             except Exception as e:
-                print(f"   대체 L-BFGS-B 실패: {str(e)}")
+                print(f"   ???L-BFGS-B ?ㅽ뙣: {str(e)}")
                 result = None
         
-        # 방법 3: BFGS (bounds 없음)
+        # 諛⑸쾿 3: BFGS (bounds ?놁쓬)
         if result is None:
             try:
-                print("   시도 3: BFGS")
+                print("   ?쒕룄 3: BFGS")
                 result = minimize(log_likelihood, initial_vals, method='BFGS', 
                                 options={'maxiter': 1500, 'gtol': 1e-4})
                 
                 if result.success and result.fun < 1e7:
-                    print(f"   ✓ BFGS 성공: f={result.fun:.4f}")
+                    print(f"   ? BFGS ?깃났: f={result.fun:.4f}")
                 else:
                     result = None
             except Exception as e:
-                print(f"   BFGS 실패: {str(e)}")
+                print(f"   BFGS ?ㅽ뙣: {str(e)}")
                 result = None
         
-        # 방법 4: Powell (derivative-free)
+        # 諛⑸쾿 4: Powell (derivative-free)
         if result is None:
             try:
-                print("   시도 4: Powell")
+                print("   ?쒕룄 4: Powell")
                 result = minimize(log_likelihood, initial_vals, method='Powell', 
                                 options={'maxiter': 1000, 'ftol': 1e-6})
                 
                 if result.success and result.fun < 1e7:
-                    print(f"   ✓ Powell 성공: f={result.fun:.4f}")
+                    print(f"   ? Powell ?깃났: f={result.fun:.4f}")
                 else:
                     result = None
             except Exception as e:
-                print(f"   Powell 실패: {str(e)}")
+                print(f"   Powell ?ㅽ뙣: {str(e)}")
                 result = None
         
-        # 모든 방법 실패시 기본값 반환
+        # 紐⑤뱺 諛⑸쾿 ?ㅽ뙣??湲곕낯媛?諛섑솚
         if result is None:
-            print("   ✗ 모든 최적화 방법 실패 - 기본값 사용")
+            print("   ?? 紐⑤뱺 理쒖쟻??諛⑸쾿 ?ㅽ뙣 - 湲곕낯媛??ъ슜")
             result = type('obj', (object,), {
                 'x': initial_vals, 
                 'fun': 1e10, 
@@ -485,18 +482,18 @@ class _StochasticFrontierCostAnalyzer:
                 'message': 'All optimization methods failed'
             })()
         
-        # 개선된 표준오차 계산
-        print("   표준오차 계산 중..")
+        # 媛쒖꽑???쒖??ㅼ감 怨꾩궛
+        print("   ?쒖??ㅼ감 怨꾩궛 以?..")
         try:
             if result.success and result.fun < 1e9:
-                # Hessian 계산 (보다 안정적인 방법)
+                # Hessian 怨꾩궛 (???덉젙?곸씤 諛⑸쾿)
                 eps = 1e-5
                 n_params = len(result.x)
                 hessian = np.zeros((n_params, n_params))
                 
                 f0 = log_likelihood(result.x)
                 
-                # diagonal elements만 계산 (빠르고 안정적)
+                # diagonal elements留?怨꾩궛 (???덉젙??
                 for i in range(n_params):
                     x_plus = result.x.copy()
                     x_minus = result.x.copy()
@@ -507,9 +504,9 @@ class _StochasticFrontierCostAnalyzer:
                     f_minus = log_likelihood(x_minus)
                     
                     second_deriv = (f_plus - 2*f0 + f_minus) / (eps**2)
-                    hessian[i, i] = abs(second_deriv)  # 절댓값 사용
+                    hessian[i, i] = abs(second_deriv)  # ?덈뙎媛??ъ슜
                 
-                # 표준오차 계산
+                # ?쒖??ㅼ감 怨꾩궛
                 std_errors = np.zeros(n_params)
                 for i in range(n_params):
                     if hessian[i, i] > 1e-10:
@@ -517,17 +514,17 @@ class _StochasticFrontierCostAnalyzer:
                     else:
                         std_errors[i] = np.nan
                 
-                # 비합리적인 표준오차 제한
+                # 鍮꾪빀由ъ쟻???쒖??ㅼ감 ?쒗븳
                 std_errors = np.where(std_errors > 100, np.nan, std_errors)
                 
             else:
                 std_errors = np.full(len(result.x), np.nan)
                 
         except Exception as e:
-            print(f"   표준오차 계산 오류: {str(e)}")
+            print(f"   ?쒖??ㅼ감 怨꾩궛 ?ㅻ쪟: {str(e)}")
             std_errors = np.full(len(result.x), np.nan)
         
-        # 결과 정리
+        # 寃곌낵 ?뺣━
         n_beta = X.shape[1]
         estimated_params = {
             'beta': result.x[:n_beta],
@@ -546,78 +543,78 @@ class _StochasticFrontierCostAnalyzer:
             }
         }
         
-        # 결과 출력
+        # 寃곌낵 異쒕젰
         if estimated_params['success']:
-            print(f"   ✓ 최적화 성공!")
-            print(f"   로그우도: {estimated_params['log_likelihood']:.4f}")
-            print(f"   σ_u: {estimated_params['sigma_u']:.4f}")
-            print(f"   σ_v: {estimated_params['sigma_v']:.4f}")
-            print(f"   λ (σ_u/σ_v): {estimated_params['sigma_u']/estimated_params['sigma_v']:.4f}")
+            print(f"   ? 理쒖쟻???깃났!")
+            print(f"   濡쒓렇?곕룄: {estimated_params['log_likelihood']:.4f}")
+            print(f"   ?_u: {estimated_params['sigma_u']:.4f}")
+            print(f"   ?_v: {estimated_params['sigma_v']:.4f}")
+            print(f"   貫 (?_u/?_v): {estimated_params['sigma_u']/estimated_params['sigma_v']:.4f}")
         else:
-            print(f"   ✗ 최적화 실패: {estimated_params['message']}")
-            print(f"   함수값 {result.fun:.4f}")
+            print(f"   ?? 理쒖쟻???ㅽ뙣: {estimated_params['message']}")
+            print(f"   ?⑥닔媛? {result.fun:.4f}")
         
         return estimated_params
     
     def calculate_efficiency(self):
-        """기술적 효율성(Technical Efficiency) 계산 - 개선된 버전"""
-        print("\n기술적 효율성(TE) 계산 중..")
+        """湲곗닠???⑥쑉??Technical Efficiency) 怨꾩궛 - 媛쒖꽑??踰꾩쟾"""
+        print("\n湲곗닠???⑥쑉??TE) 怨꾩궛 以?..")
         
         if 'frontier' not in self.results:
             self.estimate_stochastic_frontier()
         
-        # 추정이 실패한 경우 처리
+        # 異붿젙???ㅽ뙣??寃쎌슦 泥섎━
         if not self.results['frontier']['success']:
-            print("✗ 확률변경함수 추정이 실패하여 효율성을 계산할 수 없습니다.")
-            # 기본값으로 1.0 (완전 효율적) 할당
+            print("?? ?뺣쪧蹂寃쏀븿??異붿젙???ㅽ뙣?섏뿬 ?⑥쑉?깆쓣 怨꾩궛?????놁뒿?덈떎.")
+            # 湲곕낯媛믪쑝濡?1.0 (?꾩쟾 ?⑥쑉?? ?좊떦
             self.normalized_data['technical_efficiency'] = 1.0
             return np.ones(len(self.normalized_data))
         
-        # 파라미터 추출
+        # ?뚮씪誘명꽣 異붿텧
         beta = self.results['frontier']['beta']
         sigma_u = self.results['frontier']['sigma_u']
         sigma_v = self.results['frontier']['sigma_v']
         
-        # numerical stability 체크
+        # numerical stability 泥댄겕
         if sigma_u < 1e-6 or sigma_v < 1e-6:
-            print("✗ σ 값이 너무 작아 효율성 계산을 건너뜁니다")
+            print("?? ? 媛믪씠 ?덈Т ?묒븘 ?⑥쑉??怨꾩궛??嫄대꼫?곷땲??")
             self.normalized_data['technical_efficiency'] = 1.0
             return np.ones(len(self.normalized_data))
         
-        # 종속변수와 독립변수
+        # 醫낆냽蹂?섏? ?낅┰蹂??
         y = self.normalized_data[f'ln_{self.cost_var}'].values
         X = self.normalized_data[self.translog_vars].values
         X = np.column_stack([np.ones(len(X)), X])
         
-        # 잔차
+        # ?붿감
         residuals = y - X @ beta
         
-        # 기술적 효율성 계산 (비용함수용 - Jondrow et al., 1982)
+        # 湲곗닠???⑥쑉??怨꾩궛 (鍮꾩슜?⑥닔??- Jondrow et al., 1982)
         sigma_sq = sigma_u**2 + sigma_v**2
         sigma = np.sqrt(sigma_sq)
         lambd = sigma_u / sigma_v
         
-        # numerical stability를 위한 처리
+        # numerical stability瑜??꾪븳 泥섎━
         try:
-            mu_star = residuals * sigma_u**2 / sigma_sq  # 비용함수는 부호 반대
+            mu_star = residuals * sigma_u**2 / sigma_sq  # 鍮꾩슜?⑥닔??遺??諛섎?
             sigma_star = sigma_u * sigma_v / sigma
             
-            # numerical stability: 극단값 제한
+            # numerical stability: 洹밴컪 ?쒗븳
             mu_star = np.clip(mu_star, -10, 10)
             sigma_star = np.maximum(sigma_star, 1e-6)
             
-            # 조건부 기댓값(기술적 효율성)
+            # 議곌굔遺 湲곕뙎媛?(湲곗닠???⑥쑉??
             ratio = mu_star / sigma_star
-            ratio = np.clip(ratio, -10, 10)  # 극단값 제한
+            ratio = np.clip(ratio, -10, 10)  # 洹밴컪 ?쒗븳
             
-            # 안정적인 계산을 위해 항목별로 계산
+            # ?덉젙?곸씤 怨꾩궛???꾪빐 ?④퀎蹂꾨줈 怨꾩궛
             exp_term = np.exp(-mu_star + 0.5 * sigma_star**2)
             
-            # CDF 계산 시 numerical stability
+            # CDF 怨꾩궛 ??numerical stability
             cdf_term1 = norm.cdf(ratio + sigma_star)
             cdf_term2 = norm.cdf(ratio)
             
-            # 0으로 나누기 방지
+            # 0?쇰줈 ?섎늻湲?諛⑹?
             denominator = 1 - cdf_term2
             denominator = np.maximum(denominator, 1e-10)
             
@@ -625,131 +622,131 @@ class _StochasticFrontierCostAnalyzer:
             
             technical_efficiency = exp_term * numerator / denominator
             
-            # 결과 검증 및 후처리
+            # 寃곌낵 寃利?諛??꾩쿂由?
             technical_efficiency = np.clip(technical_efficiency, 1e-6, 1.0)
             
-            # NaN이나 inf 체크
+            # NaN?대굹 inf 泥댄겕
             invalid_mask = ~np.isfinite(technical_efficiency)
             if invalid_mask.any():
-                print(f"✗ {invalid_mask.sum()}개 관측치에서 효율성 계산 오류 - 기본값 0.5 할당")
+                print(f"?? {invalid_mask.sum()}媛?愿痢↔컪?먯꽌 ?⑥쑉??怨꾩궛 ?ㅻ쪟 - 湲곕낯媛?0.5 ?좊떦")
                 technical_efficiency[invalid_mask] = 0.5
             
             self.normalized_data['technical_efficiency'] = technical_efficiency
             
-            print("✓ 기술적 효율성(TE) 계산 완료")
-            print(f"   평균 TE: {technical_efficiency.mean():.4f}")
-            print(f"   최소 TE: {technical_efficiency.min():.4f}")
-            print(f"   최대 TE: {technical_efficiency.max():.4f}")
+            print("? 湲곗닠???⑥쑉??TE) 怨꾩궛 ?꾨즺")
+            print(f"   ?됯퇏 TE: {technical_efficiency.mean():.4f}")
+            print(f"   理쒖냼 TE: {technical_efficiency.min():.4f}")
+            print(f"   理쒕? TE: {technical_efficiency.max():.4f}")
             
             return technical_efficiency
             
         except Exception as e:
-            print(f"✗ 효율성 계산 중 오류: {str(e)}")
-            # 오류 시 기본값 할당
+            print(f"? ?⑥쑉??怨꾩궛 以??ㅻ쪟: {str(e)}")
+            # ?ㅻ쪟 ??湲곕낯媛??좊떦
             technical_efficiency = np.full(len(residuals), 0.8)
             self.normalized_data['technical_efficiency'] = technical_efficiency
             return technical_efficiency
-
-def calculate_cost_economics(self):
-        """비용함수 경제학적 지표 계산"""
-        print("\n비용함수 경제학적 지표 계산 중..")
+    
+    def calculate_cost_economics(self):
+        """鍮꾩슜?⑥닔 寃쎌젣?숈쟻 吏??怨꾩궛"""
+        print("\n鍮꾩슜?⑥닔 寃쎌젣?숈쟻 吏??怨꾩궛 以?..")
         
         if 'technical_efficiency' not in self.normalized_data.columns:
             self.calculate_efficiency()
         
-        # 파라미터
+        # ?뚮씪誘명꽣
         beta = self.results['frontier']['beta']
         
-        # 실제 비용몫 계산 (세페르드 방법)
+        # ?ㅼ젣 鍮꾩슜紐?怨꾩궛 (?щ컮瑜?諛⑸쾿)
         self._calculate_actual_cost_shares()
         
-        # 가격탄력성 계산
+        # 媛寃⑺깂?μ꽦 怨꾩궛
         self._calculate_price_elasticities(beta)
         
-        # 기술변화 계산 (수정됨 - 비용함수 기준)
+        # 湲곗닠蹂??怨꾩궛 (?섏젙??- 鍮꾩슜?⑥닔 湲곗?)
         if self.include_time:
             self._calculate_technical_change_cost_corrected(beta)
         
-        # 규모의 경제 계산 (수정됨)
+        # 洹쒕え??寃쎌젣 怨꾩궛 (?섏젙??
         self._calculate_scale_economies(beta)
         
-        # TFP 분해 계산
+        # TFP 遺꾪빐 怨꾩궛
         self._calculate_tfp_decomposition()
         
-        print("비용함수 경제학적 지표 계산 완료")
+        print("鍮꾩슜?⑥닔 寃쎌젣?숈쟻 吏??怨꾩궛 ?꾨즺")
         
-        print("\n✓ TFP 분해 공식:")
-        print("TFP 증가율 = 기술변화 + 기술적효율성변화 + 규모의경제효과)")
-        print("여기서:")
-        print("  • 기술변화: -∂lnC/∂t (비용 감소 효과)")  
-        print("  • 기술적효율성변화: ∂ln(TE)/∂t")
-        print("  • 규모의경제효과: (1-1/규모의경제) × 산출물증가율")
+        print("\n?? TFP 遺꾪빐 怨듭떇:")
+        print("TFP 利앷???= 湲곗닠蹂??+ 湲곗닠?곹슚?⑥꽦蹂??+ 洹쒕え?섍꼍?쒗슚怨?)
+        print("?ш린??")
+        print("  ? 湲곗닠蹂?? -?굃nC/?굏 (鍮꾩슜 媛먯냼 ?④낵)")  
+        print("  ? 湲곗닠?곹슚?⑥꽦蹂?? ?굃n(TE)/?굏")
+        print("  ? 洹쒕え?섍꼍?쒗슚怨? (1-1/洹쒕え?섍꼍?? 횞 ?곗텧?됱쬆媛??)
     
     def _calculate_actual_cost_shares(self):
-        """실제 비용몫 계산 (세페르드 방법)"""
+        """?ㅼ젣 鍮꾩슜紐?怨꾩궛 (?щ컮瑜?諛⑸쾿)"""
         data = self.normalized_data
         
-        print("\n실제 비용몫 계산 중..")
+        print("\n?ㅼ젣 鍮꾩슜紐?怨꾩궛 以?..")
         
-        # 총비용 계산 및 검증
+        # 珥앸퉬??怨꾩궛 諛?寃利?
         total_cost_calculated = sum(data[price_var] * data[input_var] 
                                   for price_var, input_var in zip(self.price_vars, self.input_vars))
         data['calculated_total_cost'] = total_cost_calculated
         
-        # 실제 총비용과 계산된 총비용 비교
+        # ?ㅼ젣 珥앸퉬?⑷낵 怨꾩궛??珥앸퉬??鍮꾧탳
         actual_total_cost = data[self.cost_var]
         cost_diff = abs(actual_total_cost - total_cost_calculated).mean()
-        print(f"   총비용 검증: 실제 vs 계산 차이 평균 = {cost_diff:.6f}")
+        print(f"   珥앸퉬??寃利? ?ㅼ젣 vs 怨꾩궛 李⑥씠 ?됯퇏 = {cost_diff:.6f}")
         
-        # 실제 비용몫 계산: si = pi * xi / TC
+        # ?ㅼ젣 鍮꾩슜紐?怨꾩궛: si = pi * xi / TC
         for price_var, input_var in zip(self.price_vars, self.input_vars):
             input_cost = data[price_var] * data[input_var]
-            cost_share = input_cost / actual_total_cost  # 실제 총비용 사용
+            cost_share = input_cost / actual_total_cost  # ?ㅼ젣 珥앸퉬???ъ슜
             data[f'share_{input_var}'] = cost_share
         
-        # 비용몫 합계 검증
+        # 鍮꾩슜紐??⑷퀎 寃利?
         total_shares = sum(data[f'share_{input_var}'] for input_var in self.input_vars)
         data['total_shares'] = total_shares
         
-        print(f"\n✓ 비용몫 검증:")
-        print(f"   비용몫 합계 평균: {total_shares.mean():.6f}")
-        print(f"   비용몫 합계 표준편차: {total_shares.std():.6f}")
-        print(f"   비용몫 합계 범위: [{total_shares.min():.6f}, {total_shares.max():.6f}]")
+        print(f"\n? 鍮꾩슜紐?寃利?")
+        print(f"   鍮꾩슜紐??⑷퀎 ?됯퇏: {total_shares.mean():.6f}")
+        print(f"   鍮꾩슜紐??⑷퀎 ?쒖??몄감: {total_shares.std():.6f}")
+        print(f"   鍮꾩슜紐??⑷퀎 踰붿쐞: [{total_shares.min():.6f}, {total_shares.max():.6f}]")
         
-        # 개별 비용몫 출력
+        # 媛쒕퀎 鍮꾩슜紐?異쒕젰
         for input_var in self.input_vars:
             share_mean = data[f'share_{input_var}'].mean()
-            print(f"   평균 {input_var.upper()} 비용몫: {share_mean:.6f}")
+            print(f"   ?됯퇏 {input_var.upper()} 鍮꾩슜紐? {share_mean:.6f}")
         
         if abs(total_shares.mean() - 1.0) < 0.01:
-            print("   ✓ 비용몫 합계가 세페르드입니다(≈ 1)")
+            print("   ? 鍮꾩슜紐??⑷퀎媛 ?щ컮由낅땲??(? 1)")
         else:
-            print(f"   ✗  비용몫 합계가 1에서 벗어났습니다: {total_shares.mean():.6f}")
+            print(f"   ??  鍮꾩슜紐??⑷퀎媛 1?먯꽌 踰쀬뼱?ъ뒿?덈떎: {total_shares.mean():.6f}")
     
     def _calculate_price_elasticities(self, beta):
-        """가격탄력성 계산"""
+        """媛寃⑺깂?μ꽦 怨꾩궛"""
         data = self.normalized_data
         
-        # 자기가격탄력성과 교차가격탄력성
+        # ?먭린媛寃⑺깂?μ꽦怨?援먯감媛寃⑺깂?μ꽦
         for i, (price_var, input_var) in enumerate(zip(self.price_vars, self.input_vars)):
             share_i = data[f'share_{input_var}']
             
             for j, (price_var_j, input_var_j) in enumerate(zip(self.price_vars, self.input_vars)):
                 if i == j:
-                    # 자기가격탄력성
+                    # ?먭린媛寃⑺깂?μ꽦
                     ln_var = f'ln_{price_var}'
                     beta_idx = 1 + i
                     elasticity = beta[beta_idx]
                     
-                    # 2차항
+                    # 2李⑦빆
                     var2_idx = self.translog_vars.index(f'{ln_var}2')
                     elasticity += beta[1 + var2_idx] * data[ln_var]
                     
-                    # 최종 탄력성
+                    # 理쒖쥌 ?꾨젰??
                     elasticity = elasticity / share_i - 1
                     
                 else:
-                    # 교차가격탄력성
+                    # 援먯감媛寃⑺깂?μ꽦
                     ln_var_i = f'ln_{price_var}'
                     ln_var_j = f'ln_{price_var_j}'
                     
@@ -763,27 +760,27 @@ def calculate_cost_economics(self):
                 data[f'elasticity_{input_var}_{input_var_j}'] = elasticity
     
     def _calculate_technical_change_cost_corrected(self, beta):
-        """기술변화 계산 (비용함수) - 계수 확인 및 수정된 계산"""
+        """湲곗닠蹂??怨꾩궛 (鍮꾩슜?⑥닔) - 怨꾩닔 ?뺤씤 諛??뺤젙??怨꾩궛"""
         if not self.include_time:
             return
         
         data = self.normalized_data
         
-        print(f"\n✓ 기술변화 관련 계수 확인:")
+        print(f"\n?? 湲곗닠蹂??愿??怨꾩닔 ?뺤씤:")
         print("-" * 50)
         
-        # 시간의 1차항 계수 확인
+        # ?쒓컙??1李⑦빆 怨꾩닔 ?뺤씤
         time_idx = self.translog_vars.index(self.time_var)
-        beta_t = beta[1 + time_idx]  # 상수항 제외
-        print(f"   β_t (시간 1차항 계수): {beta_t:.6f}")
+        beta_t = beta[1 + time_idx]  # ?곸닔???쒖쇅
+        print(f"   棺_t (?쒓컙 1李⑦빆 怨꾩닔): {beta_t:.6f}")
         
-        # 시간의 2차항 계수 확인
+        # ?쒓컙??2李⑦빆 怨꾩닔 ?뺤씤
         time2_idx = self.translog_vars.index(f'{self.time_var}2')
         beta_t2 = beta[1 + time2_idx]
-        print(f"   β_tt (시간 2차항 계수): {beta_t2:.6f}")
+        print(f"   棺_tt (?쒓컙 2李⑦빆 怨꾩닔): {beta_t2:.6f}")
         
-        # 시간과 가격변수의 교차항 계수 확인
-        print("   시간-가격 교차항 계수:")
+        # ?쒓컙怨?媛寃⑸??섏쓽 援먯감??怨꾩닔 ?뺤씤
+        print("   ?쒓컙-媛寃?援먯감??怨꾩닔:")
         time_price_coeffs = {}
         for var in self.price_vars:
             time_cross = f'ln_{var}_{self.time_var}'
@@ -791,149 +788,149 @@ def calculate_cost_economics(self):
                 cross_idx = self.translog_vars.index(time_cross)
                 beta_cross = beta[1 + cross_idx]
                 time_price_coeffs[var] = beta_cross
-                print(f"     β_{var}_t: {beta_cross:.6f}")
+                print(f"     棺_{var}_t: {beta_cross:.6f}")
         
-        # 시간과 산출물의 교차항 계수 확인
+        # ?쒓컙怨??곗텧?됱쓽 援먯감??怨꾩닔 ?뺤씤
         time_output_cross = f'ln_{self.output_var}_{self.time_var}'
         beta_yt = 0
         if time_output_cross in self.translog_vars:
             cross_idx = self.translog_vars.index(time_output_cross)
             beta_yt = beta[1 + cross_idx]
-            print(f"   β_y_t (시간-산출물 교차항): {beta_yt:.6f}")
+            print(f"   棺_y_t (?쒓컙-?곗텧??援먯감??: {beta_yt:.6f}")
         
         print("-" * 50)
         
-        # 기술변화 계산: TECH = -∂lnC/∂t (PDF 방법론)
-        # ∂lnC/∂t = β_t + β_tt*t + Σβ_it*ln(pi) + β_yt*ln(y)
-        # 따라서 TECH = -(β_t + β_tt*t + Σβ_it*ln(pi) + β_yt*ln(y))
+        # 湲곗닠蹂??怨꾩궛: TECH = -?굃nC/?굏 (PDF 諛⑸쾿濡?
+        # ?굃nC/?굏 = 棺_t + 棺_tt*t + 誇棺_it*ln(pi) + 棺_yt*ln(y)
+        # ?곕씪??TECH = -(棺_t + 棺_tt*t + 誇棺_it*ln(pi) + 棺_yt*ln(y))
         
-        # 1차항: -β_t
+        # 1李⑦빆: -棺_t
         tech_change = -beta_t
         
-        # 2차항: -β_tt * t
+        # 2李⑦빆: -棺_tt * t
         tech_change += -beta_t2 * data[self.time_var]
         
-        # 시간-가격 교차항: -Σβ_it * ln(pi)
+        # ?쒓컙-媛寃?援먯감?? -誇棺_it * ln(pi)
         for var in self.price_vars:
             if var in time_price_coeffs:
                 tech_change += -time_price_coeffs[var] * data[f'ln_{var}']
         
-        # 시간-산출물 교차항: -β_yt * ln(y)
+        # ?쒓컙-?곗텧??援먯감?? -棺_yt * ln(y)
         if beta_yt != 0:
             tech_change += -beta_yt * data[f'ln_{self.output_var}']
         
         data['tech_change_cost'] = tech_change
         
-        print(f"\n✓ 기술변화 계산 결과:")
-        print(f"   공식: TECH = -∂lnC/∂t")
-        print(f"   평균 기술변화: {tech_change.mean():.6f}")
-        print(f"   기술변화 범위: [{tech_change.min():.6f}, {tech_change.max():.6f}]")
+        print(f"\n?? 湲곗닠蹂??怨꾩궛 寃곌낵:")
+        print(f"   怨듭떇: TECH = -?굃nC/?굏")
+        print(f"   ?됯퇏 湲곗닠蹂?? {tech_change.mean():.6f}")
+        print(f"   湲곗닠蹂??踰붿쐞: [{tech_change.min():.6f}, {tech_change.max():.6f}]")
         
-        # 해석 제공문구
+        # ?댁꽍 ?꾩?留?
         if tech_change.mean() > 0:
-            print("   ✓ 양수 → 기술진보 (비용 감소)")
+            print("   ? ?묒닔 ??湲곗닠吏꾨낫 (鍮꾩슜 媛먯냼)")
         elif tech_change.mean() < 0:
-            print("   ✗  음수 → 기술퇴보 또는 비용 증가")
-            print("   ✗ 가능한 원인:")
-            print("      - 시간계수 β_t > 0 (시간이 지날수록 비용증가)")
-            print("      - 데이터에 기술퇴보 반영")
-            print("      - 추정 모델의 적합성")
+            print("   ??  ?뚯닔 ??湲곗닠?대낫 ?먮뒗 鍮꾩슜 利앷?")
+            print("   ?? 媛?ν븳 ?먯씤:")
+            print("      - ?쒓컙怨꾩닔 棺_t > 0 (?쒓컙???곕씪 鍮꾩슜利앷?)")
+            print("      - ?곗씠?곗뿉 湲곗닠?대낫 諛섏쁺")
+            print("      - 異붿젙 紐⑤뜽???쒓퀎")
         else:
-            print("   →  변화 없음 기술변화 없음")
+            print("   ??  ????湲곗닠蹂???놁쓬")
         
-        # 구성요소별 기여도 분석
-        print(f"\n✓ 기술변화 구성요소 분석:")
+        # 援ъ꽦?붿냼蹂?湲곗뿬??遺꾩꽍
+        print(f"\n?? 湲곗닠蹂??援ъ꽦?붿냼 遺꾩꽍:")
         component1 = -beta_t
         component2 = (-beta_t2 * data[self.time_var]).mean()
-        print(f"   1차항 기여도(-β_t): {component1:.6f}")
-        print(f"   2차항 기여도 평균 (-β_tt*t): {component2:.6f}")
+        print(f"   1李⑦빆 湲곗뿬??(-棺_t): {component1:.6f}")
+        print(f"   2李⑦빆 湲곗뿬???됯퇏 (-棺_tt*t): {component2:.6f}")
         
         total_cross_effect = 0
         for var in self.price_vars:
             if var in time_price_coeffs:
                 cross_effect = (-time_price_coeffs[var] * data[f'ln_{var}']).mean()
                 total_cross_effect += cross_effect
-                print(f"   {var} 교차항 평균: {cross_effect:.6f}")
+                print(f"   {var} 援먯감???됯퇏: {cross_effect:.6f}")
         
         if beta_yt != 0:
             output_cross_effect = (-beta_yt * data[f'ln_{self.output_var}']).mean()
             total_cross_effect += output_cross_effect
-            print(f"   산출물 교차항 평균: {output_cross_effect:.6f}")
+            print(f"   ?곗텧??援먯감???됯퇏: {output_cross_effect:.6f}")
         
-        print(f"   총 교차항 효과: {total_cross_effect:.6f}")
-        print(f"   전체 평균: {component1 + component2 + total_cross_effect:.6f}")
+        print(f"   珥?援먯감???④낵: {total_cross_effect:.6f}")
+        print(f"   ?꾩껜 ?됯퇏: {component1 + component2 + total_cross_effect:.6f}")
         print("-" * 50)
     
     def _calculate_scale_economies(self, beta):
-        """규모의 경제 계산 (비용함수)"""
+        """洹쒕え??寃쎌젣 怨꾩궛 (鍮꾩슜?⑥닔)"""
         data = self.normalized_data
         
-        # 산출물에 대한 비용탄력성(IRTS = ∂lnC/∂lnY)
+        # ?곗텧?됱뿉 ???鍮꾩슜?꾨젰??(IRTS = ?굃nC/?굃nY)
         ln_output_var = f'ln_{self.output_var}'
         output_idx = self.translog_vars.index(ln_output_var)
         
-        # 1차항: β_y
-        output_elasticity = beta[1 + output_idx]  # 상수항 제외
+        # 1李⑦빆: 棺_y
+        output_elasticity = beta[1 + output_idx]  # ?곸닔???쒖쇅
         
-        # 2차항: β_yy * ln(y)
+        # 2李⑦빆: 棺_yy * ln(y)
         output2_idx = self.translog_vars.index(f'{ln_output_var}2')
         output_elasticity += beta[1 + output2_idx] * data[ln_output_var]
         
-        # 가격-산출물 교차항: Σβ_iy * ln(wi)
+        # 媛寃??곗텧??援먯감?? 誇棺_iy * ln(wi)
         for var in self.price_vars:
             output_cross = f'ln_{var}_{self.output_var}'
             if output_cross in self.translog_vars:
                 cross_idx = self.translog_vars.index(output_cross)
                 output_elasticity += beta[1 + cross_idx] * data[f'ln_{var}']
         
-        # 시간-산출물 교차항: β_yt * t
+        # ?쒓컙-?곗텧??援먯감?? 棺_yt * t
         if self.include_time:
             time_output_cross = f'ln_{self.output_var}_{self.time_var}'
             if time_output_cross in self.translog_vars:
                 cross_idx = self.translog_vars.index(time_output_cross)
                 output_elasticity += beta[1 + cross_idx] * data[self.time_var]
         
-        # 규모의 경제 = 1 / IRTS (여기서 IRTS = 산출물 비용탄력성)
+        # 洹쒕え??寃쎌젣 = 1 / IRTS (?ш린??IRTS = ?곗텧??鍮꾩슜?꾨젰??
         scale_economies = 1 / output_elasticity
         
-        # 데이터에 저장(TFP 분해에서 사용)
-        data['irts'] = output_elasticity  # 산출물 비용탄력성(1/RTS)
-        data['output_elasticity'] = output_elasticity  # 기존 호환성
+        # ?곗씠?곗뿉 ???(TFP 遺꾪빐?먯꽌 ?ъ슜)
+        data['irts'] = output_elasticity  # ?곗텧??鍮꾩슜?꾨젰??(1/RTS)
+        data['output_elasticity'] = output_elasticity  # 湲곗〈 ?명솚??
         data['scale_economies'] = scale_economies
     
     def _calculate_tfp_decomposition(self):
-        """TFP 증가율과 구성요인 분해 계산"""
+        """TFP 利앷??④낵 援ъ꽦?붿씤 遺꾪빐 怨꾩궛"""
         data = self.normalized_data.sort_values([self.id_var, self.time_var])
         
-        # 1. 기술적 효율성 변화 계산 (TE의 로그 차분)
+        # 1. 湲곗닠???⑥쑉??蹂??怨꾩궛 (TE??濡쒓렇 李⑤텇)
         data['ln_te'] = np.log(data['technical_efficiency'])
         data['tech_efficiency_change'] = data.groupby(self.id_var)['ln_te'].diff()
         
-        # 2. 산출물 증가율 계산 (규모효과 계산용)
+        # 2. ?곗텧??利앷???怨꾩궛 (洹쒕え?④낵 怨꾩궛??
         data['ln_output'] = data[f'ln_{self.output_var}']
         data['output_growth'] = data.groupby(self.id_var)['ln_output'].diff()
         
-        # 3. 기술변화 효과 (수정됨 - 이미 세페르드분모로 계산됨)
+        # 3. 湲곗닠蹂???④낵 (?섏젙??- ?대? ?щ컮瑜?遺?몃줈 怨꾩궛??
         if 'tech_change_cost' in data.columns:
-            # 이미 Stata 방식으로 계산되어 세페르드분모를 갖춤
+            # ?대? Stata 諛⑹떇?쇰줈 怨꾩궛?섏뼱 ?щ컮瑜?遺?몃? 媛吏?
             data['tech_change_effect'] = data['tech_change_cost']
         else:
             data['tech_change_effect'] = 0
         
-        # 4. 규모효과 계산 = (1-IRTS) × 산출증가율(PDF 방법론)
+        # 4. 洹쒕え?④낵 怨꾩궛 = (1-IRTS) 횞 ?곗텧利앷???(PDF 諛⑸쾿濡?
         # Stata: gen SCALE = (1-IRTS)*gr_y
         if 'irts' in data.columns:
             data['scale_effect'] = (1 - data['irts']) * data['output_growth']
         else:
             data['scale_effect'] = 0
         
-        # 5. TFP 증가율 계산 = SCALE + TECH + TEFF (PDF 방법론)
+        # 5. TFP 利앷???怨꾩궛 = SCALE + TECH + TEFF (PDF 諛⑸쾿濡?
         # Stata: gen TFP = SCALE + TECH + TEFF
         data['tfp_growth'] = (data['scale_effect'] + 
                              data['tech_change_effect'] + 
                              data['tech_efficiency_change'])
         
-        # 6. 백분율 변수를 위한 변수들
+        # 6. 諛깅텇??蹂?섏쓣 ?꾪븳 蹂?섎뱾
         for var in ['tech_efficiency_change', 'tech_change_effect', 'scale_effect', 
                    'tfp_growth', 'output_growth']:
             if var in data.columns:
@@ -941,41 +938,41 @@ def calculate_cost_economics(self):
         
         self.normalized_data = data
         
-        print(f"\n✓ TFP 분해 계산 완료:")
+        print(f"\n?? TFP 遺꾪빐 怨꾩궛 ?꾨즺:")
         valid_data = data.dropna(subset=['tfp_growth', 'tech_change_effect', 'tech_efficiency_change', 'scale_effect'])
         if len(valid_data) > 0:
-            print(f"   평균 TFP 증가율: {valid_data['tfp_growth'].mean()*100:.4f}%")
-            print(f"   평균 기술변화: {valid_data['tech_change_effect'].mean()*100:.4f}%")
-            print(f"   평균 기술적효율성변화: {valid_data['tech_efficiency_change'].mean()*100:.4f}%")
-            print(f"   평균 규모의경제효과: {valid_data['scale_effect'].mean()*100:.4f}%")
-
-def print_results(self, save_path='cost_results.csv'):
-        """결과 출력 - TFP 분해 4가지 요소만 출력"""
+            print(f"   ?됯퇏 TFP 利앷??? {valid_data['tfp_growth'].mean()*100:.4f}%")
+            print(f"   ?됯퇏 湲곗닠蹂?? {valid_data['tech_change_effect'].mean()*100:.4f}%")
+            print(f"   ?됯퇏 湲곗닠?곹슚?⑥꽦蹂?? {valid_data['tech_efficiency_change'].mean()*100:.4f}%")
+            print(f"   ?됯퇏 洹쒕え?섍꼍?쒗슚怨? {valid_data['scale_effect'].mean()*100:.4f}%")
+    
+    def print_results(self, save_path='cost_results.csv'):
+        """寃곌낵 異쒕젰 - TFP 遺꾪빐 4媛吏 ?붿냼留?異쒕젰"""
         print("\n" + "=" * 100)
-        print("확률변경비용함수 추정 결과")
+        print("?뺣쪧蹂寃쎈퉬?⑺븿??異붿젙 寃곌낵")
         print("=" * 100)
         
-        # 1. 파라미터 추정치 출력
+        # 1. ?뚮씪誘명꽣 異붿젙移?異쒕젰
         if 'frontier' in self.results:
             frontier = self.results['frontier']
             beta = frontier['beta']
             std_errors = frontier.get('std_errors', np.full(len(beta), np.nan))
             
-            print("\n1. 파라미터 추정치)")
+            print("\n1. ?뚮씪誘명꽣 異붿젙移?)
             print("-" * 100)
-            print(f"{'변수명':<20} {'계수':<12} {'표준오차':<12} {'t-값':<10} {'p-값':<10} {'유의도':<8}")
+            print(f"{'蹂?섎챸':<20} {'怨꾩닔':<12} {'?쒖??ㅼ감':<12} {'t-媛?:<10} {'p-媛?:<10} {'?좎쓽??:<8}")
             print("-" * 100)
             
-            # 상수항
+            # ?곸닔??
             t_stat = beta[0] / std_errors[0] if not np.isnan(std_errors[0]) and std_errors[0] != 0 else np.nan
             p_value = 2 * (1 - norm.cdf(abs(t_stat))) if not np.isnan(t_stat) else np.nan
             significance = "***" if p_value < 0.01 else "**" if p_value < 0.05 else "*" if p_value < 0.1 else ""
             
-            print(f"{'상수항':<20} {beta[0]:>8.6f} {std_errors[0]:>8.4f} {t_stat:>8.3f} {p_value:>8.4f} {significance:<8}")
+            print(f"{'?곸닔??:<20} {beta[0]:>8.6f} {std_errors[0]:>8.4f} {t_stat:>8.3f} {p_value:>8.4f} {significance:<8}")
             
-            # 변수별 계수
+            # 蹂?섎퀎 怨꾩닔
             for i, var_name in enumerate(self.translog_vars):
-                coef = beta[i + 1]  # 상수항 제외
+                coef = beta[i + 1]  # ?곸닔???쒖쇅
                 se = std_errors[i + 1] if i + 1 < len(std_errors) else np.nan
                 t_stat = coef / se if not np.isnan(se) and se != 0 else np.nan
                 p_value = 2 * (1 - norm.cdf(abs(t_stat))) if not np.isnan(t_stat) else np.nan
@@ -984,200 +981,200 @@ def print_results(self, save_path='cost_results.csv'):
                 print(f"{var_name:<20} {coef:>8.6f} {se:>8.4f} {t_stat:>8.3f} {p_value:>8.4f} {significance:<8}")
             
             print("-" * 100)
-            print("유의도: *** p<0.01, ** p<0.05, * p<0.1")
+            print("?좎쓽?? *** p<0.01, ** p<0.05, * p<0.1")
             
-            # ✓ 기술변화 관련 계수 해석 추가
-            print(f"\n✓ 기술변화 관련 계수 해석:")
+            # ?? 湲곗닠蹂??愿??怨꾩닔 ?댁꽍 異붽?
+            print(f"\n?? 湲곗닠蹂??愿??怨꾩닔 ?댁꽍:")
             print("-" * 50)
             
-            # 시간 변수 계수 찾기 및 해석
+            # ?쒓컙 蹂??怨꾩닔 李얘린 諛??댁꽍
             if self.include_time and self.time_var in self.translog_vars:
                 time_idx = self.translog_vars.index(self.time_var)
-                beta_t = beta[time_idx + 1]  # 상수항 제외
+                beta_t = beta[time_idx + 1]  # ?곸닔???쒖쇅
                 
-                print(f"   시간(t) 계수 β_t = {beta_t:.6f}")
+                print(f"   ?쒓컙(t) 怨꾩닔 棺_t = {beta_t:.6f}")
                 if beta_t > 0:
-                    print("   → β_t > 0: 시간이 지날수록 비용증가 (기술퇴보 또는 비용상승 요인)")
-                    print("   → 기술변화 TECH = -β_t = {:.6f} (음수)".format(-beta_t))
+                    print("   ??棺_t > 0: ?쒓컙???곕씪 鍮꾩슜利앷? (湲곗닠?대낫 ?먮뒗 鍮꾩슜?곸듅 ?붿씤)")
+                    print("   ??湲곗닠蹂??TECH = -棺_t = {:.6f} (?뚯닔)".format(-beta_t))
                 elif beta_t < 0:
-                    print("   → β_t < 0: 시간이 지날수록 비용감소 (기술진보)")
-                    print("   → 기술변화 TECH = -β_t = {:.6f} (양수)".format(-beta_t))
+                    print("   ??棺_t < 0: ?쒓컙???곕씪 鍮꾩슜媛먯냼 (湲곗닠吏꾨낫)")
+                    print("   ??湲곗닠蹂??TECH = -棺_t = {:.6f} (?묒닔)".format(-beta_t))
                 else:
-                    print("   → β_t = 0: 시간에 따른 비용변화 없음")
+                    print("   ??棺_t = 0: ?쒓컙???곕Ⅸ 鍮꾩슜蹂???놁쓬")
                 
-                print(f"   ✓ 기술변화 공식: TECH = -∂lnC/∂t = -β_t - β_tt×t - Σβ_it×ln(pi) - β_yt×ln(y)")
+                print(f"   ?? 湲곗닠蹂??怨듭떇: TECH = -?굃nC/?굏 = -棺_t - 棺_tt횞t - 誇棺_it횞ln(pi) - 棺_yt횞ln(y)")
             
             print("-" * 50)
             
-            # 2. 모델 적합도
-            print(f"\n2. 모델 적합도)")
+            # 2. 紐⑤뜽 ?듦퀎??
+            print(f"\n2. 紐⑤뜽 ?듦퀎??)
             print("-" * 40)
-            print(f"관측수: {frontier.get('n_obs', 'N/A'):>20}")
-            print(f"파라미터 수: {frontier.get('n_params', 'N/A'):>15}")
-            print(f"로그우도: {frontier['log_likelihood']:>15.4f}")
-            print(f"시그마_u: {frontier['sigma_u']:>15.4f}")
-            print(f"시그마_v: {frontier['sigma_v']:>15.4f}")
-            print(f"시그마²: {frontier['sigma_u']**2 + frontier['sigma_v']**2:>15.4f}")
-            print(f"람다 (σu/σv): {frontier['sigma_u']/frontier['sigma_v']:>10.4f}")
-            print(f"γ = σu²/σ²: {frontier['sigma_u']**2/(frontier['sigma_u']**2 + frontier['sigma_v']**2):>13.4f}")
+            print(f"愿痢≪닔: {frontier.get('n_obs', 'N/A'):>20}")
+            print(f"?뚮씪誘명꽣 ?? {frontier.get('n_params', 'N/A'):>15}")
+            print(f"濡쒓렇?곕룄: {frontier['log_likelihood']:>15.4f}")
+            print(f"?쒓렇留?u: {frontier['sigma_u']:>15.4f}")
+            print(f"?쒓렇留?v: {frontier['sigma_v']:>15.4f}")
+            print(f"?쒓렇留댟? {frontier['sigma_u']**2 + frontier['sigma_v']**2:>15.4f}")
+            print(f"?뚮떎 (?u/?v): {frontier['sigma_u']/frontier['sigma_v']:>10.4f}")
+            print(f"款 = ?u짼/?짼: {frontier['sigma_u']**2/(frontier['sigma_u']**2 + frontier['sigma_v']**2):>13.4f}")
         
-        # 3. 기술적 효율성(TE) 통계
+        # 3. 湲곗닠???⑥쑉??TE) ?듦퀎
         if 'technical_efficiency' in self.normalized_data.columns:
             te = self.normalized_data['technical_efficiency']
-            print(f"\n3. 기술적 효율성(TE) 통계")
+            print(f"\n3. 湲곗닠???⑥쑉??TE) ?듦퀎")
             print("-" * 40)
-            print(f"평균: {te.mean():>20.4f}")
-            print(f"표준편차: {te.std():>15.4f}")
-            print(f"최소값: {te.min():>16.4f}")
-            print(f"최대값: {te.max():>16.4f}")
-            print(f"중위수: {te.median():>16.4f}")
+            print(f"?됯퇏: {te.mean():>20.4f}")
+            print(f"?쒖??몄감: {te.std():>15.4f}")
+            print(f"理쒖냼媛? {te.min():>16.4f}")
+            print(f"理쒕?媛? {te.max():>16.4f}")
+            print(f"以묒쐞?? {te.median():>16.4f}")
         
-        # 4. TFP 분해 결과 (핵심 4가지 구성요인)
+        # 4. TFP 遺꾪빐 寃곌낵 (?듭떖 4媛吏 援ъ꽦?붿씤)
         display_cols = [self.id_var, self.time_var]
         
-        # TFP 핵심 구성요인만 추가
+        # TFP ?듭떖 援ъ꽦?붿씤?ㅻ쭔 異붽?
         tfp_core_components = ['tfp_growth', 'tech_change_effect', 'tech_efficiency_change', 'scale_effect']
         
         for comp in tfp_core_components:
             if comp in self.normalized_data.columns:
                 display_cols.append(comp)
         
-        # 결측치 제거
+        # 寃곗륫移??쒓굅
         cost_display = self.normalized_data[display_cols].dropna()
         
         if len(cost_display) > 0:
-            print(f"\n4. TFP 분해 결과 (핵심 4가지 구성요인)")
+            print(f"\n4. TFP 遺꾪빐 寃곌낵 (?듭떖 4媛吏 援ъ꽦?붿씤)")
             print("=" * 80)
             
-            # 컬럼명 변경(가독성)
+            # 而щ읆紐?蹂寃?(媛?낆꽦)
             col_rename = {
-                'tfp_growth': 'TFP증가율',
-                'tech_change_effect': '기술변화',
-                'tech_efficiency_change': '기술적효율성변화',
-                'scale_effect': '규모의경제효과'
+                'tfp_growth': 'TFP利앷???,
+                'tech_change_effect': '湲곗닠蹂??,
+                'tech_efficiency_change': '湲곗닠?곹슚?⑥꽦蹂??,
+                'scale_effect': '洹쒕え?섍꼍?쒗슚怨?
             }
             
             cost_display_renamed = cost_display.rename(columns=col_rename)
             
-            # 전체 데이터 출력
-            print("TFP 분해 결과:")
+            # ?꾩껜 ?곗씠??異쒕젰
+            print("TFP 遺꾪빐 寃곌낵:")
             print(cost_display_renamed.round(6).to_string(index=False))
-            print(f"\n총 {len(cost_display_renamed)}개 관측치")
+            print(f"\n珥?{len(cost_display_renamed)}媛?愿痢≪튂")
             
-            # TFP 분해 구성요인 통계
-            tfp_stats_cols = ['TFP증가율', '기술변화', '기술적효율성변화', '규모의경제효과']
+            # TFP 遺꾪빐 援ъ꽦?붿씤 ?듦퀎
+            tfp_stats_cols = ['TFP利앷???, '湲곗닠蹂??, '湲곗닠?곹슚?⑥꽦蹂??, '洹쒕え?섍꼍?쒗슚怨?]
             available_tfp_cols = [col for col in tfp_stats_cols if col in cost_display_renamed.columns]
             
             if available_tfp_cols:
                 print("\n" + "-" * 70)
-                print("TFP 구성요인 통계 (연간 변화율, %)")
+                print("TFP 援ъ꽦?붿씤 ?듦퀎 (?곌컙 蹂?붿쑉, %)")
                 print("-" * 70)
-                print(f"{'구성요인':<20} {'평균':<12} {'표준편차':<12} {'최소값':<12} {'최대값':<12}")
+                print(f"{'援ъ꽦?붿씤':<20} {'?됯퇏':<12} {'?쒖??몄감':<12} {'理쒖냼媛?:<12} {'理쒕?媛?:<12}")
                 print("-" * 70)
                 
                 for col in available_tfp_cols:
                     if col in cost_display_renamed.columns:
-                        col_data = cost_display_renamed[col].dropna() * 100  # 백분율
+                        col_data = cost_display_renamed[col].dropna() * 100  # 諛깅텇??
                         if len(col_data) > 0:
                             print(f"{col:<20} {col_data.mean():>8.4f} {col_data.std():>12.4f} {col_data.min():>12.4f} {col_data.max():>12.4f}")
                 
                 print("-" * 70)
                 
-                # TFP 분해 검증
-                if all(col in cost_display_renamed.columns for col in ['TFP증가율', '기술변화', '기술적효율성변화', '규모의경제효과']):
-                    calculated_tfp = (cost_display_renamed['기술변화'] + 
-                                    cost_display_renamed['기술적효율성변화'] + 
-                                    cost_display_renamed['규모의경제효과'])
-                    decomposition_error = cost_display_renamed['TFP증가율'] - calculated_tfp
+                # TFP 遺꾪빐 寃利?
+                if all(col in cost_display_renamed.columns for col in ['TFP利앷???, '湲곗닠蹂??, '湲곗닠?곹슚?⑥꽦蹂??, '洹쒕え?섍꼍?쒗슚怨?]):
+                    calculated_tfp = (cost_display_renamed['湲곗닠蹂??] + 
+                                    cost_display_renamed['湲곗닠?곹슚?⑥꽦蹂??] + 
+                                    cost_display_renamed['洹쒕え?섍꼍?쒗슚怨?])
+                    decomposition_error = cost_display_renamed['TFP利앷???] - calculated_tfp
                     
-                    print(f"\n✓ TFP 분해 정확성")
-                    print(f"   평균 분해오차: {decomposition_error.mean()*100:>8.6f}%")
-                    print(f"   최대 절대오차: {decomposition_error.abs().max()*100:>8.6f}%")
+                    print(f"\n?? TFP 遺꾪빐 ?뺥솗??")
+                    print(f"   ?됯퇏 遺꾪빐?ㅼ감: {decomposition_error.mean()*100:>8.6f}%")
+                    print(f"   理쒕? ?덈??ㅼ감: {decomposition_error.abs().max()*100:>8.6f}%")
                     
-                    if decomposition_error.abs().max() < 0.05:  # 5% 이하
-                        print("   ✓ 분해가 정확합니다)")
-                    elif decomposition_error.abs().max() < 0.10:  # 10% 이하
-                        print("   →  분해 오차가 다소 있습니다")
+                    if decomposition_error.abs().max() < 0.05:  # 5% ?댄븯
+                        print("   ? 遺꾪빐媛 ?뺥솗?⑸땲??)
+                    elif decomposition_error.abs().max() < 0.10:  # 10% ?댄븯
+                        print("   ??  遺꾪빐 ?ㅼ감媛 ?ㅼ냼 ?덉뒿?덈떎")
                     else:
-                        print("   ✗ 분해 오차가 큽니다)")
+                        print("   ? 遺꾪빐 ?ㅼ감媛 ?쎈땲??)
             
-            # 시간별 평균
+            # ?쒓컙蹂??됯퇏
             if self.include_time and len(cost_display) > 0:
-                print(f"\n시간별 평균:")
+                print(f"\n?쒓컙蹂??됯퇏:")
                 time_avg = cost_display.groupby(self.time_var)[tfp_core_components].mean()
                 time_avg_renamed = time_avg.rename(columns=col_rename)
                 print(time_avg_renamed.round(6).to_string())
             
-            # ID별 평균 (개체별 비교)
-            print(f"\nID별 평균 (개체별 비교):")
+            # ID蹂??됯퇏 (媛쒖껜蹂?鍮꾧탳)
+            print(f"\nID蹂??됯퇏 (媛쒖껜蹂?鍮꾧탳):")
             print("-" * 60)
             id_avg = cost_display.groupby(self.id_var)[tfp_core_components].mean()
             id_avg_renamed = id_avg.rename(columns=col_rename)
             print(id_avg_renamed.round(6).to_string())
             
-            # 파일 저장
-            print(f"\n✓ TFP 분해 분석 데이터 저장: {save_path}")
+            # ?뚯씪 ???
+            print(f"\n?? TFP 遺꾪빐 遺꾩꽍 ?곗씠????? {save_path}")
             
-            # 디렉토리가 없으면 생성
+            # ?붾젆?좊━媛 ?놁쑝硫??앹꽦
             import os
             save_dir = os.path.dirname(save_path)
             if save_dir and not os.path.exists(save_dir):
                 os.makedirs(save_dir)
             
             cost_display_renamed.to_csv(save_path, index=False, encoding='utf-8-sig')
-            print("저장 완료!")
+            print("????꾨즺!")
         
         else:
-            print("TFP 분해 분석 데이터가 없습니다")
+            print("TFP 遺꾪빐 遺꾩꽍 ?곗씠?곌? ?놁뒿?덈떎")
         
         print("\n" + "=" * 100)
     
     def plot_results(self):
-        """결과 시각화"""
+        """寃곌낵 ?쒓컖??""
         if 'technical_efficiency' not in self.normalized_data.columns:
-            print("기술적 효율성(TE)이 계산되지 않았습니다")
+            print("湲곗닠???⑥쑉??TE)??怨꾩궛?섏? ?딆븯?듬땲??")
             return
         
         fig, axes = plt.subplots(2, 2, figsize=(15, 12))
         
-        # 기술적 효율성 분포
+        # 湲곗닠???⑥쑉??遺꾪룷
         axes[0, 0].hist(self.normalized_data['technical_efficiency'], bins=30, alpha=0.7, edgecolor='black')
-        axes[0, 0].set_title('기술적 효율성(TE) 분포')
-        axes[0, 0].set_xlabel('기술적 효율성')
-        axes[0, 0].set_ylabel('빈도')
+        axes[0, 0].set_title('湲곗닠???⑥쑉??TE) 遺꾪룷')
+        axes[0, 0].set_xlabel('湲곗닠???⑥쑉??)
+        axes[0, 0].set_ylabel('鍮덈룄')
         
-        # TFP 증가율 시계열
+        # TFP 利앷????쒓퀎??
         if self.include_time and 'tfp_growth' in self.normalized_data.columns:
             tfp_by_time = self.normalized_data.groupby(self.time_var)['tfp_growth'].mean()
             axes[0, 1].plot(tfp_by_time.index, tfp_by_time.values * 100, marker='o')
-            axes[0, 1].set_title('시간별 평균 TFP 증가율')
-            axes[0, 1].set_xlabel('시간')
-            axes[0, 1].set_ylabel('TFP 증가율(%)')
+            axes[0, 1].set_title('?쒓컙蹂??됯퇏 TFP 利앷???)
+            axes[0, 1].set_xlabel('?쒓컙')
+            axes[0, 1].set_ylabel('TFP 利앷???(%)')
             axes[0, 1].axhline(y=0, color='red', linestyle='--', alpha=0.5)
         
-        # TFP 구성요인별 시계열
+        # TFP 援ъ꽦?붿씤蹂??쒓퀎??
         if self.include_time and all(col in self.normalized_data.columns for col in ['tech_change_effect', 'tech_efficiency_change', 'scale_effect']):
             components = ['tech_change_effect', 'tech_efficiency_change', 'scale_effect']
-            component_names = ['기술변화', '기술적효율성변화', '규모의경제효과']
+            component_names = ['湲곗닠蹂??, '湲곗닠?곹슚?⑥꽦蹂??, '洹쒕え?섍꼍?쒗슚怨?]
             
             for comp, name in zip(components, component_names):
                 comp_by_time = self.normalized_data.groupby(self.time_var)[comp].mean()
                 axes[1, 0].plot(comp_by_time.index, comp_by_time.values * 100, marker='o', label=name)
             
-            axes[1, 0].set_title('TFP 구성요인별 시계열')
-            axes[1, 0].set_xlabel('시간')
-            axes[1, 0].set_ylabel('변화율 (%)')
+            axes[1, 0].set_title('TFP 援ъ꽦?붿씤蹂??쒓퀎??)
+            axes[1, 0].set_xlabel('?쒓컙')
+            axes[1, 0].set_ylabel('蹂?붿쑉 (%)')
             axes[1, 0].legend()
             axes[1, 0].axhline(y=0, color='red', linestyle='--', alpha=0.5)
         
-        # 비용몫 분포
+        # 鍮꾩슜紐?遺꾪룷
         share_vars = [f'share_{input_var}' for input_var in self.input_vars if f'share_{input_var}' in self.normalized_data.columns]
         if share_vars:
             share_data = self.normalized_data[share_vars].mean()
             axes[1, 1].bar(range(len(share_data)), share_data.values)
-            axes[1, 1].set_title('평균 비용몫')
-            axes[1, 1].set_xlabel('생산요소')
-            axes[1, 1].set_ylabel('비용몫')
+            axes[1, 1].set_title('?됯퇏 鍮꾩슜紐?)
+            axes[1, 1].set_xlabel('?앹궛?붿냼')
+            axes[1, 1].set_ylabel('鍮꾩슜紐?)
             axes[1, 1].set_xticks(range(len(share_data)))
             axes[1, 1].set_xticklabels([var.replace('share_', '').upper() for var in share_vars])
         
@@ -1185,29 +1182,29 @@ def print_results(self, save_path='cost_results.csv'):
         plt.show()
 
     def run_complete_analysis(self, save_path='cost_tfp_results.csv'):
-        """전체 TFP 분해 분석 실행"""
-        print("확률변경비용함수 및 TFP 분해 분석을 시작합니다..")
+        """?꾩껜 TFP 遺꾪빐 遺꾩꽍 ?ㅽ뻾"""
+        print("?뺣쪧蹂寃쎈퉬?⑺븿??諛?TFP 遺꾪빐 遺꾩꽍???쒖옉?⑸땲??..")
         
         # 1. EDA
         self.exploratory_data_analysis()
         
-        # 2. 데이터 준비
+        # 2. ?곗씠??以鍮?
         self.normalize_data()
         self.create_translog_variables()
         
-        # 3. 추정
+        # 3. 異붿젙
         self.estimate_ols()
         self.estimate_stochastic_frontier()
         
-        # 4. TFP 및 구성요인 분석
+        # 4. TFP 諛?援ъ꽦?붿씤 遺꾩꽍
         self.calculate_efficiency()
         self.calculate_cost_economics()
         
-        # 5. 결과 출력
+        # 5. 寃곌낵 異쒕젰
         self.print_results(save_path)
         self.plot_results()
         
-        print("\nTFP 분해 분석이 완료되었습니다")
+        print("\nTFP 遺꾪빐 遺꾩꽍???꾨즺?섏뿀?듬땲??")
         
         return self.results, self.normalized_data
 
@@ -1215,14 +1212,14 @@ def print_results(self, save_path='cost_results.csv'):
 def Run_StochasticFrontierCost(data, cost_var, output_var, price_vars, input_vars, 
                           time_var='year', id_var='id', include_time=True, save_path='cost_results.csv'):
     """
-    확률변경비용함수를 이용한 TFP 분해 분석 - 사용자 친화적 인터페이스
+    ?뺣쪧蹂寃쎈퉬?⑺븿?섎? ?댁슜??TFP 遺꾪빐 遺꾩꽍 - ?ъ슜??移쒗솕???명꽣?섏씠??
     """
     
-    print("✓ 확률변경비용함수를 이용한 TFP 분해 분석을 시작합니다..")
+    print("?? ?뺣쪧蹂寃쎈퉬?⑺븿?섎? ?댁슜??TFP 遺꾪빐 遺꾩꽍???쒖옉?⑸땲??..")
     print("=" * 80)
     
     try:
-        # 분석기 생성
+        # 遺꾩꽍湲??앹꽦
         analyzer = _StochasticFrontierCostAnalyzer(
             data=data,
             cost_var=cost_var,
@@ -1234,16 +1231,16 @@ def Run_StochasticFrontierCost(data, cost_var, output_var, price_vars, input_var
             include_time=include_time
         )
         
-        # 전체 분석 실행
+        # ?꾩껜 遺꾩꽍 ?ㅽ뻾
         results, processed_data = analyzer.run_complete_analysis(save_path)
         
-        print("✓ 분석이 완료되었습니다")
+        print("? 遺꾩꽍???꾨즺?섏뿀?듬땲??")
         
         return results, processed_data
         
     except Exception as e:
-        print(f"✗ 분석 중 오류 발생: {str(e)}")
-        print("상세 오류:")
+        print(f"? 遺꾩꽍 以??ㅻ쪟 諛쒖깮: {str(e)}")
+        print("?곸꽭 ?ㅻ쪟:")
         import traceback
         traceback.print_exc()
         return None, None
